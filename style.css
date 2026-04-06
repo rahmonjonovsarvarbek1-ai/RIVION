@@ -1,0 +1,179 @@
+:root {
+    --bg: #000000;
+    --accent: #ffffff;
+    --text-dim: #888888;
+    --border: #222222;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--accent);
+    overflow-x: hidden;
+}
+
+.app-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Navigatsiya */
+nav {
+    height: 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+}
+
+.logo { font-weight: 800; font-size: 1.5rem; letter-spacing: 2px; }
+
+.nav-links { display: flex; align-items: center; gap: 30px; }
+
+.nav-links a { color: var(--text-dim); text-decoration: none; font-size: 0.9rem; transition: 0.3s; }
+
+.nav-links a:hover { color: var(--accent); }
+
+.btn-login {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 8px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Hero Section */
+.hero {
+    height: calc(100vh - 80px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.badge {
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    padding: 5px 15px;
+    border-radius: 50px;
+    margin-bottom: 20px;
+    display: inline-block;
+}
+
+h1 {
+    font-size: 4.5rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 20px;
+    letter-spacing: -2px;
+}
+
+h1 span { -webkit-text-stroke: 1px var(--accent); color: transparent; }
+
+p { color: var(--text-dim); max-width: 500px; margin: 0 auto 40px; line-height: 1.6; }
+
+/* Tugmalar */
+.cta-group { display: flex; gap: 20px; justify-content: center; }
+
+.btn-main {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 15px 40px;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-text { background: transparent; color: var(--accent); border: none; cursor: pointer; font-size: 1rem; }
+
+/* --- MODAL STILLARI --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(10px);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: #0a0a0a;
+    border: 1px solid var(--border);
+    padding: 40px;
+    width: 90%;
+    max-width: 420px;
+    border-radius: 16px;
+    text-align: center;
+    position: relative;
+}
+
+.close-modal {
+    position: absolute;
+    top: 20px; right: 20px;
+    font-size: 28px;
+    cursor: pointer;
+    color: var(--text-dim);
+}
+
+.modal-sub { font-size: 0.9rem; margin-bottom: 30px; }
+
+.auth-providers { display: flex; flex-direction: column; gap: 12px; }
+
+.provider-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 14px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: 0.2s;
+}
+
+.provider-btn:hover { background: #111; border-color: var(--text-dim); }
+
+.provider-btn img { width: 20px; height: 20px; }
+
+.divider { margin: 25px 0; color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
+
+.auth-input {
+    width: 100%;
+    padding: 14px;
+    background: #000;
+    border: 1px solid var(--border);
+    color: white;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    outline: none;
+}
+
+.full-width { width: 100%; }
+
+/* Mobile */
+@media (max-width: 768px) {
+    h1 { font-size: 2.8rem; }
+    .nav-links a { display: none; }
+    .cta-group { flex-direction: column; }
+    .btn-main { width: 100%; }
+}
+
