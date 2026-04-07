@@ -598,33 +598,49 @@ window.sendMessage = async () => {
     } catch (err) { console.error(err); }
 };
 
-// 2. Chatni ochish va xabarlarni yuklash
 window.openChat = (peerUid, peerName, peerPhoto) => {
     const user = auth.currentUser;
     currentPeerUid = peerUid;
     currentChatId = getChatId(user.uid, peerUid);
 
-    // UI ni yangilash
-    document.getElementById('chat-welcome').style.display = 'none';
-    document.getElementById('active-chat').style.display = 'flex';
-    document.getElementById('chat-user-name').innerText = peerName;
-    document.getElementById('chat-user-img').src = peerPhoto;
+    // 1. BO'LIMLARNI ALMASHISH (Search-dan Chat bo'limiga o'tish)
+    // Agar sizda bo'limlar ID-si bo'lsa, ularni ko'rsatish/yashirish qatorini qo'shing:
+    // document.getElementById('search-section').style.display = 'none';
+    // document.getElementById('chat-section').style.display = 'block';
 
-    // Xabarlarni real-time eshitish
+    // 2. UI NI YANGILASH (Siz yuborgan HTML ID-lariga moslab)
+    const emptyState = document.getElementById('no-chat-selected');
+    const activeChat = document.getElementById('active-chat-container');
+    
+    if (emptyState) emptyState.style.display = 'none';
+    if (activeChat) activeChat.style.display = 'block';
+
+    // Foydalanuvchi ma'lumotlarini o'rnatish
+    document.getElementById('main-chat-user-name').innerText = peerName;
+    document.getElementById('main-chat-user-img').src = peerPhoto || 'default-avatar.png';
+
+    // 3. XABARLARNI YUKLASH
     const q = query(collection(db, "chats", currentChatId, "messages"), orderBy("timestamp", "asc"));
+    
     onSnapshot(q, (snapshot) => {
-        const display = document.getElementById('messages-display');
+        const display = document.getElementById('main-chat-messages'); // To'g'ri ID
         display.innerHTML = "";
+        
         snapshot.forEach(doc => {
             const msg = doc.data();
             const isMe = msg.senderId === user.uid;
+            
+            // Xabar dizaynini chiroyli qilish
             display.innerHTML += `
-                <div class="msg ${isMe ? 'sent' : 'received'}">
-                    ${msg.text}
+                <div class="message-wrapper ${isMe ? 'sent' : 'received'}">
+                    <div class="message-bubble">
+                        ${msg.text}
+                        <span class="msg-time">${new Date(msg.timestamp?.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                    </div>
                 </div>
             `;
         });
-        display.scrollTop = display.scrollHeight; // Avtomatik pastga tushish
+        display.scrollTop = display.scrollHeight;
     });
 };
 
@@ -690,11 +706,7 @@ window.openFullChat = (roomId, name, photo) => {
     loadMessages(roomId); 
 };
 
-// Telefonda orqaga qaytish
-window.backToInbox = () => {
-    const wrapper = document.getElementById('chatWrapper');
-    wrapper.classList.remove('is-chat-open');
-};
+
 
 let selectedUser = null; // Profil ochilganda foydalanuvchi ma'lumotlarini saqlash
 
@@ -1069,44 +1081,42 @@ window.handleChatFromProfile = async (userId) => {
     }
 };
 
+// 1. Chatga kirish
 async function selectUserForChat(userId) {
     if (!userId) return;
     currentActiveChatId = userId;
 
-    const noChatState = document.getElementById('no-chat-selected');
-    const activeChatContainer = document.getElementById('active-chat-container');
-    const userNameEl = document.getElementById('main-chat-user-name');
-    const userImgEl = document.getElementById('main-chat-user-img');
+    const chatWindow = document.getElementById('chatWindow');
+    const sidebar = document.getElementById('chatSidebar');
+    const noChat = document.getElementById('no-chat-selected');
+    const activeContainer = document.getElementById('active-chat-container');
 
-    if (noChatState) noChatState.style.display = 'none';
-    if (activeChatContainer) activeChatContainer.style.display = 'flex';
-
-    try {
-        const userDoc = await getDoc(doc(db, "users", userId));
-        if (userDoc.exists()) {
-            const userData = userDoc.data();
-            if (userNameEl) userNameEl.innerText = userData.displayName || "RIVION User";
-
-            if (userImgEl) {
-                // Rasm manzilini tekshirish
-                const photo = (userData.photoURL && userData.photoURL !== "undefined") 
-                              ? userData.photoURL 
-                              : 'https://ui-avatars.com/api/?name=' + (userData.displayName || 'U');
-                
-                userImgEl.src = photo;
-                
-                // Cheksiz loopni to'xtatuvchi xavfsiz onerror
-                userImgEl.onerror = function() { 
-                    this.onerror = null; 
-                    this.src = 'https://ui-avatars.com/api/?background=random&name=R';
-                };
-            }
-        }
-    } catch (error) {
-        console.error("User yuklashda xato:", error);
+    if (window.innerWidth <= 768) {
+        chatWindow.classList.add('active');
+        sidebar.style.display = 'none';
     }
+
+    noChat.style.display = 'none';
+    activeContainer.style.display = 'flex';
+
+    // Foydalanuvchi ma'lumotlarini yuklash (Firebase)
+    // Bu yerda getDoc funksiyangizni ishlating...
     loadMainMessages(userId);
 }
+
+// 2. Orqaga qaytish (Instagram uslubida)
+function backToSidebar() {
+    const chatWindow = document.getElementById('chatWindow');
+    const sidebar = document.getElementById('chatSidebar');
+
+    chatWindow.classList.remove('active');
+    if (window.innerWidth <= 768) {
+        chatWindow.style.display = 'none';
+        sidebar.style.display = 'flex';
+    }
+}
+
+
 
 // 3. Xabarlarni Real-time yuklash (Professional onSnapshot)
 function loadMainMessages(targetUserId) {
@@ -1202,3 +1212,18 @@ const setSafeImage = (imgElement, photoURL, displayName) => {
         console.warn("Rasm yuklanmadi, zaxira rasm qo'yildi.");
     };
 };
+
+// Chat ro'yxatidagi biror kishini bosganda
+function openChat() {
+    if (window.innerWidth <= 768) {
+        const messageWindow = document.querySelector('.message-window');
+        messageWindow.classList.add('active'); // Oynani butun ekranga ochadi
+    }
+}
+
+// Chatdan chiqish (Orqaga tugmasi uchun)
+function closeChat() {
+    const messageWindow = document.querySelector('.message-window');
+    messageWindow.classList.remove('active');
+}
+

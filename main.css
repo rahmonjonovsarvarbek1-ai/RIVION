@@ -1584,3 +1584,146 @@ textarea {
     padding: 20px;
     background: rgba(0, 0, 0, 0.2);
 }
+
+
+/* ASOSIY KONTEYNER */
+.chat-main-wrapper {
+    display: flex;
+    height: 85vh;
+    overflow: hidden;
+    border-radius: 15px;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+/* SIDEBAR */
+.chat-sidebar {
+    width: 350px;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header-custom { padding: 20px; }
+.search-chat {
+    background: rgba(255,255,255,0.05);
+    border-radius: 20px;
+    padding: 8px 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.search-chat input {
+    background: transparent;
+    border: none;
+    color: white;
+    outline: none;
+    width: 100%;
+}
+
+/* CHAT OYNASI */
+.chat-window-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+#active-chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.main-messages-display {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background-image: url('chat-bg.png'); /* Ixtiyoriy fon */
+}
+
+/* NAV-AVATAR */
+.nav-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50% !important; /* To'liq aylana */
+    object-fit: cover;
+}
+
+/* MOBIL MOSLASHUV */
+@media (max-width: 768px) {
+    .chat-sidebar { width: 100%; }
+    .chat-window-main { display: none; }
+
+    .chat-window-main.active {
+        display: flex !important;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: #000000;
+    }
+    
+    .back-btn { display: block !important; }
+}
+
+.back-btn { display: none; background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
+
+/* Chat bo'limi Search-dan mustaqil bo'lishi uchun */
+#chat-section {
+    position: relative;
+    height: 100%;
+}
+
+.main-chat-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px;
+    background: var(--card-bg); /* */
+}
+
+/* CHAT FOOTERNI PROFESSIONAL QILISH */
+.main-chat-footer {
+    padding: 15px;
+    background: #0f0f0f; /* Dark background */
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.input-wrapper {
+    display: flex;
+    align-items: center;
+    background: rgba(255,255,255,0.05);
+    border-radius: 25px;
+    padding: 5px 15px;
+    gap: 10px;
+}
+
+.input-wrapper input {
+    flex: 1;
+    background: transparent;
+    border: none !important; /* Xunuk ko'k chiziqni yo'qotadi */
+    color: white;
+    outline: none;
+    padding: 10px;
+}
+
+/* JO'NATISH TUGMASI */
+.main-send-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #0084ff; /* Moviy rang */
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.main-send-btn:hover {
+    background: #0073e6;
+    transform: scale(1.05);
+}
