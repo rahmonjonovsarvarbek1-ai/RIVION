@@ -1,83 +1,134 @@
-import { auth, googleProvider, signInWithPopup, onAuthStateChanged } from './firebase-config.js';
+import { auth, db } from './firebase-config.js'; 
+import { 
+    signInWithPopup, 
+    GoogleAuthProvider, 
+    onAuthStateChanged,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // --- 1. ELEMENTLARNI TANLAB OLISH ---
-const modal = document.getElementById('authModal');
-const openBtnHero = document.getElementById('openModalHero');
-const openBtnNav = document.getElementById('openModalNav');
-const closeBtn = document.querySelector('.close-modal');
-const googleBtn = document.querySelector('.provider-btn.google');
-const navLoginBtn = document.querySelector('.btn-login');
+const mainAuthBtn = document.getElementById('mainAuthBtn');
+const toggleAuth = document.getElementById('toggleAuth');
+const googleBtn = document.getElementById('googleBtn');
+const authName = document.getElementById('authName');
+const authEmail = document.getElementById('authEmail');
+const authPassword = document.getElementById('authPassword');
+const modalTitle = document.getElementById('modalTitle');
+const modalSub = document.getElementById('modalSub');
+const toggleText = document.getElementById('toggleText');
 
-// --- 2. MODAL OYNASI LOGIKASI ---
+// Navbatdagi login tugmasi (Header qismida bo'lsa)
+const navLoginBtn = document.querySelector('.btn-login') || document.querySelector('.logo'); 
 
-// Modalni ochish funksiyasi
-const openModal = () => {
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden'; // Orqa fonni qotirib qo'yadi
-};
+let isLoginMode = true;
 
-// Modalni yopish funksiyasi
-const closeModal = () => {
-    modal.style.display = 'none';
-    document.body.style.overflow = 'auto';
-};
+// --- 2. REJIMNI ALMASHTIRISH (LOGIN <-> SIGN UP) ---
+if (toggleAuth) {
+    toggleAuth.onclick = (e) => {
+        e.preventDefault();
+        isLoginMode = !isLoginMode;
 
-// Tugmalarga hodisalarni biriktirish
-if(openBtnHero) openBtnHero.onclick = openModal;
-if(openBtnNav) openBtnNav.onclick = openModal;
-if(closeBtn) closeBtn.onclick = closeModal;
+        // Instagram uslubidagi o'zgarishlar
+        modalTitle.innerText = isLoginMode ? "Kirish" : "Ro'yxatdan o'tish";
+        modalSub.innerText = isLoginMode ? "Davom etish uchun ma'lumotlarni kiriting." : "Do'stlaringiz bilan muloqot uchun ro'yxatdan o'ting.";
+        authName.style.display = isLoginMode ? 'none' : 'block'; 
+        mainAuthBtn.innerText = isLoginMode ? 'Kirish' : 'Ro\'yxatdan o\'tish';
+        toggleText.innerText = isLoginMode ? "Hisobingiz yo'qmi?" : "Hisobingiz bormi?";
+        toggleAuth.innerText = isLoginMode ? "Ro'yxatdan o'tish" : "Kirish";
+    };
+}
 
-// Modal tashqarisiga bosilganda yopish
-window.onclick = (event) => {
-    if (event.target == modal) {
-        closeModal();
-    }
-};
+// --- 3. FIREBASE AUTH LOGIKASI ---
 
-// --- 3. FIREBASE AUTH (GOOGLE LOGIN) ---
+// A. Google Login
+if (googleBtn) {
+    googleBtn.onclick = async () => {
+        const provider = new GoogleAuthProvider();
+        try {
+            googleBtn.innerText = "Ulanmoqda...";
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
 
-// Google tugmasi bosilganda
-googleBtn.onclick = async () => {
-    try {
-        googleBtn.innerText = "Ulanmoqda...";
-        const result = await signInWithPopup(auth, googleProvider);
-        const user = result.user;
-        
-        console.log("Muvaffaqiyatli kirildi:", user.displayName);
-        closeModal(); // Modalni yopish (har ehtimolga qarshi)
+            // Foydalanuvchi ma'lumotlarini Firestore'da saqlash
+            await setDoc(doc(db, "users", user.uid), {
+                uid: user.uid,
+                displayName: user.displayName,
+                email: user.email,
+                photoURL: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'U')}`,
+                lastSeen: serverTimestamp()
+            }, { merge: true });
 
-        // --- ASOSIY QISMI: Yangi sahifaga o'tkazish ---
-        window.location.href = 'main.html'; 
+            window.location.href = 'main.html';
+        } catch (error) {
+            console.error("Google Error:", error);
+            googleBtn.innerHTML = `<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G"> Google orqali davom etish`;
+        }
+    };
+}
 
-    } catch (error) {
-        console.error("Xatolik:", error.message);
-        alert("Kirishda xatolik yuz berdi. Firebase Console-da Google Auth yoqilganini tekshiring.");
-        // Xatolik bo'lsa tugmani eski holiga qaytaramiz
-        googleBtn.innerHTML = `<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G"> Google orqali davom etish`;
-    }
-};
+// B. Email va Parol orqali Auth
+if (mainAuthBtn) {
+    mainAuthBtn.onclick = async () => {
+        const email = authEmail.value.trim();
+        const password = authPassword.value;
+        const name = authName.value.trim();
+
+        if (!email || !password) return alert("Barcha maydonlarni to'ldiring!");
+
+        try {
+            if (isLoginMode) {
+                // Tizimga kirish
+                await signInWithEmailAndPassword(auth, email, password);
+                window.location.href = 'main.html';
+            } else {
+                // Ro'yxatdan o'tish
+                if (!name) return alert("Iltimos, ismingizni kiriting!");
+                
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Profil rasmi uchun default avatar (Undefined xatosini oldini oladi)
+                const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`;
+
+                await setDoc(doc(db, "users", user.uid), {
+                    uid: user.uid,
+                    displayName: name,
+                    email: email,
+                    photoURL: avatar,
+                    createdAt: serverTimestamp()
+                });
+
+                alert("Muvaffaqiyatli ro'yxatdan o'tdingiz!");
+                window.location.href = 'main.html';
+            }
+        } catch (error) {
+            // Xatoliklarni chiroyli tushuntirish
+            if (error.code === 'auth/email-already-in-use') {
+                alert("Bu email band. Iltimos, Kirish bo'limidan foydalaning.");
+            } else if (error.code === 'auth/invalid-credential') {
+                alert("Email yoki parol noto'g'ri.");
+            } else {
+                alert("Xatolik: " + error.message);
+            }
+        }
+    };
+}
 
 // --- 4. FOYDALANUVCHI HOLATINI KUZATISH ---
 onAuthStateChanged(auth, (user) => {
-    if (user) {
-        // Foydalanuvchi tizimga kirgan bo'lsa, navigatsiyadagi tugmani o'zgartiramiz
-        navLoginBtn.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                <img src="${user.photoURL}" style="width: 25px; height: 25px; border-radius: 50%; border: 1px solid white;">
-                <span style="font-size: 0.85rem;">${user.displayName.split(' ')[0]}</span>
-            </div>
-        `;
+    if (user && navLoginBtn) {
+        // Foydalanuvchi rasmini tekshirish
+        const photo = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'U')}`;
         
-        // Hero qismidagi tugmani o'zgartirish
-        if(openBtnHero) {
-            openBtnHero.innerText = "Hamjamiyatga o'tish";
-            openBtnHero.onclick = () => {
-                alert("Tez kunda hamjamiyat xonalari ishga tushadi!");
-            };
-        }
-    } else {
-        // Foydalanuvchi chiqib ketgan bo'lsa
-        navLoginBtn.innerText = "Kirish";
-        navLoginBtn.onclick = openModal;
+        // Navigatordagi tugmani profil ko'rinishiga o'tkazish
+        navLoginBtn.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <img src="${photo}" style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid #333;">
+                <span style="font-size: 0.9rem; font-weight: 500;">${(user.displayName || 'User').split(' ')[0]}</span>
+            </div>
+  
+            `;
     }
 });

@@ -3,61 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RIVION | Minimalist Community</title>
+    <title>RIVION | Kirish va Ro'yxatdan o'tish</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="app-wrapper">
+    <div class="app-wrapper main-landing">
         <nav>
             <div class="logo">RIVION</div>
-            <div class="nav-links">
-                <a href="#">Hamjamiyat</a>
-                <a href="#">Sheriklar</a>
-                <button class="btn-login" id="openModalNav">Kirish</button>
-            </div>
         </nav>
 
-        <section class="hero">
-            <div class="hero-content">
-                <span class="badge">Yangi davr boshlanmoqda</span>
-                <h1>Welcome <br>to <span>RIVION</span></h1>
-                <p>Siz bu yerda o'zingiz kabi insonlarni uchratasiz, tanishasiz va suhbatlar qurishingiz mumkin.</p>
-                <div class="cta-group">
-                    <button class="btn-main" id="openModalHero">Ro'yxatdan o'tish</button>
-                    <button class="btn-text">Batafsil →</button>
+        <main class="auth-container">
+            <div class="brand-section">
+                <h1>Welcome to <span>RIVION</span></h1>
+                <p id="modalSub">Davom etish uchun ma'lumotlarni kiriting.</p>
+            </div>
+
+            <div class="auth-card">
+                <h2 id="modalTitle">Kirish</h2>
+                
+                <div class="auth-providers">
+                    <button class="provider-btn google" id="googleBtn">
+                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
+                        Google orqali davom etish
+                    </button>
+                </div>
+
+                <div class="divider">yoki</div>
+
+                <div class="email-auth">
+                    <input type="text" id="authName" placeholder="To'liq ismingiz" class="auth-input" style="display: none;">
+                    <input type="email" id="authEmail" placeholder="Gmail manzilingiz" class="auth-input">
+                    <input type="password" id="authPassword" placeholder="Parolingiz" class="auth-input">
+                    
+                    <button class="btn-main full-width" id="mainAuthBtn">Kirish</button>
+                    
+                    <div class="toggle-container">
+                        <span id="toggleText">Hisobingiz yo'qmi?</span> 
+                        <a href="#" id="toggleAuth">Ro'yxatdan o'tish</a>
+                    </div>
                 </div>
             </div>
-        </section>
+        </main>
     </div>
 
-    <div id="authModal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2>RIVION-ga qo'shiling</h2>
-            <p class="modal-sub">Davom etish uchun hisobingizni tanlang</p>
-            
-            <div class="auth-providers">
-                <button class="provider-btn google">
-                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
-                    Google orqali davom etish
-                </button>
-                <button class="provider-btn facebook">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg" alt="F">
-                    Facebook orqali davom etish
-                </button>
-            </div>
-
-            <div class="divider">yoki</div>
-
-            <div class="email-auth">
-                <input type="email" placeholder="Gmail manzilingiz" class="auth-input">
-                <button class="btn-main full-width">Email bilan kirish</button>
-            </div>
-        </div>
-    </div>
-
-    
     <script type="module" src="script.js"></script>
 </body>
 </html>

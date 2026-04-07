@@ -4,12 +4,14 @@ import {
     collection, 
     addDoc, 
     setDoc, 
-    getDoc,      // <--- BUNI ALBATTA QO'SHING
+    getDoc, 
     doc, 
     query, 
+    where,       // <--- BUNI QO'SHDIK (Qidiruv uchun shart)
+    limit,       // <--- BUNI QO'SHDIK (Natijalarni cheklash uchun)
     orderBy, 
     onSnapshot, 
-    getDocs,     // <--- Qidiruv ishlashi uchun bu ham kerak
+    getDocs, 
     serverTimestamp,
     updateDoc,
     arrayUnion,
@@ -243,10 +245,19 @@ document.getElementById('logoutBtnDrawer').addEventListener('click', () => {
 });
 
 // Izoh qutisini ochish/yopish
-window.toggleCommentBox = (postId) => {
-    const box = document.getElementById(`comment-box-${postId}`);
-    box.style.display = box.style.display === 'none' ? 'block' : 'none';
-};
+function toggleCommentBox(id) {
+    const box = document.getElementById(id); // ID to'g'ri kelayotganiga ishonch hosil qiling
+    
+    if (box) {
+        if (box.style.display === "none" || box.style.display === "") {
+            box.style.display = "block";
+        } else {
+            box.style.display = "none";
+        }
+    } else {
+        console.error("Xato: 'box' topilmadi! ID ni tekshiring.");
+    }
+}
 
 // Izoh yuborish
 window.sendComment = async (postId) => {
@@ -516,7 +527,7 @@ onSnapshot(query(collection(db, "discovery"), orderBy("createdAt", "desc")), (sn
                     <p class="post-caption">${data.bio}</p>
                     
                     <button onclick="sendInterest('${data.uid}', '${data.userName}')" class="network-action-btn">
-                        👋 Qiziqish
+                        👋 Qiziqish bildirish
                     </button>
                 </div>
             </div>
@@ -687,54 +698,110 @@ window.backToInbox = () => {
 
 let selectedUser = null; // Profil ochilganda foydalanuvchi ma'lumotlarini saqlash
 
-// 1. Qidiruv funksiyasi
 window.searchUsers = async (val) => {
     const resultsContainer = document.getElementById('search-results');
-    if (val.length < 2) {
+    const input = val.toLowerCase().trim(); // Kichik harfga o'girish (ixtiyoriy)
+    
+    if (input.length < 2) {
         resultsContainer.innerHTML = "Kamida 2 ta harf kiriting...";
         return;
     }
 
-    // Firebase'dan foydalanuvchilarni qidirish
+    // Firebase'dan qidirish
     const q = query(collection(db, "users"), 
                 where("displayName", ">=", val), 
                 where("displayName", "<=", val + '\uf8ff'),
                 limit(5));
 
-    const querySnapshot = await getDocs(q);
-    resultsContainer.innerHTML = "";
+    try {
+        const querySnapshot = await getDocs(q);
+        resultsContainer.innerHTML = "";
 
-    querySnapshot.forEach((doc) => {
-        const user = doc.data();
-        resultsContainer.innerHTML += `
-            <div class="inbox-item" onclick="viewUserProfile('${doc.id}', '${user.displayName}', '${user.photoURL}', '${user.username || 'user'}')">
-                <img src="${user.photoURL}" class="nav-avatar">
-                <div>
-                    <strong>${user.displayName}</strong>
-                    <p style="font-size: 0.8rem; color: gray;">@${user.username || 'user'}</p>
+        if (querySnapshot.empty) {
+            resultsContainer.innerHTML = "<p style='padding:10px; color:gray;'>Hech kim topilmadi</p>";
+            return;
+        }
+
+        querySnapshot.forEach((doc) => {
+            const user = doc.data();
+            
+            // --- MUHIM: UNDEFINED XATOSINI OLDINI OLISH ---
+            const userPhoto = user.photoURL || 'default-avatar.png'; // Agar rasm bo'lmasa, zaxira rasm
+            const userName = user.displayName || 'Noma\'lum foydalanuvchi';
+            const userTag = user.username || 'user';
+
+            resultsContainer.innerHTML += `
+                <div class="inbox-item" onclick="viewUserProfile('${doc.id}', '${userName}', '${userPhoto}', '${userTag}')">
+                    <img src="${userPhoto}" class="nav-avatar" onerror="this.src='default-avatar.png'">
+                    <div>
+                        <strong>${userName}</strong>
+                        <p style="font-size: 0.8rem; color: gray;">@${userTag}</p>
+                    </div>
                 </div>
-            </div>
-        `;
-    });
+            `;
+        });
+    } catch (error) {
+        console.error("Qidiruvda xato:", error);
+    }
 };
 
 // 2. Profilni Modalda ochish
-window.viewUserProfile = (uid, name, photo, username) => {
-    selectedUser = { uid, name, photo, username };
-    
+window.viewUserProfile = (userId, name, photo, username) => {
+    // Ma'lumotlarni to'ldirish
     document.getElementById('p-modal-name').innerText = name;
     document.getElementById('p-modal-username').innerText = "@" + username;
-    document.getElementById('p-modal-img').src = photo;
-    
+    document.getElementById('p-modal-img').src = photo || 'default-avatar.png';
+
+    // TUGMALARNI JONLANTIRISH (Eng muhim joyi!)
+    const actionsBox = document.querySelector('.profile-actions-box');
+    actionsBox.innerHTML = `
+        <button onclick="handleChatFromProfile('${userId}')" class="btn-chat">
+            <i class="fas fa-comment"></i> Chatga o'tish
+        </button>
+        <button onclick="handleFriendRequest('${userId}')" class="btn-friend" id="friendBtn">
+            <i class="fas fa-user-plus"></i> Do'st bo'lish
+        </button>
+        <button onclick="handleBlockUser('${userId}')" class="btn-block">
+            <i class="fas fa-ban"></i> Bloklash
+        </button>
+    `;
+
     document.getElementById('user-profile-modal').style.display = 'block';
 };
 
-// 3. Profil ichidan chatga o'tish (Siz avval so'ragan floating chatni ochadi)
-window.handleChatFromProfile = () => {
-    if (!selectedUser) return;
-    closeProfileModal();
-    // Siz avvalgi qadamda o'rnatgan floating chat funksiyasi
-    openDirectMessage(selectedUser.uid, selectedUser.name, selectedUser.photo);
+window.handleChatFromProfile = (userId) => {
+    if (!userId) return;
+
+    // Elementlar borligini tekshirib olamiz
+    const home = document.getElementById('home-section');
+    const chat = document.getElementById('chat-section');
+
+    if (home && chat) {
+        home.style.display = 'none';
+        chat.style.display = 'block';
+        console.log("Chat ochildi:", userId);
+        // loadDirectChat(userId); // Bu funksiya bo'lsa chaqiring
+    } else {
+        // Agar bu xato chiqsa, demak HTML-da id'lar noto'g'ri qo'yilgan
+        console.error("Xato: 'home-section' yoki 'chat-section' ID-li elementlar topilmadi!");
+        alert("Xatolik: Sahifa tuzilishi noto'g'ri. Iltimos, HTML-ni tekshiring.");
+    }
+};
+
+
+// 2. Do'stlik so'rovi
+window.handleFriendRequest = async (userId) => {
+    const btn = document.getElementById('friendBtn');
+    btn.disabled = true;
+    btn.innerText = "Yuborildi...";
+    
+    // Firebase mantiqi shu yerda bo'ladi (addDoc)
+    console.log("Do'stlik so'rovi yuborildi:", userId);
+};
+
+// 3. Modalni yopish
+window.closeProfileModal = () => {
+    document.getElementById('user-profile-modal').style.display = 'none';
 };
 
 window.closeProfileModal = () => {
@@ -956,4 +1023,182 @@ window.buyPremium = async () => {
             console.error("Xatolik:", error);
         }
     }
+};
+
+// 1. Chatga o'tish funksiyasi
+window.openDirectMessage = (userId) => {
+    console.log("Chat ochilmoqda:", userId);
+    // Chat sahifasiga yo'naltirish
+    window.location.href = `main.html?uid=${userId}`;
+};
+
+window.handleFriendRequest = async (requestId, action) => {
+    try {
+        const requestRef = doc(db, "friendRequests", requestId);
+        
+        // updateDoc o'rniga setDoc ishlatamiz (merge: true bilan)
+        if (action === 'accept') {
+            await setDoc(requestRef, { status: 'accepted' }, { merge: true });
+            alert("Do'stlik qabul qilindi!");
+        } else {
+            await setDoc(requestRef, { status: 'rejected' }, { merge: true });
+        }
+    } catch (error) {
+        console.error("Xato: Firebase-da hujjat topilmadi yoki ruxsat yo'q", error);
+    }
+};
+
+let currentActiveChatId = null; // Kim bilan gaplashayotganimizni saqlaydi
+
+// 1. Profil modalidan chatni ochish
+window.handleChatFromProfile = async (userId) => {
+    if (!userId) return;
+
+    // UI-ni almashtirish
+    const home = document.getElementById('home-section');
+    const chat = document.getElementById('chat-section');
+    const modal = document.getElementById('user-profile-modal');
+
+    if (home && chat) {
+        home.style.display = 'none';
+        chat.style.display = 'block';
+        if (modal) modal.style.display = 'none'; // Modalni yopish
+
+        // Foydalanuvchini tanlash va yuklash
+        selectUserForChat(userId);
+    }
+};
+
+async function selectUserForChat(userId) {
+    if (!userId) return;
+    currentActiveChatId = userId;
+
+    const noChatState = document.getElementById('no-chat-selected');
+    const activeChatContainer = document.getElementById('active-chat-container');
+    const userNameEl = document.getElementById('main-chat-user-name');
+    const userImgEl = document.getElementById('main-chat-user-img');
+
+    if (noChatState) noChatState.style.display = 'none';
+    if (activeChatContainer) activeChatContainer.style.display = 'flex';
+
+    try {
+        const userDoc = await getDoc(doc(db, "users", userId));
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            if (userNameEl) userNameEl.innerText = userData.displayName || "RIVION User";
+
+            if (userImgEl) {
+                // Rasm manzilini tekshirish
+                const photo = (userData.photoURL && userData.photoURL !== "undefined") 
+                              ? userData.photoURL 
+                              : 'https://ui-avatars.com/api/?name=' + (userData.displayName || 'U');
+                
+                userImgEl.src = photo;
+                
+                // Cheksiz loopni to'xtatuvchi xavfsiz onerror
+                userImgEl.onerror = function() { 
+                    this.onerror = null; 
+                    this.src = 'https://ui-avatars.com/api/?background=random&name=R';
+                };
+            }
+        }
+    } catch (error) {
+        console.error("User yuklashda xato:", error);
+    }
+    loadMainMessages(userId);
+}
+
+// 3. Xabarlarni Real-time yuklash (Professional onSnapshot)
+function loadMainMessages(targetUserId) {
+    const currentUid = auth.currentUser.uid;
+    // Chat ID yaratish (har doim bir xil tartibda: kichik_id + katta_id)
+    const combinedId = currentUid < targetUserId ? `${currentUid}_${targetUserId}` : `${targetUserId}_${currentUid}`;
+
+    const q = query(
+        collection(db, "chats", combinedId, "messages"),
+        orderBy("timestamp", "asc")
+    );
+
+    onSnapshot(q, (snapshot) => {
+        const messageContainer = document.getElementById('main-chat-messages');
+        messageContainer.innerHTML = '';
+
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            const isMe = data.senderId === currentUid;
+            
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message-wrapper ${isMe ? 'me' : 'them'}`;
+            msgDiv.innerHTML = `
+                <div class="message-bubble">
+                    <p>${data.text}</p>
+                    <span class="msg-time">${formatTime(data.timestamp)}</span>
+                </div>
+            `;
+            messageContainer.appendChild(msgDiv);
+        });
+        
+        // Avtomatik pastga tushirish (Scroll to bottom)
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+    });
+}
+
+// 4. Xabar yuborish funksiyasi
+window.sendMainChatMessage = async () => {
+    const input = document.getElementById('mainChatInput');
+    const text = input.value.trim();
+    
+    if (!text || !currentActiveChatId) return;
+
+    const currentUid = auth.currentUser.uid;
+    const combinedId = currentUid < currentActiveChatId ? `${currentUid}_${currentActiveChatId}` : `${currentActiveChatId}_${currentUid}`;
+
+    input.value = ''; // Inputni darhol tozalash
+
+    try {
+        await addDoc(collection(db, "chats", combinedId, "messages"), {
+            senderId: currentUid,
+            text: text,
+            timestamp: serverTimestamp()
+        });
+        
+        // Chat ro'yxatini yangilash (oxirgi xabar vaqti uchun)
+        await setDoc(doc(db, "chats", combinedId), {
+            lastMessage: text,
+            lastUpdate: serverTimestamp(),
+            users: [currentUid, currentActiveChatId]
+        }, { merge: true });
+
+    } catch (e) {
+        console.error("Yuborishda xato:", e);
+    }
+};
+
+// Vaqtni chiroyli formatlash
+function formatTime(timestamp) {
+    if (!timestamp) return "";
+    const date = timestamp.toDate();
+    return date.getHours() + ":" + String(date.getMinutes()).padStart(2, '0');
+}
+
+// Qidiruv natijalari yoki profil uchun rasm yuklash kodi
+const setSafeImage = (imgElement, photoURL, displayName) => {
+    if (!imgElement) return;
+
+    // Internetdagi har doim ishlaydigan zaxira rasm
+    const backupAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName || 'U')}&background=random`;
+
+    // Agar photoURL haqiqatda mavjud bo'lsa va "undefined" bo'lmasa ishlatsin
+    if (photoURL && photoURL !== "undefined" && photoURL !== null) {
+        imgElement.src = photoURL;
+    } else {
+        imgElement.src = backupAvatar;
+    }
+
+    // AGAR rasm baribir yuklanmasa (masalan, link singan bo'lsa)
+    imgElement.onerror = function() {
+        this.onerror = null; // Cheksiz xatoni (loop) to'xtatish uchun shart!
+        this.src = backupAvatar;
+        console.warn("Rasm yuklanmadi, zaxira rasm qo'yildi.");
+    };
 };
