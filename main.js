@@ -299,54 +299,52 @@ window.toggleLike = async (postId, currentlyLiked, authorId, postText) => {
 
     const postRef = doc(db, "posts", postId);
     try {
-        if (currentlyLiked) {
-            // Like olib tashlanganda
+   
+     if (currentlyLiked) {
             await updateDoc(postRef, { likes: arrayRemove(user.uid) });
         } else {
-            // Like bosilganda
+            // Like qo'shildi
             await updateDoc(postRef, { likes: arrayUnion(user.uid) });
-            
-            // BILDIRISHNOMA YUBORISH (Faqat like bosilganda va o'ziga o'zi bo'lmasa)
+
+            // BILDIRISHNOMA YUBORISH (Faqat boshqa odam bo'lsa)
             if (authorId && authorId !== user.uid) {
-                await sendNotification(authorId, "like", postText || "Rasm/Post");
+                await sendNotification(authorId, "like", postText || "Sizning postingiz");
             }
         }
     } catch (err) {
         console.error("Like xatosi:", err);
- 
+  
     }
 };
 
 window.addComment = async (postId, authorId, postText) => {
     const user = auth.currentUser;
-    if (!user) return alert("Avval tizimga kiring!");
+    if (!user) return;
 
     const input = document.getElementById(`comment-input-${postId}`);
-    if (!input) return; // Input topilmasa to'xtatadi
+   
     const text = input.value.trim();
-
     if (text === "") return;
 
     try {
-
+   
         const commentRef = collection(db, "posts", postId, "comments");
         await addDoc(commentRef, {
             text: text,
             uid: user.uid,
             name: user.displayName || "Foydalanuvchi",
-            // Rasm xatosini (404) oldini olish uchun placeholder:
-            img: user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}&background=random`,
+            img: user.photoURL || "",
             time: serverTimestamp()
         });
-        
-        // BILDIRISHNOMA YUBORISH (Faqat boshqa odamga)
+
+        // BILDIRISHNOMA YUBORISH
         if (authorId && authorId !== user.uid) {
-            await sendNotification(authorId, "comment", postText || text);
+            await sendNotification(authorId, "comment", text);
         }
 
-        input.value = ""; 
+        input.value = "";
     } catch (err) {
-        console.error("Fikr qoldirishda xato:", err);
+        console.error("Izoh xatosi:", err);
     }
 };
 
