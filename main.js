@@ -7,8 +7,8 @@ import {
     getDoc, 
     doc, 
     query, 
-    where,       // <--- Qidiruv uchun shart
-    limit,       // <--- Natijalarni cheklash uchun
+    where, 
+    limit, 
     orderBy, 
     onSnapshot, 
     getDocs, 
@@ -16,7 +16,8 @@ import {
     updateDoc,
     arrayUnion,
     arrayRemove,
-    increment    // <--- MANA SHU YERGA QO'SHILDI (Hisoblagich uchun)
+    increment,
+    writeBatch // <--- MANA SHU YERGA QO'SHILDI (Xatoni yo'qotish uchun)
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // --- ELEMENTLARNI TANLAB OLISH ---
@@ -95,12 +96,28 @@ onAuthStateChanged(auth, async (user) => {
             console.error("Profil yuklashda xato:", error);
         }
 
+        // --- YANGI QISM: QIZIL NUQTA (BADGE) MANTIQI ---
+        const badge = document.getElementById("notification-badge");
+        if (badge) {
+            // Faqat o'qilmagan bildirishnomalarni kuzatish
+            const qBadge = query(
+                collection(db, "notifications"),
+                where("toUid", "==", user.uid),
+                where("isRead", "==", false)
+            );
+
+            onSnapshot(qBadge, (snapshot) => {
+                // Agar kamida bitta o'qilmagan xabar bo'lsa, nuqtani ko'rsatamiz
+                badge.style.display = snapshot.empty ? "none" : "block";
+            });
+        }
+
         // --- 2. BILDIRISHNOMALARNI ESHITISH (XAVFSIZ VARIANT) ---
         const notifyList = document.getElementById("notifications-list");
         
         if (notifyList && user.uid) {
             try {
-                // Query endi FAQAT user.uid aniq bo'lganda ishlaydi
+   
                 const qNotify = query(
                     collection(db, "notifications"), 
                     where("toUid", "==", user.uid), 
@@ -119,7 +136,7 @@ onAuthStateChanged(auth, async (user) => {
                         const n = doc.data();
                         const text = n.type === "like" ? "postingizga like bosdi" : "izoh qoldirdi";
                         
-                        // Rasm 404 xatolarini oldini olish uchun mantiq
+   
                         const userImg = (n.fromPhoto && n.fromPhoto !== 'undefined' && n.fromPhoto !== "") 
                             ? n.fromPhoto 
                             : `https://ui-avatars.com/api/?name=${n.fromName}&background=random`;
@@ -142,7 +159,7 @@ onAuthStateChanged(auth, async (user) => {
         }
 
     } else {
-        // Foydalanuvchi chiqib ketgan bo'lsa
+   
         if (window.location.pathname.includes('main.html')) {
             window.location.href = 'index.html';
         }
@@ -1630,3 +1647,86 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
+// --- 3. FOYDALANUVCHI HOLATINI TEKSHIRISH ---
+onAuthStateChanged(auth, async (user) => {
+    if (user && user.uid) { 
+        updateUserUI(user); 
+
+        // 1. PROFILNI YUKLASH
+        try {
+            const userRef = doc(db, "users", user.uid);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+                // ... (Sizning profil render kodingiz)
+            }
+        } catch (error) {
+            console.error("Profil yuklashda xato (Internetni tekshiring):", error);
+        }
+
+        // --- 2. BILDIRISHNOMALAR (XAVFSIZ MANTIQ) ---
+        const badge = document.getElementById("notification-badge");
+        const notifyList = document.getElementById("notifications-list");
+        const alertsBtn = document.querySelector('[data-section="notifications"]');
+
+        // Faqat user.uid aniq bo'lgandagina query yaratamiz
+        const qBadge = query(
+            collection(db, "notifications"),
+            where("toUid", "==", user.uid),
+            where("isRead", "==", false)
+        );
+
+        const qNotify = query(
+            collection(db, "notifications"), 
+            where("toUid", "==", user.uid), 
+            orderBy("createdAt", "desc"),
+            limit(20)
+        );
+
+        // Qizil nuqta (badge) uchun snapshot
+        if (badge) {
+            onSnapshot(qBadge, (snapshot) => {
+                badge.style.display = snapshot.empty ? "none" : "block";
+            }, (err) => console.warn("Badge snapshot error:", err));
+        }
+
+        // Ro'yxatni chiqarish uchun snapshot
+        if (notifyList) {
+            onSnapshot(qNotify, (snapshot) => {
+                notifyList.innerHTML = "";
+                if (snapshot.empty) {
+                    notifyList.innerHTML = '<p style="text-align:center; color:#555; padding:20px;">Bildirishnomalar yo\'q.</p>';
+                    return;
+                }
+                snapshot.forEach((doc) => {
+                    const n = doc.data();
+                    const text = n.type === "like" ? "postingizga like bosdi" : "izoh qoldirdi";
+                    const userImg = (n.fromPhoto && n.fromPhoto !== "") ? n.fromPhoto : `https://ui-avatars.com/api/?name=${n.fromName}`;
+                    
+                    notifyList.innerHTML += `
+                        <div style="display: flex; gap: 10px; padding: 12px; border-bottom: 1px solid #1a1a1a; align-items: center;">
+                            <img src="${userImg}" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
+                            <div>
+                                <p style="margin:0; font-size: 13px; color: white;"><b>${n.fromName}</b> ${text}</p>
+                            </div>
+                        </div>`;
+                });
+            }, (err) => console.warn("Notify snapshot error:", err));
+        }
+
+        // 3. Tugmaga event ulash (Xatoni yo'qotish uchun xavfsiz tekshiruv)
+        if (alertsBtn) {
+            alertsBtn.onclick = async () => {
+                const unreadSnap = await getDocs(qBadge);
+                const batch = writeBatch(db);
+                unreadSnap.forEach(d => batch.update(d.ref, { isRead: true }));
+                await batch.commit();
+            };
+        }
+
+    } else {
+        // Foydalanuvchi chiqib ketgan bo'lsa login sahifasiga
+        if (window.location.pathname.includes('main.html')) {
+            window.location.href = 'index.html';
+        }
+    }
+});
