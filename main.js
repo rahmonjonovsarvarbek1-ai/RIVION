@@ -45,10 +45,10 @@ themeToggle.addEventListener('click', () => {
 
 // --- 3. FOYDALANUVCHI HOLATINI TEKSHIRISH ---
 onAuthStateChanged(auth, async (user) => {
-    if (user) {
+    if (user && user.uid) { 
         updateUserUI(user); 
 
-        // 1. PROFIL MA'LUMOTLARINI YUKLASH (Mavjud koding)
+        // 1. PROFIL MA'LUMOTLARINI YUKLASH
         try {
             const userRef = doc(db, "users", user.uid);
             const userSnap = await getDoc(userRef);
@@ -81,7 +81,7 @@ onAuthStateChanged(auth, async (user) => {
                     extraInfo.innerHTML = `
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <i class="fas fa-map-marker-alt" style="color: #1d9bf0; width: 14px;"></i> 
-                            <span>${userData.city || 'Andijon, Uzbekistan'}</span>
+                            <span>${userData.city || 'Tashkent, Uzbekistan'}</span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <i class="fas fa-birthday-cake" style="color: #1d9bf0; width: 14px;"></i> 
@@ -95,39 +95,57 @@ onAuthStateChanged(auth, async (user) => {
             console.error("Profil yuklashda xato:", error);
         }
 
-        // --- 2. BILDIRISHNOMALARNI ESHITISH (Yangi qo'shilgan qism) ---
+        // --- 2. BILDIRISHNOMALARNI ESHITISH (XAVFSIZ VARIANT) ---
         const notifyList = document.getElementById("notifications-list");
-        if (notifyList) {
-            const qNotify = query(
-                collection(db, "notifications"), 
-                where("toUid", "==", user.uid), // Foydalanuvchi ID-si aniq bo'lganda ishlaydi
-                orderBy("createdAt", "desc"),
-                limit(20)
-            );
+        
+        if (notifyList && user.uid) {
+            try {
+                // Query endi FAQAT user.uid aniq bo'lganda ishlaydi
+                const qNotify = query(
+                    collection(db, "notifications"), 
+                    where("toUid", "==", user.uid), 
+                    orderBy("createdAt", "desc"),
+                    limit(20)
+                );
 
-            onSnapshot(qNotify, (snapshot) => {
-                notifyList.innerHTML = "";
-                if (snapshot.empty) {
-                    notifyList.innerHTML = '<p style="text-align:center; color:#555; padding:20px;">Hozircha bildirishnomalar yo\'q.</p>';
-                    return;
-                }
-                snapshot.forEach((doc) => {
-                    const n = doc.data();
-                    const text = n.type === "like" ? "postingizga like bosdi" : "izoh qoldirdi";
-                    notifyList.innerHTML += `
-                        <div style="display: flex; gap: 10px; padding: 12px; border-bottom: 1px solid #1a1a1a; align-items: center;">
-                            <img src="${n.fromPhoto || 'https://via.placeholder.com/40'}" style="width: 35px; height: 35px; border-radius: 50%;">
-                            <div>
-                                <p style="margin:0; font-size: 13px; color: white;"><b>${n.fromName}</b> ${text}</p>
-                                <small style="color: #555;">${n.createdAt ? new Date(n.createdAt.seconds * 1000).toLocaleTimeString() : 'Hozirgina'}</small>
-                            </div>
-                        </div>`;
+                onSnapshot(qNotify, (snapshot) => {
+                    notifyList.innerHTML = "";
+                    if (snapshot.empty) {
+                        notifyList.innerHTML = '<p style="text-align:center; color:#555; padding:20px;">Hozircha bildirishnomalar yo\'q.</p>';
+                        return;
+                    }
+
+                    snapshot.forEach((doc) => {
+                        const n = doc.data();
+                        const text = n.type === "like" ? "postingizga like bosdi" : "izoh qoldirdi";
+                        
+                        // Rasm 404 xatolarini oldini olish uchun mantiq
+                        const userImg = (n.fromPhoto && n.fromPhoto !== 'undefined' && n.fromPhoto !== "") 
+                            ? n.fromPhoto 
+                            : `https://ui-avatars.com/api/?name=${n.fromName}&background=random`;
+                        
+                        notifyList.innerHTML += `
+                            <div style="display: flex; gap: 10px; padding: 12px; border-bottom: 1px solid #1a1a1a; align-items: center;">
+                                <img src="${userImg}" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
+                                <div>
+                                    <p style="margin:0; font-size: 13px; color: white;"><b>${n.fromName}</b> ${text}</p>
+                                    <small style="color: #555;">${n.createdAt ? new Date(n.createdAt.seconds * 1000).toLocaleTimeString() : 'Hozirgina'}</small>
+                                </div>
+                            </div>`;
+                    });
+                }, (err) => {
+                    console.error("Bildirishnomalarni olishda xato:", err);
                 });
-            });
+            } catch (qErr) {
+                console.error("Query yaratishda xato:", qErr);
+            }
         }
 
     } else {
-        window.location.href = 'index.html';
+        // Foydalanuvchi chiqib ketgan bo'lsa
+        if (window.location.pathname.includes('main.html')) {
+            window.location.href = 'index.html';
+        }
     }
 });
 
@@ -275,78 +293,96 @@ onSnapshot(q, (snapshot) => {
     });
 });
 
-// C. Like bosish funksiyasi (Global window obyektiga ulaymiz)
-window.toggleLike = async (postId, currentlyLiked) => {
+window.toggleLike = async (postId, currentlyLiked, authorId, postText) => {
     const user = auth.currentUser;
     if (!user) return;
 
     const postRef = doc(db, "posts", postId);
     try {
         if (currentlyLiked) {
+            // Like olib tashlanganda
             await updateDoc(postRef, { likes: arrayRemove(user.uid) });
         } else {
+            // Like bosilganda
             await updateDoc(postRef, { likes: arrayUnion(user.uid) });
+            
+            // BILDIRISHNOMA YUBORISH (Faqat like bosilganda va o'ziga o'zi bo'lmasa)
+            if (authorId && authorId !== user.uid) {
+                await sendNotification(authorId, "like", postText || "Rasm/Post");
+            }
         }
     } catch (err) {
         console.error("Like xatosi:", err);
-    }
-    // Like bosilgan joyda (faqat like qo'shilganda):
-    if (!isLiked) {
-    await sendNotification(data.authorId, "like", data.content);
+ 
     }
 };
 
-// A. Kommentariya qo'shish
-window.addComment = async (postId) => {
+window.addComment = async (postId, authorId, postText) => {
     const user = auth.currentUser;
     if (!user) return alert("Avval tizimga kiring!");
 
     const input = document.getElementById(`comment-input-${postId}`);
+    if (!input) return; // Input topilmasa to'xtatadi
     const text = input.value.trim();
 
     if (text === "") return;
 
     try {
-        // Har bir post ichida 'comments' kolleksiyasiga yozamiz
+
         const commentRef = collection(db, "posts", postId, "comments");
         await addDoc(commentRef, {
             text: text,
             uid: user.uid,
             name: user.displayName || "Foydalanuvchi",
-            img: user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}`,
+            // Rasm xatosini (404) oldini olish uchun placeholder:
+            img: user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}&background=random`,
             time: serverTimestamp()
         });
         
-        input.value = ""; // Inputni tozalash
+        // BILDIRISHNOMA YUBORISH (Faqat boshqa odamga)
+        if (authorId && authorId !== user.uid) {
+            await sendNotification(authorId, "comment", postText || text);
+        }
+
+        input.value = ""; 
     } catch (err) {
         console.error("Fikr qoldirishda xato:", err);
     }
 };
 
+
 window.loadComments = (postId) => {
     const display = document.getElementById(`comments-display-${postId}`);
     
-    // AGAR ELEMENT TOPILMASA, FUNKSIYANI TO'XTATISH
+    // 1. Element borligini tekshirish (Xatoni oldini oladi)
     if (!display) {
-        console.warn(`Element topilmadi: comments-display-${postId}`);
-        return;
+        return; 
     }
 
     const q = query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "asc"));
 
     onSnapshot(q, (snapshot) => {
-        display.innerHTML = ""; // Mana shu yerda xato berayotgan edi
+        display.innerHTML = ""; 
+        
         snapshot.forEach((doc) => {
             const c = doc.data();
+            
+            // 2. Rasm xatosini (404) oldini olish
+            const userImg = (c.userPhoto && c.userPhoto !== 'undefined') 
+                ? c.userPhoto 
+                : `https://ui-avatars.com/api/?background=random&color=fff&name=${c.userName}`;
+
             display.innerHTML += `
-                <div class="single-comment" style="display: flex; gap: 8px; margin-bottom: 8px;">
-                    <img src="${c.userPhoto || 'https://via.placeholder.com/30'}" style="width: 24px; height: 24px; border-radius: 50%;">
-                    <div style="background: #1a1a1a; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem;">
-                        <b style="color: #0084ff; display: block; font-size: 0.75rem;">${c.userName}</b>
-                        <span>${c.text}</span>
+                <div class="single-comment" style="display: flex; gap: 8px; margin-bottom: 8px; align-items: flex-start;">
+                    <img src="${userImg}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;">
+                    <div style="background: #1e1e1e; padding: 6px 14px; border-radius: 16px; font-size: 0.85rem; max-width: 85%;">
+                        <b style="color: #1d9bf0; display: block; font-size: 0.75rem; margin-bottom: 2px;">${c.userName}</b>
+                        <span style="color: #eee; word-break: break-word;">${c.text}</span>
                     </div>
                 </div>`;
         });
+    }, (error) => {
+        console.error("Kommentlarni yuklashda xato:", error);
     });
 };
 
@@ -437,29 +473,34 @@ window.sendComment = async (postId) => {
     // data.authorId - post muallifining ID-si
 };
 
-window.sendComment = async (postId) => {
+window.sendComment = async (postId, postAuthorId) => {
     const input = document.getElementById(`comment-input-${postId}`);
+    if (!input) return;
+
     const text = input.value.trim();
     if (!text || !auth.currentUser) return;
 
     try {
-        // 1. Kommentariyani qo'shish
+        // 1. Kommentni qo'shish
         const commentRef = collection(db, "posts", postId, "comments");
         await addDoc(commentRef, {
             text: text,
+            uid: auth.currentUser.uid,
             userName: auth.currentUser.displayName || "Foydalanuvchi",
             userPhoto: auth.currentUser.photoURL || "",
             createdAt: serverTimestamp()
         });
 
-        // 2. POSTNING O'ZIDAGI HISOBLAGICHNI YANGILASH (Muhim qism!)
+        // 2. Hisoblagichni yangilash (Endi increment xato bermaydi)
         const postRef = doc(db, "posts", postId);
         await updateDoc(postRef, {
-            commentsCount: increment(1) // Firebase-dagi qiymatni +1 qiladi
+            commentsCount: increment(1) 
         });
 
         input.value = ""; 
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+        console.error("Xato:", e); 
+    }
 };
 
 // 1. Profilni yuklash
@@ -1538,44 +1579,56 @@ async function sendNotification(targetUserId, type, postContent) {
     }
 }
 
-const notifyList = document.getElementById("notifications-list"); // HTML-dagi ro'yxat ID-si
+// --- BILDIRISHNOMALARNI TO'LIQ VA TO'G'RI VARIANTI ---
+onAuthStateChanged(auth, (user) => {
+    if (user && user.uid) {
+        // 1. Elementni qidirish
+        const notifyList = document.getElementById("notifications-list");
 
-const qNotify = query(
-    collection(db, "notifications"), 
-    where("toUid", "==", auth.currentUser?.uid), 
-    orderBy("createdAt", "desc"),
-    limit(20)
-);
+        // 2. Query'ni FAQAT shu blok ichida e'lon qilamiz
+        const qNotify = query(
+            collection(db, "notifications"), 
+            where("toUid", "==", user.uid), 
+            orderBy("createdAt", "desc"),
+            limit(20)
+        );
 
-onSnapshot(qNotify, (snapshot) => {
-    // Agar bildirishnomalar bo'limida bo'lsang, ro'yxatni yangila
-    if (!notifyList) return;
-    
-    notifyList.innerHTML = "";
-    snapshot.forEach((doc) => {
-        const n = doc.data();
-        const text = n.type === "like" ? "postingizga like bosdi" : "postingizga izoh qoldirdi";
-        
-        notifyList.innerHTML += `
-            <div class="notification-card ${n.isRead ? '' : 'new-notify'}">
-                <img src="${n.fromPhoto || 'https://via.placeholder.com/40'}" class="notify-avatar">
-                <div class="notify-info">
-                    <p><b>${n.fromName}</b> ${text}</p>
-                    <span class="notify-time">hozirgina</span>
-                </div>
-            </div>
-        `;
-    });
-});
+        // 3. onSnapshot'ni ham FAQAT shu blok ichida chaqiramiz
+        onSnapshot(qNotify, (snapshot) => {
+            if (!notifyList) return;
+            notifyList.innerHTML = "";
+            
+            if (snapshot.empty) {
+                notifyList.innerHTML = '<p style="text-align:center; color:#888; padding:20px; font-size:13px;">Hozircha bildirishnomalar yo\'q.</p>';
+                return;
+            }
 
-onSnapshot(qNotify, (snapshot) => {
-    const unreadCount = snapshot.docs.filter(d => !d.data().isRead).length;
-    const badge = document.getElementById("notify-badge");
-    
-    if (unreadCount > 0) {
-        badge.style.display = "block";
-        badge.innerText = unreadCount;
+            snapshot.forEach((doc) => {
+                const n = doc.data();
+                const typeText = n.type === "like" ? "postingizga like bosdi" : "izoh qoldirdi";
+                
+                // Rasm xatosini (404) yo'qotish uchun tekshiruv
+                const userImg = (n.fromPhoto && n.fromPhoto !== 'undefined' && n.fromPhoto !== "") 
+                    ? n.fromPhoto 
+                    : `https://ui-avatars.com/api/?name=${n.fromName || 'User'}&background=random`;
+
+                notifyList.innerHTML += `
+                    <div style="display: flex; gap: 10px; padding: 12px; border-bottom: 1px solid #1a1a1a; align-items: center;">
+                        <img src="${userImg}" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
+                        <div>
+                            <p style="margin:0; font-size: 13px; color: white;"><b>${n.fromName}</b> ${typeText}</p>
+                            <small style="color: #555;">${n.createdAt ? new Date(n.createdAt.seconds * 1000).toLocaleTimeString() : 'Hozirgina'}</small>
+                        </div>
+                    </div>`;
+            });
+        }, (err) => {
+            console.error("Bildirishnomalarni yuklashda Firebase xatosi:", err);
+        });
+
     } else {
-        badge.style.display = "none";
+        // Foydalanuvchi chiqib ketgan bo'lsa ro'yxatni tozalash
+        const notifyList = document.getElementById("notifications-list");
+        if (notifyList) notifyList.innerHTML = "";
     }
 });
+
