@@ -48,6 +48,7 @@ onAuthStateChanged(auth, async (user) => {
     if (user) {
         updateUserUI(user); 
 
+        // 1. PROFIL MA'LUMOTLARINI YUKLASH (Mavjud koding)
         try {
             const userRef = doc(db, "users", user.uid);
             const userSnap = await getDoc(userRef);
@@ -57,13 +58,10 @@ onAuthStateChanged(auth, async (user) => {
                 const drawerName = document.getElementById('drawerName');
                 
                 if (drawerName) {
-                    // 1. Ism va Verified belgisini tayyorlaymiz
-                    // style ichiga display: inline-flex qo'shdik, bu masofani to'g'rilaydi
                     const verifiedTag = userData.isVerified === true 
-                        ? `<svg viewBox="0 0 24 24" style="width: 18px; height: 18px; min-width: 18px; flex-shrink: 0; fill: #1d9bf0; margin-left: 5px; vertical-align: middle;"><path d="M22.5 12.5c0-1.58-.88-2.95-2.18-3.66.25-.9.4-1.84.4-2.84 0-3.04-2.46-5.5-5.5-5.5-1 0-1.94.27-2.74.75C11.77 1.03 10.4 0 9.5 0 6.46 0 4 2.46 4 5.5c0 1 .27 1.94.75 2.74C3.53 9.03 2.5 10.4 2.5 12.5c0 1.58.88 2.95 2.18 3.66-.25.9-.4 1.84-.4 2.84 0 3.04 2.46 5.5 5.5 5.5 1 0 1.94-.27 2.74-.75 1.22 1.22 2.58 2.25 3.5 2.25 3.04 0 5.5-2.46 5.5-5.5 0-1-.27-1.94-.75-2.74 1.22-.72 2.18-2.08 2.18-3.66zm-5 0l-5 5-2.5-2.5 1.41-1.41L11.5 13.59l3.59-3.59L17.5 12.5z"/></svg>` 
+                        ? `<svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #1d9bf0; margin-left: 5px; vertical-align: middle;"><path d="M22.5 12.5c0-1.58-.88-2.95-2.18-3.66.25-.9.4-1.84.4-2.84 0-3.04-2.46-5.5-5.5-5.5-1 0-1.94.27-2.74.75C11.77 1.03 10.4 0 9.5 0 6.46 0 4 2.46 4 5.5c0 1 .27 1.94.75 2.74C3.53 9.03 2.5 10.4 2.5 12.5c0 1.58.88 2.95 2.18 3.66-.25.9-.4 1.84-.4 2.84 0 3.04 2.46 5.5 5.5 5.5 1 0 1.94-.27 2.74-.75 1.22 1.22 2.58 2.25 3.5 2.25 3.04 0 5.5-2.46 5.5-5.5 0-1-.27-1.94-.75-2.74 1.22-.72 2.18-2.08 2.18-3.66zm-5 0l-5 5-2.5-2.5 1.41-1.41L11.5 13.59l3.59-3.59L17.5 12.5z"/></svg>` 
                         : '';
 
-                    // DrawerName konteynerini tozalab, ism va belgini yopishtirib joylaymiz
                     drawerName.style.display = "block";
                     drawerName.innerHTML = `
                         <div style="display: inline-flex; align-items: center; max-width: 100%; margin-bottom: 4px;">
@@ -74,35 +72,60 @@ onAuthStateChanged(auth, async (user) => {
                         </div>
                     `;
 
-                    // 2. Qo'shimcha ma'lumotlar bloki (Joylashuv, yosh, o'qish)
                     let oldExtra = document.getElementById('drawer-extra-info');
                     if (oldExtra) oldExtra.remove();
 
                     const extraInfo = document.createElement('div');
                     extraInfo.id = 'drawer-extra-info';
-                    extraInfo.style.cssText = "font-size: 12px; color: #888; font-weight: normal; line-height: 1.6; margin-top: 2px;";
-                    
+                    extraInfo.style.cssText = "font-size: 12px; color: #888; margin-top: 2px;";
                     extraInfo.innerHTML = `
                         <div style="display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-map-marker-alt" style="color: #1d9bf0; width: 14px; text-align: center;"></i> 
+                            <i class="fas fa-map-marker-alt" style="color: #1d9bf0; width: 14px;"></i> 
                             <span>${userData.city || 'Andijon, Uzbekistan'}</span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-birthday-cake" style="color: #1d9bf0; width: 14px; text-align: center;"></i> 
+                            <i class="fas fa-birthday-cake" style="color: #1d9bf0; width: 14px;"></i> 
                             <span>${userData.age || '19'} yosh</span>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-university" style="color: #1d9bf0; width: 14px; text-align: center;"></i> 
-                            <span>${userData.study || 'TATU'}</span>
-                        </div>
                     `;
-                    
                     drawerName.appendChild(extraInfo);
                 }
             }
         } catch (error) {
             console.error("Profil yuklashda xato:", error);
         }
+
+        // --- 2. BILDIRISHNOMALARNI ESHITISH (Yangi qo'shilgan qism) ---
+        const notifyList = document.getElementById("notifications-list");
+        if (notifyList) {
+            const qNotify = query(
+                collection(db, "notifications"), 
+                where("toUid", "==", user.uid), // Foydalanuvchi ID-si aniq bo'lganda ishlaydi
+                orderBy("createdAt", "desc"),
+                limit(20)
+            );
+
+            onSnapshot(qNotify, (snapshot) => {
+                notifyList.innerHTML = "";
+                if (snapshot.empty) {
+                    notifyList.innerHTML = '<p style="text-align:center; color:#555; padding:20px;">Hozircha bildirishnomalar yo\'q.</p>';
+                    return;
+                }
+                snapshot.forEach((doc) => {
+                    const n = doc.data();
+                    const text = n.type === "like" ? "postingizga like bosdi" : "izoh qoldirdi";
+                    notifyList.innerHTML += `
+                        <div style="display: flex; gap: 10px; padding: 12px; border-bottom: 1px solid #1a1a1a; align-items: center;">
+                            <img src="${n.fromPhoto || 'https://via.placeholder.com/40'}" style="width: 35px; height: 35px; border-radius: 50%;">
+                            <div>
+                                <p style="margin:0; font-size: 13px; color: white;"><b>${n.fromName}</b> ${text}</p>
+                                <small style="color: #555;">${n.createdAt ? new Date(n.createdAt.seconds * 1000).toLocaleTimeString() : 'Hozirgina'}</small>
+                            </div>
+                        </div>`;
+                });
+            });
+        }
+
     } else {
         window.location.href = 'index.html';
     }
@@ -267,6 +290,10 @@ window.toggleLike = async (postId, currentlyLiked) => {
     } catch (err) {
         console.error("Like xatosi:", err);
     }
+    // Like bosilgan joyda (faqat like qo'shilganda):
+    if (!isLiked) {
+    await sendNotification(data.authorId, "like", data.content);
+    }
 };
 
 // A. Kommentariya qo'shish
@@ -405,6 +432,9 @@ window.sendComment = async (postId) => {
     } catch (error) {
         console.error("Fikr yuborishda xatolik:", error);
     }
+    // Comment yozilgan joyda (try-catch ichida):
+    await sendNotification(data.authorId, "comment", data.content); 
+    // data.authorId - post muallifining ID-si
 };
 
 window.sendComment = async (postId) => {
@@ -1488,3 +1518,64 @@ window.openChat = (uid, name, photo) => {
     }
 };
 
+// Bildirishnoma yuborish funksiyasi
+async function sendNotification(targetUserId, type, postContent) {
+    if (targetUserId === auth.currentUser.uid) return; // O'ziga o'zi bildirishnoma bormaydi
+
+    try {
+        await addDoc(collection(db, "notifications"), {
+            toUid: targetUserId,      // Kimga borishi kerak
+            fromUid: auth.currentUser.uid,
+            fromName: auth.currentUser.displayName || "Foydalanuvchi",
+            fromPhoto: auth.currentUser.photoURL || "",
+            type: type,               // "like" yoki "comment"
+            postText: postContent.substring(0, 30) + "...", // Postning qisqa matni
+            isRead: false,            // Yangi bildirishnoma ekanligi
+            createdAt: serverTimestamp()
+        });
+    } catch (e) {
+        console.error("Notification xatosi:", e);
+    }
+}
+
+const notifyList = document.getElementById("notifications-list"); // HTML-dagi ro'yxat ID-si
+
+const qNotify = query(
+    collection(db, "notifications"), 
+    where("toUid", "==", auth.currentUser?.uid), 
+    orderBy("createdAt", "desc"),
+    limit(20)
+);
+
+onSnapshot(qNotify, (snapshot) => {
+    // Agar bildirishnomalar bo'limida bo'lsang, ro'yxatni yangila
+    if (!notifyList) return;
+    
+    notifyList.innerHTML = "";
+    snapshot.forEach((doc) => {
+        const n = doc.data();
+        const text = n.type === "like" ? "postingizga like bosdi" : "postingizga izoh qoldirdi";
+        
+        notifyList.innerHTML += `
+            <div class="notification-card ${n.isRead ? '' : 'new-notify'}">
+                <img src="${n.fromPhoto || 'https://via.placeholder.com/40'}" class="notify-avatar">
+                <div class="notify-info">
+                    <p><b>${n.fromName}</b> ${text}</p>
+                    <span class="notify-time">hozirgina</span>
+                </div>
+            </div>
+        `;
+    });
+});
+
+onSnapshot(qNotify, (snapshot) => {
+    const unreadCount = snapshot.docs.filter(d => !d.data().isRead).length;
+    const badge = document.getElementById("notify-badge");
+    
+    if (unreadCount > 0) {
+        badge.style.display = "block";
+        badge.innerText = unreadCount;
+    } else {
+        badge.style.display = "none";
+    }
+});
