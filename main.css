@@ -1880,3 +1880,129 @@ textarea {
 .comments-scroll-area::-webkit-scrollbar-thumb:hover {
     background: #0084ff;
 }
+
+/* Search dagi kichik videolar */
+.reel-item {
+    aspect-ratio: 9 / 16;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+}
+.reel-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* To'liq ekranli Reels kartasi */
+.reel-full-card {
+    width: 100%;
+    height: 100vh;
+    scroll-snap-align: start;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+.reel-full-card video {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* Like va Comment tugmalari uchun interfeys (Video ustida) */
+.reel-actions {
+    position: absolute;
+    right: 15px;
+    bottom: 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    color: white;
+    text-align: center;
+}
+
+/* Modal foni */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+/* Modal kartasi */
+.reel-modal-card {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    width: 90%;
+    max-width: 450px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    color: white;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* Fayl tanlash maydoni */
+.file-drop-area {
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 15px;
+    padding: 40px 20px;
+    text-align: center;
+    transition: 0.3s;
+}
+
+.file-drop-area:hover {
+    border-color: #0095f6;
+    background: rgba(0, 149, 246, 0.05);
+}
+
+.upload-icon {
+    font-size: 40px;
+    margin-bottom: 15px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.select-file-btn {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 8px 20px;
+    background: #0095f6;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+/* Tugmalar */
+.modal-footer {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.btn-cancel, .btn-share {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-cancel { background: rgba(255, 255, 255, 0.1); color: white; }
+.btn-share { background: #0095f6; color: white; }
+
+.btn-share:hover { background: #1877f2; transform: translateY(-2px); }

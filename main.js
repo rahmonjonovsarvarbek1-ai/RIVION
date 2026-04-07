@@ -20,6 +20,16 @@ import {
     writeBatch // <--- MANA SHU YERGA QO'SHILDI (Xatoni yo'qotish uchun)
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+import { 
+    getStorage, 
+    ref, 
+    uploadBytes, 
+    getDownloadURL 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+// Storage-ni ishga tushirish (firebase-config dan kelgan 'app' orqali)
+const storage = getStorage();
+
 // --- ELEMENTLARNI TANLAB OLISH ---
 const burgerBtn = document.getElementById('burgerBtn');
 const sideDrawer = document.getElementById('sideDrawer');
@@ -1730,3 +1740,81 @@ onAuthStateChanged(auth, async (user) => {
         }
     }
 });
+
+// Buni main.js ga qo'shing
+function closeReelsViewer() {
+    const viewer = document.getElementById('reels-viewer');
+    viewer.style.display = 'none';
+    // Videolarni to'xtatish
+    const videos = viewer.querySelectorAll('video');
+    videos.forEach(v => v.pause());
+}
+
+window.closeReelsViewer = closeReelsViewer;
+
+// 1. Video faylni tanlashni eshitish
+let selectedReelFile = null;
+
+function handleReelFile(event) {
+    selectedReelFile = event.target.files[0];
+    if (selectedReelFile) {
+        console.log("Video tanlandi:", selectedReelFile.name);
+        alert("Video tanlandi: " + selectedReelFile.name);
+    }
+}
+
+async function shareReel() {
+    if (!selectedReelFile) return alert("Iltimos, video tanlang!");
+    
+    // Matnni olish
+    const caption = document.getElementById('reel-caption').value;
+    const user = auth.currentUser;
+
+    try {
+        console.log("Yuklanmoqda...");
+        const fileRef = ref(storage, `reels/${Date.now()}_${selectedReelFile.name}`);
+        const snapshot = await uploadBytes(fileRef, selectedReelFile);
+        const videoURL = await getDownloadURL(snapshot.ref);
+
+        // Firestore-ga caption bilan birga yozamiz
+        await addDoc(collection(db, "reels"), {
+            uid: user.uid,
+            userName: user.displayName,
+            videoURL: videoURL,
+            description: caption, // Izoh shu yerda saqlanadi
+            likes: [],
+            createdAt: serverTimestamp()
+        });
+
+        alert("Muvaffaqiyatli ulashildi!");
+        // Tozalash
+        document.getElementById('reel-caption').value = "";
+        location.reload();
+    } catch (error) {
+        console.error(error);
+        alert("Xatolik yuz berdi. Internetni tekshiring!");
+    }
+}
+
+// 3. FUNKSIYALARNI GLOBALGA CHIQARISH (Xatolarni oldini olish uchun)
+window.handleReelFile = handleReelFile;
+window.shareReel = shareReel;
+
+// Buni main.js faylining ENG OXIRIGA qo'shing
+window.openAddReelModal = function() {
+    const modal = document.getElementById('add-reel-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+    } else {
+        console.error("Modal topilmadi! HTML-da id='add-reel-modal' borligini tekshiring.");
+    }
+};
+
+window.closeAddReelModal = function() {
+    const modal = document.getElementById('add-reel-modal');
+    if (modal) modal.style.display = 'none';
+};
+
+window.handleReelFile = handleReelFile; // Fayl tanlash funksiyasi
+window.shareReel = shareReel;           // Yuklash funksiyasi
+
