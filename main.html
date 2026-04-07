@@ -197,35 +197,32 @@
                 <h4>Muloqotni boshlash uchun kontaktni tanlang</h4>
             </div>
 
-            <div id="active-chat-container" style="display: none;">
-                <div class="mobile-chat-nav" id="chatNav">
-                    <button onclick="backToSidebar()" class="back-btn">
-                        <i class="fas fa-arrow-left"></i>
-                    </button>
-                    <div class="active-user-info">
-                        <img id="main-chat-user-img" src="" class="nav-avatar">
-                        <div class="user-meta">
-                            <span id="main-chat-user-name">Foydalanuvchi</span>
-                            <small id="user-online-status">offline</small>
-                        </div>
-                    </div>
-                    <div class="chat-actions">
-                        <i class="fas fa-info-circle"></i>
-                    </div>
-                </div>
+           <div id="active-chat-container" class="mobile-chat-view">
+    <div class="chat-header">
+        <button onclick="closeChat()" class="back-btn">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <img id="main-chat-user-img" src="assets/default-avatar.png">
+        <div class="user-info">
+            <span id="main-chat-user-name">Foydalanuvchi</span>
+            <small>online</small>
+        </div>
+    </div>
 
-                <div id="main-chat-messages" class="main-messages-display"></div>
-                
-                <div class="main-chat-footer">
-                    <div class="input-wrapper">
-                        <button class="attach-btn"><i class="fas fa-plus"></i></button>
-                        <input type="text" id="mainChatInput" placeholder="Xabar yozing..." autocomplete="off">
-                        <button onclick="sendMainChatMessage()" class="main-send-btn" id="sendBtn">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
+    <div id="main-chat-messages" class="messages-area"></div>
+
+    <div class="chat-footer" style="padding: 15px; border-top: 1px solid #222; background: #000;">
+    <div style="display: flex; align-items: center; background: #1a1a1a; padding: 5px 15px; border-radius: 25px;">
+        <input type="text" id="mainChatInput" placeholder="Xabar yozing..." 
+               style="flex: 1; background: none; border: none; color: #fff; outline: none; padding: 10px;">
+        
+        <button onclick="sendMainChatMessage()" 
+                style="background: none; border: none; color: #0084ff; font-size: 20px; cursor: pointer; padding-left: 10px;">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
+</div>
         </div>
     </div>
 </div>

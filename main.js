@@ -7,15 +7,16 @@ import {
     getDoc, 
     doc, 
     query, 
-    where,       // <--- BUNI QO'SHDIK (Qidiruv uchun shart)
-    limit,       // <--- BUNI QO'SHDIK (Natijalarni cheklash uchun)
+    where,       // <--- Qidiruv uchun shart
+    limit,       // <--- Natijalarni cheklash uchun
     orderBy, 
     onSnapshot, 
     getDocs, 
     serverTimestamp,
     updateDoc,
     arrayUnion,
-    arrayRemove
+    arrayRemove,
+    increment    // <--- MANA SHU YERGA QO'SHILDI (Hisoblagich uchun)
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // --- ELEMENTLARNI TANLAB OLISH ---
@@ -107,6 +108,48 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
+
+window.openChat = (uid, name, photo) => {
+    const container = document.getElementById('active-chat-container');
+    const img = document.getElementById('main-chat-user-img');
+
+    if (container) {
+        container.style.display = 'flex';
+        if (window.innerWidth <= 768) {
+            container.classList.add('mobile-active');
+        }
+    }
+
+    // Ismni yozish
+    document.getElementById('main-chat-user-name').innerText = name;
+
+    // Rasm xatosini tuzatish
+    if (img) {
+        // Agar photo haqiqatda mavjud bo'lsa uni qo'y, aks holda harf-avatar ishlat
+        if (photo && photo !== 'undefined' && photo !== 'null') {
+            img.src = photo;
+        } else {
+            // Rasm bo'lmasa ismidan rasm yasab beradigan servis
+            img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`;
+        }
+    }
+};
+
+window.closeChat = () => {
+    const container = document.getElementById('active-chat-container');
+    if (container) {
+        container.style.display = 'none';
+        container.classList.remove('mobile-active'); // Mobil rejimni yopish
+    }
+};
+
+// Orqaga qaytish tugmasi uchun
+window.closeChat = () => {
+    document.getElementById('active-chat-container').style.display = 'none';
+    document.getElementById('no-chat-selected').style.display = 'flex';
+};
+
+
 function updateUserUI(user) {
     const nameDisplays = ['userNameDisplay', 'drawerName'];
     const avatarDisplays = ['userAvatar', 'drawerAvatar', 'inputAvatar'];
@@ -153,7 +196,7 @@ onSnapshot(q, (snapshot) => {
     postsList.innerHTML = ""; 
 
     if (snapshot.empty) {
-        postsList.innerHTML = `<p style="text-align:center; color:var(--text-secondary); margin-top:20px;">Hozircha postlar yo'q...</p>`;
+        postsList.innerHTML = `<p style="text-align:center; color:var(--text-secondary); margin-top:20px;">Hozircha xabarlar yo'q...</p>`;
         return;
     }
 
@@ -165,34 +208,47 @@ onSnapshot(q, (snapshot) => {
         // Foydalanuvchi like bosganmi yoki yo'q?
         const isLiked = data.likes?.includes(auth.currentUser?.uid);
 
-       postsList.innerHTML += `
-    <div class="post-card horizontal-post">
-        <img src="${data.authorPhoto || 'https://via.placeholder.com/40'}" class="post-avatar-large">
-        
-        <div class="post-content-area">
-            <div class="post-header-mini">
-                <span class="post-author">${data.authorName}</span>
-                <span class="post-time">${time}</span>
-            </div>
-            
-            <div class="post-body-mini">
-                <p>${data.content}</p>
-            </div>
-            
-            <div class="post-footer-mini">
-                <button onclick="toggleLike('${postId}', ${isLiked})" class="mini-action-btn ${isLiked ? 'active-like' : ''}">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-                    <span>${data.likes?.length || 0}</span>
-                </button>
+        postsList.innerHTML += `
+            <div class="post-card horizontal-post">
+                <img src="${data.authorPhoto || 'https://via.placeholder.com/40'}" class="post-avatar-large">
                 
-                <button class="mini-action-btn" onclick="toggleCommentBox('${postId}')">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
-                    <span>${data.comments?.length || 0}</span>
-                </button>
+                <div class="post-content-area">
+                    <div class="post-header-mini">
+                        <span class="post-author">${data.authorName}</span>
+                        <span class="post-time">${time}</span>
+                    </div>
+                    
+                    <div class="post-body-mini">
+                        <p>${data.content}</p>
+                    </div>
+                    
+                    <div class="post-footer-mini">
+                        <button onclick="toggleLike('${postId}', ${isLiked})" class="mini-action-btn ${isLiked ? 'active-like' : ''}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                            <span>${data.likes?.length || 0}</span>
+                        </button>
+                        
+                        <button class="mini-action-btn" onclick="toggleCommentBox('${postId}')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+                            <span>${data.commentsCount || (data.comments ? data.comments.length : 0)}</span>
+                        </button>
+                    </div>
+
+                    <div id="comment-box-${postId}" class="comment-section-mini" style="display: none; border-top: 1px solid #222; margin-top: 10px; padding-top: 10px;">
+                        <div id="comments-display-${postId}" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px;">
+                        </div>
+                        
+                        <div class="comment-input-wrapper" style="display: flex; gap: 8px; background: #1a1a1a; padding: 5px 12px; border-radius: 20px;">
+                            <input type="text" id="comment-input-${postId}" placeholder="Fikr qoldiring..." 
+                                   style="flex: 1; background: none; border: none; color: white; outline: none; font-size: 0.85rem;">
+                            <button onclick="sendComment('${postId}')" style="background: none; border: none; cursor: pointer; color: #0084ff; display: flex; align-items: center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-`;
+        `;
     });
 });
 
@@ -211,6 +267,60 @@ window.toggleLike = async (postId, currentlyLiked) => {
     } catch (err) {
         console.error("Like xatosi:", err);
     }
+};
+
+// A. Kommentariya qo'shish
+window.addComment = async (postId) => {
+    const user = auth.currentUser;
+    if (!user) return alert("Avval tizimga kiring!");
+
+    const input = document.getElementById(`comment-input-${postId}`);
+    const text = input.value.trim();
+
+    if (text === "") return;
+
+    try {
+        // Har bir post ichida 'comments' kolleksiyasiga yozamiz
+        const commentRef = collection(db, "posts", postId, "comments");
+        await addDoc(commentRef, {
+            text: text,
+            uid: user.uid,
+            name: user.displayName || "Foydalanuvchi",
+            img: user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}`,
+            time: serverTimestamp()
+        });
+        
+        input.value = ""; // Inputni tozalash
+    } catch (err) {
+        console.error("Fikr qoldirishda xato:", err);
+    }
+};
+
+window.loadComments = (postId) => {
+    const display = document.getElementById(`comments-display-${postId}`);
+    
+    // AGAR ELEMENT TOPILMASA, FUNKSIYANI TO'XTATISH
+    if (!display) {
+        console.warn(`Element topilmadi: comments-display-${postId}`);
+        return;
+    }
+
+    const q = query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "asc"));
+
+    onSnapshot(q, (snapshot) => {
+        display.innerHTML = ""; // Mana shu yerda xato berayotgan edi
+        snapshot.forEach((doc) => {
+            const c = doc.data();
+            display.innerHTML += `
+                <div class="single-comment" style="display: flex; gap: 8px; margin-bottom: 8px;">
+                    <img src="${c.userPhoto || 'https://via.placeholder.com/30'}" style="width: 24px; height: 24px; border-radius: 50%;">
+                    <div style="background: #1a1a1a; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem;">
+                        <b style="color: #0084ff; display: block; font-size: 0.75rem;">${c.userName}</b>
+                        <span>${c.text}</span>
+                    </div>
+                </div>`;
+        });
+    });
 };
 
 // --- 5. NAVIGATSIYA LOGIKASI ---
@@ -244,43 +354,82 @@ document.getElementById('logoutBtnDrawer').addEventListener('click', () => {
     }
 });
 
-// Izoh qutisini ochish/yopish
-function toggleCommentBox(id) {
-    const box = document.getElementById(id); // ID to'g'ri kelayotganiga ishonch hosil qiling
+// Funksiyani window obyektiga biriktiramiz
+window.toggleCommentBox = (postId) => {
+    const box = document.getElementById(`comment-box-${postId}`);
     
-    if (box) {
-        if (box.style.display === "none" || box.style.display === "") {
-            box.style.display = "block";
-        } else {
-            box.style.display = "none";
-        }
+    if (box.style.display === "none") {
+        box.style.display = "block";
+        
+        // Postni ekranning o'rtasiga silliq olib kelish
+        box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Kommentariyalarni yuklash
+        if (window.loadComments) window.loadComments(postId);
     } else {
-        console.error("Xato: 'box' topilmadi! ID ni tekshiring.");
+        box.style.display = "none";
     }
-}
+};
 
-// Izoh yuborish
 window.sendComment = async (postId) => {
-    const input = document.getElementById(`input-${postId}`);
-    const text = input.value.trim();
-    const user = auth.currentUser;
-
-    if (!text || !user) return;
-
-    const postRef = doc(db, "posts", postId);
-    try {
-        await updateDoc(postRef, {
-            comments: arrayUnion({
-                uid: user.uid,
-                userName: user.displayName,
-                text: text,
-                createdAt: new Date().toISOString()
-            })
-        });
-        input.value = ""; // Inputni tozalash
-    } catch (err) {
-        console.error("Izoh qoldirishda xato:", err);
+    // 1. Avval elementni o'zini olyapmizmi yoki yo'q, tekshiramiz
+    const commentInput = document.getElementById(`comment-input-${postId}`);
+    
+    if (!commentInput) {
+        console.error(`Xato: comment-input-${postId} topilmadi!`);
+        alert("Xatolik: Input topilmadi. Sahifani yangilab ko'ring.");
+        return;
     }
+
+    const text = commentInput.value.trim();
+
+    // 2. Foydalanuvchi tizimga kirganini tekshirish
+    if (!auth.currentUser) {
+        alert("Fikr qoldirish uchun tizimga kiring!");
+        return;
+    }
+
+    if (text === "") return;
+
+    try {
+        const commentRef = collection(db, "posts", postId, "comments");
+        await addDoc(commentRef, {
+            text: text,
+            uid: auth.currentUser.uid,
+            userName: auth.currentUser.displayName || "Foydalanuvchi",
+            userPhoto: auth.currentUser.photoURL || "https://via.placeholder.com/30",
+            createdAt: serverTimestamp()
+        });
+
+        commentInput.value = ""; // Muvaffaqiyatli yuborilgach tozalash
+    } catch (error) {
+        console.error("Fikr yuborishda xatolik:", error);
+    }
+};
+
+window.sendComment = async (postId) => {
+    const input = document.getElementById(`comment-input-${postId}`);
+    const text = input.value.trim();
+    if (!text || !auth.currentUser) return;
+
+    try {
+        // 1. Kommentariyani qo'shish
+        const commentRef = collection(db, "posts", postId, "comments");
+        await addDoc(commentRef, {
+            text: text,
+            userName: auth.currentUser.displayName || "Foydalanuvchi",
+            userPhoto: auth.currentUser.photoURL || "",
+            createdAt: serverTimestamp()
+        });
+
+        // 2. POSTNING O'ZIDAGI HISOBLAGICHNI YANGILASH (Muhim qism!)
+        const postRef = doc(db, "posts", postId);
+        await updateDoc(postRef, {
+            commentsCount: increment(1) // Firebase-dagi qiymatni +1 qiladi
+        });
+
+        input.value = ""; 
+    } catch (e) { console.error(e); }
 };
 
 // 1. Profilni yuklash
@@ -599,46 +748,30 @@ window.sendMessage = async () => {
 };
 
 window.openChat = (peerUid, peerName, peerPhoto) => {
-    const user = auth.currentUser;
-    currentPeerUid = peerUid;
-    currentChatId = getChatId(user.uid, peerUid);
+    // 1. Bo'limlarni ko'rsatish/yashirish
+    document.getElementById('no-chat-selected').style.display = 'none';
+    document.getElementById('active-chat-container').style.display = 'block';
 
-    // 1. BO'LIMLARNI ALMASHISH (Search-dan Chat bo'limiga o'tish)
-    // Agar sizda bo'limlar ID-si bo'lsa, ularni ko'rsatish/yashirish qatorini qo'shing:
-    // document.getElementById('search-section').style.display = 'none';
-    // document.getElementById('chat-section').style.display = 'block';
-
-    // 2. UI NI YANGILASH (Siz yuborgan HTML ID-lariga moslab)
-    const emptyState = document.getElementById('no-chat-selected');
-    const activeChat = document.getElementById('active-chat-container');
-    
-    if (emptyState) emptyState.style.display = 'none';
-    if (activeChat) activeChat.style.display = 'block';
-
-    // Foydalanuvchi ma'lumotlarini o'rnatish
+    // 2. Foydalanuvchi ma'lumotlarini tepaga o'rnatish
     document.getElementById('main-chat-user-name').innerText = peerName;
     document.getElementById('main-chat-user-img').src = peerPhoto || 'default-avatar.png';
 
-    // 3. XABARLARNI YUKLASH
+    // 3. Global o'zgaruvchilarni yangilash
+    currentPeerUid = peerUid; 
+    currentChatId = getChatId(auth.currentUser.uid, peerUid);
+
+    // 4. Xabarlarni ko'rsatish (main-chat-messages diviga)
     const q = query(collection(db, "chats", currentChatId, "messages"), orderBy("timestamp", "asc"));
-    
     onSnapshot(q, (snapshot) => {
-        const display = document.getElementById('main-chat-messages'); // To'g'ri ID
+        const display = document.getElementById('main-chat-messages');
         display.innerHTML = "";
-        
         snapshot.forEach(doc => {
             const msg = doc.data();
-            const isMe = msg.senderId === user.uid;
-            
-            // Xabar dizaynini chiroyli qilish
+            const isMe = msg.senderId === auth.currentUser.uid;
             display.innerHTML += `
-                <div class="message-wrapper ${isMe ? 'sent' : 'received'}">
-                    <div class="message-bubble">
-                        ${msg.text}
-                        <span class="msg-time">${new Date(msg.timestamp?.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                    </div>
-                </div>
-            `;
+                <div class="message ${isMe ? 'sent' : 'received'}">
+                    <div class="bubble">${msg.text}</div>
+                </div>`;
         });
         display.scrollTop = display.scrollHeight;
     });
@@ -1153,36 +1286,23 @@ function loadMainMessages(targetUserId) {
     });
 }
 
-// 4. Xabar yuborish funksiyasi
-window.sendMainChatMessage = async () => {
+window.sendMainChatMessage = () => {
     const input = document.getElementById('mainChatInput');
-    const text = input.value.trim();
+    const message = input.value.trim();
     
-    if (!text || !currentActiveChatId) return;
-
-    const currentUid = auth.currentUser.uid;
-    const combinedId = currentUid < currentActiveChatId ? `${currentUid}_${currentActiveChatId}` : `${currentActiveChatId}_${currentUid}`;
-
-    input.value = ''; // Inputni darhol tozalash
-
-    try {
-        await addDoc(collection(db, "chats", combinedId, "messages"), {
-            senderId: currentUid,
-            text: text,
-            timestamp: serverTimestamp()
-        });
-        
-        // Chat ro'yxatini yangilash (oxirgi xabar vaqti uchun)
-        await setDoc(doc(db, "chats", combinedId), {
-            lastMessage: text,
-            lastUpdate: serverTimestamp(),
-            users: [currentUid, currentActiveChatId]
-        }, { merge: true });
-
-    } catch (e) {
-        console.error("Yuborishda xato:", e);
+    if (message !== "") {
+        console.log("Xabar yuborilmoqda:", message);
+        // Bu yerda Firebase'ga yuborish kodi bo'ladi
+        input.value = ""; // Xabar ketgach inputni tozalash
     }
 };
+
+// "Enter" tugmasini bosganda ham yuboradigan qilish
+document.getElementById('mainChatInput')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        sendMainChatMessage();
+    }
+});
 
 // Vaqtni chiroyli formatlash
 function formatTime(timestamp) {
@@ -1226,4 +1346,145 @@ function closeChat() {
     const messageWindow = document.querySelector('.message-window');
     messageWindow.classList.remove('active');
 }
+
+function addToSidebar(uid, name, photo) {
+    const list = document.getElementById('contactsList');
+    
+    // Agar bu odam ro'yxatda allaqachon bo'lsa, qayta qo'shmaymiz
+    if (document.getElementById(`contact-${uid}`)) return;
+
+    const html = `
+        <div class="contact-item" id="contact-${uid}" onclick="openChat('${uid}', '${name}', '${photo}')">
+            <img src="${photo || 'default-avatar.png'}" class="contact-avatar">
+            <div class="contact-info">
+                <span class="contact-name">${name}</span>
+                <small>Yangi xabar...</small>
+            </div>
+        </div>
+    `;
+    list.insertAdjacentHTML('afterbegin', html); // Eng tepaga qo'shadi
+}
+
+// Search-da foydalanuvchi bosilganda
+function onUserClick(uid, name, photo) {
+    // 1. Chat bo'limiga o'tkazish (Navigatsiyani bosgan bilan bir xil)
+    showSection('chat-section'); 
+    
+    // 2. Chat oynasini o'sha foydalanuvchi bilan ochish
+    openChat(uid, name, photo);
+}
+
+// Navigatsiyadagi 'Chat' bosilganda suhbatlar ro'yxatini yuklash
+async function loadMyChats() {
+    const list = document.getElementById('contactsList');
+    // Firestore-dan faqat joriy foydalanuvchi qatnashgan chatlarni olish
+    const q = query(collection(db, "chats"), where("participants", "array-contains", auth.currentUser.uid));
+    
+    onSnapshot(q, (snapshot) => {
+        list.innerHTML = ""; // Tozalash
+        snapshot.forEach(doc => {
+            const chatData = doc.data();
+            // Bu yerda chatdagi ikkinchi odam ma'lumotlarini chiqaramiz
+            renderContactItem(chatData);
+        });
+    });
+}
+
+// 1. Kontaktlarni qidirish
+document.getElementById('searchContact').addEventListener('input', async (e) => {
+    const term = e.target.value.toLowerCase();
+    const list = document.getElementById('contactsList');
+    
+    if (term.length > 0) {
+        const q = query(collection(db, "users"), where("displayName", ">=", term));
+        const snap = await getDocs(q);
+        list.innerHTML = "";
+        snap.forEach(doc => {
+            const user = doc.data();
+            renderContact(user);
+        });
+    } else {
+        loadMyChats(); // Qidiruv bo'sh bo'lsa, eski chatlarni qaytarish
+    }
+});
+
+// 2. Kontaktni ekranga chiqarish
+function renderContact(user) {
+    const html = `
+        <div class="contact-item" onclick="openChat('${user.uid}', '${user.displayName}', '${user.photoURL}')" style="cursor: pointer;">
+            <img src="${user.photoURL || 'assets/default-avatar.png'}" class="contact-avatar">
+            <div class="contact-info">
+                <span class="contact-name">${user.displayName}</span>
+                <p class="last-msg">Suhbatni boshlash...</p>
+            </div>
+        </div>`;
+    document.getElementById('contactsList').insertAdjacentHTML('beforeend', html);
+}
+
+// 3. Chatni ochish
+window.startChat = (uid, name, photo) => {
+    const myUid = auth.currentUser.uid;
+    currentChatId = myUid < uid ? `${myUid}_${uid}` : `${uid}_${myUid}`;
+
+    // UI yangilash
+    document.getElementById('no-chat-selected').style.display = 'none';
+    document.getElementById('active-chat-container').style.display = 'block';
+    document.getElementById('main-chat-user-name').innerText = name;
+    document.getElementById('main-chat-user-img').src = photo || 'default-pfp.png';
+
+    // Xabarlarni yuklash
+    loadMessages(currentChatId);
+};
+
+// 4. Xabarlarni real-time eshitish
+function loadMessages(chatId) {
+    const q = query(collection(db, "chats", chatId, "messages"), orderBy("timestamp", "asc"));
+    onSnapshot(q, (snapshot) => {
+        const box = document.getElementById('main-chat-messages');
+        box.innerHTML = "";
+        snapshot.forEach(doc => {
+            const m = doc.data();
+            const type = m.senderId === auth.currentUser.uid ? 'sent' : 'received';
+            box.innerHTML += `<div class="message ${type}">${m.text}</div>`;
+        });
+        box.scrollTop = box.scrollHeight;
+    });
+}
+
+// 5. Xabar yuborish
+window.sendMainChatMessage = async () => {
+    const input = document.getElementById('mainChatInput');
+    if (input.value.trim() && currentChatId) {
+        await addDoc(collection(db, "chats", currentChatId, "messages"), {
+            text: input.value,
+            senderId: auth.currentUser.uid,
+            timestamp: serverTimestamp()
+        });
+        input.value = "";
+    }
+};
+
+window.openChat = (uid, name, photo) => {
+    console.log("Chat ochilmoqda:", name); // Konsolda tekshirish uchun
+
+    // 1. Elementlarni o'zgaruvchiga olish
+    const noChat = document.getElementById('no-chat-selected');
+    const activeChat = document.getElementById('active-chat-container');
+    const chatName = document.getElementById('main-chat-user-name');
+    const chatImg = document.getElementById('main-chat-user-img');
+
+    // 2. Bloklarni ko'rsatish va yashirish
+    if (noChat) noChat.style.setProperty('display', 'none', 'important');
+    if (activeChat) activeChat.style.setProperty('display', 'flex', 'important');
+
+    // 3. Ma'lumotlarni yozish
+    if (chatName) chatName.innerText = name;
+    if (chatImg) chatImg.src = photo || 'assets/default-avatar.png';
+
+    // 4. Mobil versiya uchun sidebar-ni yopish (agar kerak bo'lsa)
+    if (window.innerWidth < 768) {
+        const sidebar = document.getElementById('chatSidebar');
+        if (sidebar) sidebar.style.display = 'none';
+    }
+};
 

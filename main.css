@@ -1727,3 +1727,156 @@ textarea {
     background: #0073e6;
     transform: scale(1.05);
 }
+
+/* Sidebar kontaktlar uslubi */
+.contact-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    cursor: pointer;
+    transition: 0.2s;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.contact-item:hover { background: rgba(255, 255, 255, 0.1); }
+
+.contact-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    margin-right: 12px;
+    object-fit: cover;
+}
+
+.contact-info { flex: 1; }
+
+.contact-name {
+    display: block;
+    color: white;
+    font-weight: 500;
+    font-size: 15px;
+}
+
+.last-msg {
+    color: #888;
+    font-size: 13px;
+    margin: 0;
+}
+
+/* Xabarlar uslubi */
+.main-messages-display {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    height: 100%;
+}
+
+.message {
+    max-width: 75%;
+    padding: 10px 15px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.sent {
+    align-self: flex-end;
+    background: #0084ff;
+    color: white;
+}
+
+.received {
+    align-self: flex-start;
+    background: #333;
+    color: white;
+}
+
+/* main.css 1796-qator atrofidagi @media bloki */
+@media (max-width: 768px) {
+    #active-chat-container {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        z-index: 99999 !important;
+        background-color: #000000 !important;
+        /* BU YERDA display: none-ni olib tashladik yoki shunchaki 'none' qoldirdik (!important-siz) */
+        display: none; 
+    }
+
+    /* Chat ochilganda ishlaydigan yangi klass */
+    #active-chat-container.mobile-active {
+        display: flex !important;
+    }
+}
+
+.chat-footer {
+    padding: 10px 15px;
+    background: #000;
+    border-top: 1px solid #222;
+}
+
+.input-wrapper {
+    display: flex;
+    align-items: center;
+    background: #1a1a1a; /* Input foni */
+    border-radius: 25px;
+    padding: 5px 15px;
+    width: 100%;
+}
+
+#mainChatInput {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #fff;
+    padding: 10px;
+    outline: none;
+    font-size: 16px; /* Mobil uchun qulay o'lcham */
+}
+
+#send-btn {
+    background: none;
+    border: none;
+    color: #0084ff; /* Tugma rangi */
+    font-size: 20px;
+    cursor: pointer;
+    padding: 5px;
+    transition: transform 0.2s;
+}
+
+#send-btn:active {
+    transform: scale(0.9); /* Bosilganda kichrayish effekti */
+}
+
+/* Mobil uchun maxsus tuzatish */
+@media (max-width: 768px) {
+    .chat-footer {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        z-index: 10000;
+    }
+}
+
+.comments-scroll-area {
+    max-height: 250px; /* Maksimal balandlik */
+    overflow-y: auto;  /* Vertikal skroll */
+    padding-right: 8px;
+    margin-bottom: 10px;
+}
+
+/* Skrollbarni minimalist va chiroyli qilish (RIVION uslubida) */
+.comments-scroll-area::-webkit-scrollbar {
+    width: 4px;
+}
+.comments-scroll-area::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 10px;
+}
+.comments-scroll-area::-webkit-scrollbar-thumb:hover {
+    background: #0084ff;
+}
