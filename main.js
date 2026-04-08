@@ -1,5 +1,10 @@
-// main.js - RIVION Full Logic
-import { auth, db, onAuthStateChanged, signOut } from './firebase-config.js';
+// 1. Supabase-ni brauzer tushunadigan formatda import qilamiz
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+// 2. Firebase va o'zingizning konfiguratsiyangiz
+import { auth, db, onAuthStateChanged, signOut, supabase } from './firebase-config.js'; 
+
+// 3. Firestore modullari
 import { 
     collection, 
     addDoc, 
@@ -17,27 +22,17 @@ import {
     arrayUnion,
     arrayRemove,
     increment,
-    writeBatch // <--- MANA SHU YERGA QO'SHILDI (Xatoni yo'qotish uchun)
+    writeBatch 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-import { 
-    getStorage, 
-    ref, 
-    uploadBytes, 
-    getDownloadURL 
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
-// Storage-ni ishga tushirish (firebase-config dan kelgan 'app' orqali)
-const storage = getStorage();
+
 
 // --- ELEMENTLARNI TANLAB OLISH ---
 const burgerBtn = document.getElementById('burgerBtn');
 const sideDrawer = document.getElementById('sideDrawer');
 const closeDrawer = document.getElementById('closeDrawer');
-const themeToggle = document.getElementById('themeToggle');
-const postBtn = document.getElementById('postBtn');
-const postText = document.getElementById('postText');
-const postsList = document.getElementById('postsList');
+// ... qolgan elementlar ...
 
 // --- 1. SIDEBAR (DRAWER) LOGIKASI ---
 burgerBtn.addEventListener('click', () => sideDrawer.classList.add('open'));
@@ -1764,57 +1759,249 @@ function handleReelFile(event) {
 }
 
 async function shareReel() {
-    if (!selectedReelFile) return alert("Iltimos, video tanlang!");
-    
-    // Matnni olish
-    const caption = document.getElementById('reel-caption').value;
-    const user = auth.currentUser;
+    const fileInput = document.getElementById('reel-file-input');
+    const captionInput = document.getElementById('reel-caption');
+    const file = fileInput.files[0];
+
+    if (!file) {
+        alert("Iltimos, video tanlang!");
+        return;
+    }
+
+    console.log("Yuklash boshlandi (Supabase)...");
 
     try {
-        console.log("Yuklanmoqda...");
-        const fileRef = ref(storage, `reels/${Date.now()}_${selectedReelFile.name}`);
-        const snapshot = await uploadBytes(fileRef, selectedReelFile);
-        const videoURL = await getDownloadURL(snapshot.ref);
+        const fileName = `reels/${Date.now()}_${file.name}`;
 
-        // Firestore-ga caption bilan birga yozamiz
+        const { data, error } = await supabase.storage
+            .from('videos') 
+            .upload(fileName, file);
+
+        if (error) throw error;
+
+        const { data: publicData } = supabase.storage
+            .from('videos')
+            .getPublicUrl(fileName);
+
+        const videoURL = publicData.publicUrl;
+        console.log("Video linki olindi:", videoURL);
+
+        // --- O'ZGARISH SHU YERDA ---
         await addDoc(collection(db, "reels"), {
-            uid: user.uid,
-            userName: user.displayName,
-            videoURL: videoURL,
-            description: caption, // Izoh shu yerda saqlanadi
-            likes: [],
-            createdAt: serverTimestamp()
+            // 'videoURL' emas, 'url' deb yozamiz (bazadan o'qish bilan bir xil bo'lishi uchun)
+            url: videoURL, 
+            caption: captionInput.value || "",
+            createdAt: serverTimestamp(),
+            userId: auth.currentUser ? auth.currentUser.uid : "anonim"
         });
+        // -------------------------
 
-        alert("Muvaffaqiyatli ulashildi!");
-        // Tozalash
-        document.getElementById('reel-caption').value = "";
-        location.reload();
+        alert("Video muvaffaqiyatli joylandi!");
+        closeAddReelModal();
+
     } catch (error) {
-        console.error(error);
-        alert("Xatolik yuz berdi. Internetni tekshiring!");
+        // Konsolda xatoni to'liq ko'rish uchun faqat error.message emas, error'ni o'zini chiqaramiz
+        console.error("Xato yuz berdi:", error); 
+        alert("Yuklashda xato: " + error.message);
     }
 }
-
-// 3. FUNKSIYALARNI GLOBALGA CHIQARISH (Xatolarni oldini olish uchun)
-window.handleReelFile = handleReelFile;
-window.shareReel = shareReel;
-
-// Buni main.js faylining ENG OXIRIGA qo'shing
-window.openAddReelModal = function() {
-    const modal = document.getElementById('add-reel-modal');
-    if (modal) {
-        modal.style.display = 'flex';
-    } else {
-        console.error("Modal topilmadi! HTML-da id='add-reel-modal' borligini tekshiring.");
-    }
-};
 
 window.closeAddReelModal = function() {
     const modal = document.getElementById('add-reel-modal');
     if (modal) modal.style.display = 'none';
 };
 
-window.handleReelFile = handleReelFile; // Fayl tanlash funksiyasi
-window.shareReel = shareReel;           // Yuklash funksiyasi
+window.openAddReelModal = function() {
+    const modal = document.getElementById('add-reel-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+};
+window.closeAddReelModal = closeAddReelModal;
+window.handleReelFile = handleReelFile;
+window.shareReel = shareReel;
+
+
+// Video yuklash uchun yangi funksiya
+async function uploadVideoToSupabase(file) {
+    console.log("Yuklash boshlandi (Supabase)...");
+    const fileName = `reels/${Date.now()}_${file.name}`;
+
+    // Supabase-ga yuklash
+    const { data, error } = await supabase.storage
+        .from('videos') // Supabase bucket nomi
+        .upload(fileName, file);
+
+    if (error) {
+        console.error("Supabase xatosi:", error.message);
+        alert("Xato: " + error.message);
+        return null;
+    }
+
+    // Tayyor linkni olish
+    const { data: publicData } = supabase.storage
+        .from('videos')
+        .getPublicUrl(fileName);
+
+    console.log("Yuklash tugadi! Link:", publicData.publicUrl);
+    return publicData.publicUrl;
+}
+
+async function uploadReel(file) {
+    const fileName = `${Date.now()}_video.mp4`;
+
+    // Videoni Supabase omboriga (bucket) yuboramiz
+    const { data, error } = await supabase.storage
+        .from('videos') // Supabase'da ochgan bucket nomi
+        .upload(fileName, file);
+
+    if (error) {
+        console.error("Yuklashda xato:", error.message);
+        return;
+    }
+
+    // Yuklangan videoning ochiq linkini olamiz
+    const { data: publicData } = supabase.storage
+        .from('videos')
+        .getPublicUrl(fileName);
+
+    const videoUrl = publicData.publicUrl;
+    console.log("Video linki tayyor:", videoUrl);
+    
+    // Endi bu 'videoUrl'ni Firestore-ga saqlab qo'yishingiz mumkin
+    return videoUrl;
+}
+
+async function handleVideoUpload(file) {
+    const fileName = `${Date.now()}_${file.name}`;
+    
+    // Supabase orqali yuklash
+    const { data, error } = await supabase.storage
+        .from('videos') // Supabase'da ochgan bucket nomi
+        .upload(fileName, file);
+
+    if (error) {
+        console.error("Yuklashda xato:", error.message);
+        return;
+    }
+
+    // Ochiq linkni olish
+    const { data: publicData } = supabase.storage
+        .from('videos')
+        .getPublicUrl(fileName);
+
+    return publicData.publicUrl;
+}
+
+// Videolarni (Reels) qidirish yoki ko'rsatish funksiyasi
+async function loadAllReels() {
+    const reelsContainer = document.getElementById('search-results'); // Videolar chiqadigan joy
+    const q = query(collection(db, "reels"), orderBy("createdAt", "desc"));
+
+    try {
+        const querySnapshot = await getDocs(q);
+        // Agar natija bo'lsa, videolarni ko'rsatish kodini yozasiz
+        querySnapshot.forEach((doc) => {
+            const reel = doc.data();
+            console.log("Video topildi:", reel.videoURL);
+            
+            // Bu yerda videoni HTML-ga qo'shish kodi bo'ladi
+            reelsContainer.innerHTML += `
+                <div class="video-card">
+                    <video src="${reel.videoURL}" controls width="200"></video>
+                    <p>${reel.caption}</p>
+                </div>
+            `;
+        });
+    } catch (error) {
+        console.error("Videolarni yuklashda xato:", error);
+    }
+}
+
+// Barcha videolarni (reels) yuklash funksiyasi
+async function loadExploreReels() {
+    const exploreContainer = document.getElementById('explore-reels-container'); // Videolar chiqadigan blok ID-si
+    if (!exploreContainer) return;
+
+    try {
+        // "reels" kolleksiyasidan barcha videolarni vaqt bo'yicha olish
+        const q = query(collection(db, "reels"), orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+        
+        exploreContainer.innerHTML = ""; // Oldingi narsalarni tozalash
+
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            
+            // Instagram kabi "grid" (setka) ko'rinishida chiqarish
+            exploreContainer.innerHTML += `
+                <div class="explore-item" onclick="openFullVideo('${data.videoURL}')">
+                    <video src="${data.videoURL}" muted loop></video>
+                    <div class="overlay">
+                        <span>❤️ 0</span>
+                    </div>
+                </div>
+            `;
+        });
+    } catch (error) {
+        console.error("Videolarni yuklashda xato:", error);
+    }
+}
+
+// Search bo'limidagi grid-ga barcha videolarni yuklash
+async function loadSearchReels() {
+    const reelsGrid = document.getElementById('reels-grid');
+    if (!reelsGrid) return;
+
+    // Firestore'dan videolarni "reels" kolleksiyasidan olamiz
+    const q = query(collection(db, "reels"), orderBy("createdAt", "desc"));
+    
+    // Doimiy kuzatuv (Real-time) - yangi video tushsa darrov ko'rinadi
+    onSnapshot(q, (snapshot) => {
+        reelsGrid.innerHTML = ""; // Tozalash
+        
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            // Grid elementini yaratish
+            reelsGrid.innerHTML += `
+                <div class="grid-item" style="position: relative; aspect-ratio: 9/16; background: #000; overflow: hidden; cursor: pointer;" 
+                     onclick="openReelsViewer('${doc.id}')">
+                    <video src="${data.url}" style="width: 100%; height: 100%; object-fit: cover;"></video>
+                    <div style="position: absolute; bottom: 5px; left: 5px; color: white; font-size: 10px;">
+                        <i class="fas fa-play"></i>
+                    </div>
+                </div>
+            `;
+        });
+    });
+}
+
+window.openReelsViewer = async (reelId) => {
+    const viewer = document.getElementById('reels-viewer');
+    const container = document.getElementById('reels-container');
+    viewer.style.display = 'block';
+    container.innerHTML = "Yuklanmoqda...";
+
+    const q = query(collection(db, "reels"), orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+    
+    container.innerHTML = ""; // Tozalash
+    
+    snapshot.forEach((doc) => {
+        const data = doc.data();
+        container.innerHTML += `
+            <div style="height: 100%; scroll-snap-align: start; position: relative; display: flex; align-items: center; justify-content: center;">
+                <video src="${data.videoURL}" controls loop style="max-height: 100%; max-width: 100%;"></video>
+                <div style="position: absolute; bottom: 40px; left: 20px; color: white;">
+                    <strong>@${data.userId}</strong>
+                    <p>${data.caption}</p>
+                </div>
+            </div>
+        `;
+    });
+};
+
+window.closeReelsViewer = () => {
+    document.getElementById('reels-viewer').style.display = 'none';
+};
 
