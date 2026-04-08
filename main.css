@@ -1923,17 +1923,12 @@ textarea {
     text-align: center;
 }
 
-/* Modal foni */
+
 .modal-overlay {
     position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(8px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000;
+    top: 0; left: 0; width: 100%; height: 100dvh;
+    background: #000;
+    z-index: 10000 !important;
 }
 
 /* Modal kartasi */
@@ -2006,3 +2001,198 @@ textarea {
 .btn-share { background: #0095f6; color: white; }
 
 .btn-share:hover { background: #1877f2; transform: translateY(-2px); }
+
+/* 1. Reels Grid (Profil qismidagi kichik videolar) */
+.reels-grid-layout {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    margin-top: 10px;
+}
+
+.reels-grid-item {
+    aspect-ratio: 9 / 16;
+    background: #000;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    border: 0.1px solid rgba(255, 255, 255, 0.05);
+}
+
+.reels-grid-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.reels-grid-item:hover video {
+    transform: scale(1.05);
+}
+
+/* 2. Modal Oynasi (To'liq ekran rejim) */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100dvh;
+    background: #000;
+    z-index: 999999 !important; /* Eng yuqori qatlam */
+    display: none; 
+    align-items: center;
+    justify-content: center;
+}
+
+.mobile-insta-wrap {
+    position: relative;
+    width: 100%; height: 100%;
+    display: flex; justify-content: center; align-items: center;
+    overflow: hidden;
+}
+
+/* 3. Video: Reels kabi to'liq yoyish */
+#full-screen-video {
+    width: 100%; height: 100%;
+    object-fit: cover; /* Videoni bo'shliqlarsiz yoyadi */
+    z-index: 1;
+}
+
+/* 4. Interfeys Qatlami (Tugmalar uchun ko'rinmas devor) */
+.insta-ui-container {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 10;
+    pointer-events: none; /* Video bosilishiga xalaqit bermaydi */
+}
+
+/* 5. Tugmalarni "bosiladigan" qilish */
+.back-btn, .insta-sidebar, .insta-bottom-info {
+    pointer-events: auto !important; /* MAJBURIY BOSISHNI YOQISH */
+    position: absolute;
+    color: white;
+    z-index: 100;
+}
+
+/* Chiqish (Back) tugmasi */
+.back-btn {
+    top: 40px; left: 20px;
+    font-size: 26px;
+    background: rgba(0, 0, 0, 0.4);
+    border: none; border-radius: 50%;
+    width: 45px; height: 45px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    text-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+/* O'ng tomondagi Sidebar (Like, Menu) */
+.insta-sidebar {
+    right: 20px; bottom: 120px;
+    display: flex; flex-direction: column; gap: 25px;
+    align-items: center;
+}
+
+/* Sidebar ichidagi har bir icon va matn */
+.insta-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    text-shadow: 0 0 5px rgba(0,0,0,0.7);
+}
+
+.insta-action i {
+    font-size: 30px;
+}
+
+.action-count {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Pastki foydalanuvchi ma'lumotlari */
+.insta-bottom-info {
+    left: 20px; bottom: 45px;
+    max-width: 80%;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+
+/* 1. Eng asosiy konteyner */
+.mobile-insta-wrap {
+    position: relative;
+    width: 100%;
+    height: 100dvh;
+    background: #000;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 2. Video - z-index: 1 va object-fit */
+#full-screen-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Yoki contain, ixtiyoriy */
+    z-index: 1 !important; /* Eng pastda */
+    position: relative;
+}
+
+/* 3. Interfeys qatlami - Videodan ancha yuqori */
+.insta-ui-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999 !important; /* Videoni butunlay yopishi shart */
+    pointer-events: none; /* Bu qatlam orqali videoni bosish uchun */
+}
+
+/* 4. Tugmalar - MAJBURIY BOSILISH */
+.back-btn, 
+.insta-sidebar, 
+.insta-bottom-info,
+.insta-action {
+    pointer-events: auto !important; /* BOSISHNI QAYTARISH */
+    cursor: pointer;
+    z-index: 10000 !important; /* Eng yuqori nuqta */
+}
+
+/* 5. Qaytish tugmasi (Chap yuqori) */
+.back-btn {
+    position: absolute;
+    top: 40px; 
+    left: 20px;
+    width: 45px;
+    height: 45px;
+    background: rgba(0, 0, 0, 0.5); /* Shaffof qora fon */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    color: white !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+/* 6. Sidebar (O'ng tomon) */
+.insta-sidebar {
+    position: absolute;
+    right: 15px;
+    bottom: 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    align-items: center;
+}
+
+/* 7. Pastki info */
+.insta-bottom-info {
+    position: absolute;
+    left: 20px;
+    bottom: 40px;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
