@@ -2070,13 +2070,14 @@ window.viewFullReel = function(url, docId, fileName, userName, time, likesCount 
     }
 };
 
-// Videoni to'xtatish/qo'yish funksiyasi
 window.togglePlayPause = function() {
     const video = document.getElementById('full-screen-video');
-    if (video.paused) {
-        video.play();
-    } else {
-        video.pause();
+    if (video) {
+        if (video.paused) {
+            video.play();
+        } else {
+            video.pause();
+        }
     }
 };
 
