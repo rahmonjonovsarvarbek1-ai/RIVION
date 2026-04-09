@@ -1,17 +1,22 @@
-// 1. Supabase-ni brauzer tushunadigan formatda import qilamiz
+// 1. Supabase-ni import qilish
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-// 2. Firebase va o'zingizning konfiguratsiyangiz
-import { auth, db, onAuthStateChanged, signOut, supabase } from './firebase-config.js'; 
+// 2. Firebase Auth modullari (updateProfile SHU YERDA bo'lishi shart)
+import { 
+    getAuth, 
+    onAuthStateChanged, 
+    signOut,
+    updateProfile // <--- TO'G'RI JOYI MANA SHU YER!
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// 3. Firestore modullari - deleteDoc qo'shildi!
+// 3. Firestore modullari (Bu yerdan updateProfile-ni olib tashladik)
 import { 
     collection, 
     addDoc, 
     setDoc, 
     getDoc, 
     doc, 
-    deleteDoc, // <--- Shuni qo'shing
+    deleteDoc, 
     query, 
     where, 
     limit, 
@@ -26,6 +31,8 @@ import {
     writeBatch 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+// 4. O'zingizning konfiguratsiyangiz (Eski import qatoringizni biroz tartibladik)
+import { auth, db, supabase } from './firebase-config.js';
 
 let currentUser = null; 
 let selectedUserId = null; // Bu o'zgaruvchi xabar kimga ketishini saqlaydi
