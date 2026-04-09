@@ -65,7 +65,12 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="menu-icon"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
         <span>Qiziqishlar</span>
     </div>
-    
+    <div class="menu-item" data-section="chat" onclick="showSection('chat')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="menu-icon">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span>Chat</span>
+    </div>
     <div class="menu-item">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="menu-icon"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
         <span>Ma'lumot</span>
@@ -101,28 +106,28 @@
         
         <aside class="left-sidebar">
             <ul class="side-menu">
-                <li class="active" data-section="home">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-                    <span>Asosiy Lenta</span>
-                </li>
-                <li data-section="search">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <span>Qidiruv</span>
-                </li>
-                <li data-section="meetings">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                    <span>Meetings</span>
-                </li>
-                <li data-section="notifications">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                    <span>Notifications</span>
-                    <span class="badge">3</span>
-                </li>
-                <li data-section="chat">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                    <span>Xabarlar</span>
-                </li>
-            </ul>
+        <li class="active" data-section="home">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+            <span>Asosiy Lenta</span>
+        </li>
+        <li data-section="search">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span>Qidiruv</span>
+        </li>
+        <li data-section="meetings">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span>Meetings</span>
+        </li>
+        <li data-section="notifications">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span>Notifications</span>
+            <span class="badge">3</span>
+        </li>
+        <li data-section="profile">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span>Profil</span>
+        </li>
+             </ul>
         </aside>
 
         <section class="feed-area">
@@ -343,7 +348,92 @@
         </div>
     </div>
 </div>
+ <div id="profile-section" class="content-section"> 
+    <div class="widget-card no-padding">
+        <div class="profile-header-ui">
+            <div class="profile-banner">
+                <div class="banner-overlay"></div>
+            </div>
+            <div class="profile-avatar-area">
+                <img id="user-profile-img" src="assets/default-avatar.png" alt="Profile">
+                <label for="profile-upload" class="change-img-btn">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="white"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                </label>
+                <input type="file" id="profile-upload" hidden accept="image/*">
+            </div>
+        </div>
 
+        <div class="profile-details-ui">
+    <div class="main-info">
+        <h2 id="user-profile-name">Foydalanuvchi <i id="gender-icon" class=""></i></h2>
+        <span id="user-profile-handle" class="username-tag">@username</span>
+    </div>
+
+    <p id="user-profile-bio" class="bio-text">Hali ma'lumot kiritilmagan</p>
+    
+    <div class="profile-extra-details">
+        <div class="detail-item">
+            <i class="fas fa-birthday-cake"></i>
+            <span id="user-display-age">-- yosh</span>
+        </div>
+        <div class="detail-item">
+            <i class="fas fa-map-marker-alt"></i>
+            <span id="user-display-city">Shahar kiritilmagan</span>
+        </div>
+        <div class="detail-item">
+            <i class="fas fa-briefcase"></i>
+            <span id="user-display-study">O'qish yoki Ish joyi</span>
+        </div>
+    </div>
+
+    <div class="professional-grid">
+        <div class="prof-card">
+            <div class="card-icon"><i class="fas fa-bullseye"></i></div>
+            <div class="card-content">
+                <label>Maqsad va Orzular</label>
+                <p id="user-display-goals">Katta maqsadlar sari yo'lda...</p>
+            </div>
+        </div>
+
+        <div class="prof-card">
+            <div class="card-icon"><i class="fas fa-star"></i></div>
+            <div class="card-content">
+                <label>Qiziqishlar</label>
+                <p id="user-display-interests">Coding, Design, Art</p>
+            </div>
+        </div>
+
+        <div class="prof-card full-width">
+            <div class="card-icon"><i class="fas fa-plane-departure"></i></div>
+            <div class="card-content">
+                <label>Sayohatlar</label>
+                <p id="user-display-travel">Yangi ufqlarni zabt etishni yoqtiradi</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="profile-stats-ui">
+        <div class="stat-box"><strong>0</strong><span>Postlar</span></div>
+        <div class="stat-box"><strong>0</strong><span>Obunachilar</span></div>
+        <div class="stat-box"><strong>0</strong><span>Obunalar</span></div>
+    </div>
+
+    <div class="profile-actions">
+        <button class="edit-profile-btn-full" onclick="openMyProfileModal()">
+            <i class="fas fa-pencil-alt"></i> Profilni mukammallashtirish
+        </button>
+    </div>
+</div>
+
+    <div class="widget-card" style="margin-top: 15px;">
+        <div class="section-header">
+            <h3><i class="fas fa-th-large"></i> Mening postlarim</h3>
+        </div>
+        <div id="my-posts-list" class="posts-grid-container">
+            <p class="empty-msg">Siz hali post joylamagansiz.</p>
+        </div>
+    </div>
+</div>
         </section>
 
         <aside class="right-widgets">
@@ -361,55 +451,52 @@
     </main>
 
     <div class="mobile-bottom-nav">
-        <div class="m-nav-item active" data-section="home">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-            <span>Home</span>
-        </div>
-        <div class="m-nav-item" data-section="search">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <span>Search</span>
-        </div>
-        <div class="m-nav-item" data-section="meetings">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-            <span>Meet</span>
-        </div>
-        <div class="m-nav-item" data-section="notifications" style="position: relative;">
-    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-    </svg>
-    <span>Alerts</span>
+    <div class="m-nav-item active" data-section="home">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+        <span>Home</span>
+    </div>
+    
+    <div class="m-nav-item" data-section="search">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <span>Search</span>
+    </div>
+    
+    <div class="m-nav-item" data-section="meetings">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        <span>Meet</span>
+    </div>
+    
+    <div class="m-nav-item" data-section="notifications" style="position: relative;">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <span>Alerts</span>
+        <div id="notification-badge" style="display: none; position: absolute; top: 5px; right: 25%; width: 8px; height: 8px; background-color: #ff4b4b; border-radius: 50%; border: 2px solid #000; z-index: 10;"></div>
+    </div>
 
-    <div id="notification-badge" style="
-        display: none; 
-        position: absolute; 
-        top: 5px; 
-        right: 25%; 
-        width: 8px; 
-        height: 8px; 
-        background-color: #ff4b4b; 
-        border-radius: 50%; 
-        border: 2px solid #000;
-        z-index: 10;">
+    <div class="m-nav-item" data-section="profile">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        <span>Profile</span>
     </div>
 </div>
-        <div class="m-nav-item" data-section="chat">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-            <span>Chat</span>
-        </div>
-    </div>
 
     <div id="my-profile-edit-modal" class="modal">
     <div class="modal-content profile-edit-card">
         <div class="modal-header">
-            <h3><i class="fas fa-user-edit"></i> Profilni tahrirlash</h3>
+            <h3><i class="fas fa-rocket"></i> RIVION: Shaxsiy Dunyongiz</h3>
             <span class="close-modal" onclick="closeMyProfileModal()">&times;</span>
         </div>
         
         <div class="edit-scroll-container">
+            <div class="field-section-title">Asosiy</div>
+            
             <div class="field-group">
                 <label><i class="fas fa-at"></i> Username</label>
-                <input type="text" id="edit-username" placeholder="username" oninput="checkUsernameAvailability(this.value)">
+                <input type="text" id="edit-username" placeholder="sarvar" oninput="checkUsernameAvailability(this.value)">
                 <small id="username-status"></small>
             </div>
 
@@ -418,30 +505,58 @@
                 <input type="text" id="edit-display-name" placeholder="Sarvarbek Rahmonjonov">
             </div>
 
-            <div class="field-group">
-                <label><i class="fas fa-calendar-alt"></i> Yosh</label>
-                <input type="number" id="edit-age" placeholder="19">
+            <div class="field-row">
+                <div class="field-group">
+                    <label><i class="fas fa-calendar-day"></i> Tug'ilgan sana</label>
+                    <input type="date" id="edit-birthdate" onchange="updateAgeDisplay(this.value)">
+                </div>
+                <div class="field-group">
+                    <label><i class="fas fa-venus-mars"></i> Jins</label>
+                    <select id="edit-gender">
+                        <option value="male">Erkak</option>
+                        <option value="female">Ayol</option>
+                    </select>
+                </div>
             </div>
 
+            <div class="field-section-title">Hayot yo'li</div>
+
             <div class="field-group">
-                <label><i class="fas fa-map-marker-alt"></i> Shahar</label>
+                <label><i class="fas fa-map-marker-alt"></i> Shahar / Yashash joyi</label>
                 <input type="text" id="edit-city" placeholder="Tashkent, Uzbekistan">
             </div>
 
             <div class="field-group">
                 <label><i class="fas fa-university"></i> O'qish yoki ish joyi</label>
-                <input type="text" id="edit-study" placeholder="TATU">
+                <input type="text" id="edit-study" placeholder="TATU talabasi yoki Lead Developer">
             </div>
+
+            <div class="field-section-title">Dunyoqarash va Orzular</div>
 
             <div class="field-group">
                 <label><i class="fas fa-quote-left"></i> Bio (O'zingiz haqingizda)</label>
-                <textarea id="edit-bio" rows="3" placeholder="Dasturchi va RIVION yaratuvchisi..."></textarea>
+                <textarea id="edit-bio" rows="2" placeholder="O'zingizni bir gap bilan tariflang..."></textarea>
+            </div>
+
+            <div class="field-group">
+                <label><i class="fas fa-lightbulb"></i> Kelajakdagi maqsad va orzular</label>
+                <textarea id="edit-goals" rows="2" placeholder="Masalan: Google-da ishlash yoki dunyoni o'zgartirish..."></textarea>
+            </div>
+
+            <div class="field-group">
+                <label><i class="fas fa-star"></i> Qiziqishlar (Hobbi)</label>
+                <input type="text" id="edit-interests" placeholder="Coding, Chess, Traveling, Music...">
+            </div>
+
+            <div class="field-group">
+                <label><i class="fas fa-plane"></i> Sayohat (Bo'lgan yoki borishni xohlagan joyingiz)</label>
+                <input type="text" id="edit-travel" placeholder="Dubay, Shveytsariya, Samarqand...">
             </div>
         </div>
 
         <div class="modal-footer">
             <button onclick="saveProfileChanges()" class="btn-save-full" id="saveProfileBtn">
-                <i class="fas fa-check-circle"></i> O'zgarishlarni saqlash
+                <i class="fas fa-check-circle"></i> Dunyoni yangilash
             </button>
         </div>
     </div>

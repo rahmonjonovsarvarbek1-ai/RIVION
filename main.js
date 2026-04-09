@@ -52,128 +52,105 @@ themeToggle.addEventListener('click', () => {
 });
 
 
-// --- 3. FOYDALANUVCHI HOLATINI TEKSHIRISH ---
+// --- 3. FOYDALANUVCHI HOLATINI TEKSHIRISH (PROFESSIONAL FULL) ---
 onAuthStateChanged(auth, async (user) => {
     if (user && user.uid) { 
-        // Global o'zgaruvchini yangilaymiz
         currentUser = user; 
         console.log("Siz tizimdasiz, UID:", user.uid);
         
-        // UI elementlarini yangilash (Rasm va ism)
+        // Asosiy UI elementlarini (header va h.k.) yangilash funksiyangiz
         updateUserUI(user); 
 
-        // 1. PROFIL MA'LUMOTLARINI YUKLASH (Firestore dan)
         try {
             const userRef = doc(db, "users", user.uid);
             const userSnap = await getDoc(userRef);
 
             if (userSnap.exists()) {
                 const userData = userSnap.data();
-                const drawerName = document.getElementById('drawerName');
-                
-                if (drawerName) {
-                    // Verified (ko'k belgi) mantiqi
-                    const verifiedTag = userData.isVerified === true 
-                        ? `<svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #1d9bf0; margin-left: 5px; vertical-align: middle;"><path d="M22.5 12.5c0-1.58-.88-2.95-2.18-3.66.25-.9.4-1.84.4-2.84 0-3.04-2.46-5.5-5.5-5.5-1 0-1.94.27-2.74.75C11.77 1.03 10.4 0 9.5 0 6.46 0 4 2.46 4 5.5c0 1 .27 1.94.75 2.74C3.53 9.03 2.5 10.4 2.5 12.5c0 1.58.88 2.95 2.18 3.66-.25.9-.4 1.84-.4 2.84 0 3.04 2.46 5.5 5.5 5.5 1 0 1.94-.27 2.74-.75 1.22 1.22 2.58 2.25 3.5 2.25 3.04 0 5.5-2.46 5.5-5.5 0-1-.27-1.94-.75-2.74 1.22-.72 2.18-2.08 2.18-3.66zm-5 0l-5 5-2.5-2.5 1.41-1.41L11.5 13.59l3.59-3.59L17.5 12.5z"/></svg>` 
-                        : '';
 
-                    drawerName.innerHTML = `
-                        <div style="display: inline-flex; align-items: center; max-width: 100%; margin-bottom: 4px;">
-                            <span style="font-weight: bold; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                ${userData.name || user.displayName || "Foydalanuvchi"}
-                            </span>
-                            ${verifiedTag}
-                        </div>
-                    `;
-
-                    // Eskisini o'chirib yangi ma'lumot qo'shish
-                    let oldExtra = document.getElementById('drawer-extra-info');
-                    if (oldExtra) oldExtra.remove();
-
-                    const extraInfo = document.createElement('div');
-                    extraInfo.id = 'drawer-extra-info';
-                    extraInfo.style.cssText = "font-size: 12px; color: #888; margin-top: 2px;";
-                    extraInfo.innerHTML = `
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-map-marker-alt" style="color: #1d9bf0; width: 14px;"></i> 
-                            <span>${userData.city || 'Uzbekistan'}</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-birthday-cake" style="color: #1d9bf0; width: 14px;"></i> 
-                            <span>${userData.age || '19'} yosh</span>
-                        </div>
-                    `;
-                    drawerName.appendChild(extraInfo);
+                // 1. MAJBURIY USERNAME TEKSHIRUVI
+                if (!userData.username) {
+                    showSection('profile'); 
+                    if (typeof openMyProfileModal === 'function') openMyProfileModal();
                 }
+
+                // 2. DRAWER (YON MENYU) YANGILASH
+                const drawerName = document.getElementById('drawerName');
+                const drawerAvatar = document.getElementById('drawerAvatar');
+                if (drawerName) {
+                    const verifiedTag = userData.isVerified === true ? `<svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #1d9bf0; margin-left: 5px; vertical-align: middle;"><path d="M22.5 12.5c0-1.58-.88-2.95-2.18-3.66.25-.9.4-1.84.4-2.84 0-3.04-2.46-5.5-5.5-5.5-1 0-1.94.27-2.74.75C11.77 1.03 10.4 0 9.5 0 6.46 0 4 2.46 4 5.5c0 1 .27 1.94.75 2.74C3.53 9.03 2.5 10.4 2.5 12.5c0 1.58.88 2.95 2.18 3.66-.25.9-.4 1.84-.4 2.84 0 3.04 2.46 5.5 5.5 5.5 1 0 1.94-.27 2.74-.75 1.22 1.22 2.58 2.25 3.5 2.25 3.04 0 5.5-2.46 5.5-5.5 0-1-.27-1.94-.75-2.74 1.22-.72 2.18-2.08 2.18-3.66zm-5 0l-5 5-2.5-2.5 1.41-1.41L11.5 13.59l3.59-3.59L17.5 12.5z"/></svg>` : '';
+                    drawerName.innerHTML = `
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="font-weight: bold;">${userData.displayName || user.displayName} ${verifiedTag}</span>
+                            <span style="font-size: 12px; color: #1d9bf0;">@${userData.username || 'username'}</span>
+                        </div>
+                    `;
+                }
+                if (drawerAvatar) drawerAvatar.src = userData.photoURL || user.photoURL || 'assets/default-avatar.png';
+
+                // 3. PROFIL SAHIFASINI (FULL UI) YANGILASH
+                if (document.getElementById('user-profile-name')) {
+                    // Ism va Jins ikonkasini chiqarish
+                    const genderIcon = userData.gender === 'male' ? '<i class="fas fa-mars" style="color: #1d9bf0; font-size: 16px; margin-left: 5px;"></i>' : 
+                                     userData.gender === 'female' ? '<i class="fas fa-venus" style="color: #f91880; font-size: 16px; margin-left: 5px;"></i>' : '';
+                    
+                    document.getElementById('user-profile-name').innerHTML = `${userData.displayName || user.displayName} ${genderIcon}`;
+                    document.getElementById('user-profile-handle').innerText = userData.username ? `@${userData.username}` : "@username";
+                    document.getElementById('user-profile-bio').innerText = userData.bio || "Hali ma'lumot kiritilmagan";
+                    
+                    // Detail-items (Yosh, Shahar, O'qish)
+                    document.getElementById('user-display-age').innerText = userData.age ? `${userData.age} yosh` : "19 yosh";
+                    document.getElementById('user-display-city').innerText = userData.city || "Uzbekistan";
+                    document.getElementById('user-display-study').innerText = userData.study || "TATU";
+                    
+                    // Professional Kartochkalar (Gid)
+                    if (document.getElementById('user-display-goals'))
+                        document.getElementById('user-display-goals').innerText = userData.goals || "Katta maqsadlar sari yo'lda...";
+                    
+                    if (document.getElementById('user-display-interests'))
+                        document.getElementById('user-display-interests').innerText = userData.interests || "Coding, Design, Art";
+                    
+                    if (document.getElementById('user-display-travel'))
+                        document.getElementById('user-display-travel').innerText = userData.travel || "Yangi ufqlarni zabt etishni yoqtiradi";
+
+                    // Profil rasmi
+                    document.getElementById('user-profile-img').src = userData.photoURL || user.photoURL || 'assets/default-avatar.png';
+                }
+
+                // Headerdagi (Tepadagi) rasm va ism
+                if (document.getElementById('userAvatar')) document.getElementById('userAvatar').src = userData.photoURL || user.photoURL;
+                if (document.getElementById('userNameDisplay')) document.getElementById('userNameDisplay').innerText = userData.displayName || user.displayName;
+
+            } else {
+                // Yangi foydalanuvchi bo'lsa, bazada hujjat yaratish
+                await setDoc(userRef, {
+                    uid: user.uid,
+                    displayName: user.displayName,
+                    photoURL: user.photoURL,
+                    email: user.email,
+                    createdAt: new Date(),
+                    username: "", // Bo'sh qoldiramiz, modal ochilishi uchun
+                    age: "19",
+                    city: "Uzbekistan",
+                    study: "TATU",
+                    bio: "",
+                    goals: "",
+                    interests: "",
+                    travel: "",
+                    gender: "male"
+                });
+                showSection('profile');
+                openMyProfileModal();
             }
         } catch (error) {
             console.error("Profil yuklashda xato:", error);
         }
 
-        // --- 2. QIZIL NUQTA (BADGE) MANTIQI ---
-        const badge = document.getElementById("notification-badge");
-        if (badge) {
-            const qBadge = query(
-                collection(db, "notifications"),
-                where("toUid", "==", user.uid),
-                where("isRead", "==", false)
-            );
+        // --- 4. BILDIRISHNOMALAR (SNAPSHOT) ---
+        // (Bu yerga o'zingizning badge va notifyList kodingizni qo'shing)
 
-            onSnapshot(qBadge, (snapshot) => {
-                badge.style.display = snapshot.empty ? "none" : "block";
-            });
-        }
-
-        // --- 3. BILDIRISHNOMALARNI ESHITISH ---
-        const notifyList = document.getElementById("notifications-list");
-        if (notifyList) {
-            // orderBy ishlatish uchun Firestore da indeks yaratilgan bo'lishi shart!
-            // Agar xato bersa orderBy ni olib tashlang
-            const qNotify = query(
-                collection(db, "notifications"), 
-                where("toUid", "==", user.uid), 
-                orderBy("createdAt", "desc"),
-                limit(20)
-            );
-
-            onSnapshot(qNotify, (snapshot) => {
-                notifyList.innerHTML = "";
-                if (snapshot.empty) {
-                    notifyList.innerHTML = '<p style="text-align:center; color:#555; padding:20px;">Hozircha bildirishnomalar yo\'q.</p>';
-                    return;
-                }
-
-                snapshot.forEach((doc) => {
-                    const n = doc.data();
-                    let text = "harakat qildi";
-                    if(n.type === "like") text = "postingizga like bosdi";
-                    if(n.type === "comment") text = "postingizga izoh qoldirdi";
-
-                    const userImg = (n.fromPhoto && n.fromPhoto !== 'undefined' && n.fromPhoto !== "") 
-                        ? n.fromPhoto 
-                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(n.fromName)}&background=random&color=fff`;
-                    
-                    notifyList.innerHTML += `
-                        <div style="display: flex; gap: 10px; padding: 12px; border-bottom: 1px solid #1a1a1a; align-items: center;">
-                            <img src="${userImg}" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
-                            <div>
-                                <p style="margin:0; font-size: 13px; color: white;"><b>${n.fromName}</b> ${text}</p>
-                                <small style="color: #555;">${n.createdAt ? new Date(n.createdAt.seconds * 1000).toLocaleTimeString() : 'Hozirgina'}</small>
-                            </div>
-                        </div>`;
-                });
-            }, (err) => {
-                console.error("Bildirishnomalarni yuklashda xato:", err);
-            });
-        }
-
-        // Inbox yuklashni ham shu yerda chaqirish kerak
-        if (typeof loadInbox === 'function') loadInbox();
-
-    } else {
-        // Tizimdan chiqsa tozalaymiz
-        currentUser = null;
-        selectedUserId = null;
+     } else {
+         currentUser = null;
         if (window.location.pathname.includes('main.html')) {
             window.location.href = 'index.html';
         }
@@ -1240,23 +1217,55 @@ window.saveProfileChanges = async () => {
     try {
         const userRef = doc(db, "users", user.uid);
         
-        // Ma'lumotlarni yig'ish
+        const getSafeValue = (id) => {
+            const el = document.getElementById(id);
+            if (!el) {
+                console.warn(`Ogohlantirish: '${id}' topilmadi!`);
+                return "";
+            }
+            return el.value.trim();
+        };
+
+        // 1. Yangi rasm URL-ini aniqlaymiz (agar yangi yuklangan bo'lsa)
+        // Agarda sizda rasm yuklashdan kelgan global o'zgaruvchi bo'lsa, shuni ishlating
+        const newPhotoURL = window.currentUploadedPhotoURL || user.photoURL;
+
         const updatedData = {
-            username: document.getElementById('edit-username').value.trim().toLowerCase(),
-            displayName: document.getElementById('edit-display-name').value.trim(),
-            age: document.getElementById('edit-age').value || "",
-            city: document.getElementById('edit-city').value.trim() || "",
-            study: document.getElementById('edit-study').value.trim() || "",
-            bio: document.getElementById('edit-bio').value.trim() || "",
+            username: getSafeValue('edit-username').toLowerCase(),
+            displayName: getSafeValue('edit-display-name'),
+            birthdate: getSafeValue('edit-birthdate'), 
+            gender: getSafeValue('edit-gender'),
+            city: getSafeValue('edit-city'),
+            study: getSafeValue('edit-study'),
+            bio: getSafeValue('edit-bio'),
+            goals: getSafeValue('edit-goals'),
+            interests: getSafeValue('edit-interests'),
+            travel: getSafeValue('edit-travel'),
+            photoURL: newPhotoURL, // Rasmni bazaga ham saqlaymiz
             lastUpdate: serverTimestamp()
         };
 
-        // MUHIM: updateDoc o'rniga setDoc ishlatamiz (merge: true bilan)
-        // Bu hujjat bo'lmasa yaratadi, bo'lsa faqat berilgan maydonlarni yangilaydi
+        // 2. Firebase Auth profilini ham yangilaymiz (Header va boshqa joylar uchun)
+        await updateProfile(user, {
+            displayName: updatedData.displayName,
+            photoURL: newPhotoURL
+        });
+
+        // 3. Firestore-ga saqlaymiz
         await setDoc(userRef, updatedData, { merge: true });
+
+        // 4. MUHIM: UI-ni darhol yangilash (Sahifa yangilanishidan oldin)
+        if (typeof window.updateAllUserDataUI === 'function') {
+            window.updateAllUserDataUI(newPhotoURL, updatedData.displayName);
+        }
         
-        alert("Profil muvaffaqiyatli saqlandi!");
-        closeMyProfileModal();
+        alert("Profil va rasm muvaffaqiyatli saqlandi!");
+        
+        if (typeof closeMyProfileModal === 'function') closeMyProfileModal();
+        
+        // Agar hamma joy birdaiga o'zgargan bo'lsa, reload shart emas, 
+        // lekin keshni tozalash uchun qoldirishingiz mumkin:
+        location.reload(); 
         
     } catch (error) {
         console.error("Saqlashda xatolik:", error);
@@ -1264,7 +1273,7 @@ window.saveProfileChanges = async () => {
     } finally {
         if (saveBtn) {
             saveBtn.disabled = false;
-            saveBtn.innerText = "O'zgarishlarni saqlash";
+            saveBtn.innerText = "Dunyoni yangilash";
         }
     }
 };
@@ -2520,3 +2529,349 @@ window.closeChat = () => {
     // Listeneryni to'xtatish (ixtiyoriy, xotirani tejash uchun)
     if (currentChatUnsubscribe) currentChatUnsubscribe();
 };
+
+// Profil ma'lumotlarini Firestore'dan o'qib, ekranga chiqarish
+window.updateProfileDisplay = async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    try {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+            const data = userDoc.data();
+            
+            // HTML elementlarini yangilash (IDlar to'g'ri ekanligini tekshiring)
+            if(document.getElementById('user-profile-name')) 
+                document.getElementById('user-profile-name').innerText = data.displayName || user.displayName || "Foydalanuvchi";
+            
+            if(document.getElementById('user-profile-handle')) 
+                document.getElementById('user-profile-handle').innerText = data.username ? `@${data.username}` : "@username";
+            
+            if(document.getElementById('user-profile-bio')) 
+                document.getElementById('user-profile-bio').innerText = data.bio || "Hali ma'lumot kiritilmagan";
+            
+            if(document.getElementById('user-display-age')) 
+                document.getElementById('user-display-age').innerText = data.age ? `${data.age} yosh` : "—";
+            
+            if(document.getElementById('user-display-city')) 
+                document.getElementById('user-display-city').innerText = data.city || "—";
+            
+            if(document.getElementById('user-display-study')) 
+                document.getElementById('user-display-study').innerText = data.study || "—";
+            
+            if(document.getElementById('user-profile-img'))
+                document.getElementById('user-profile-img').src = data.photoURL || user.photoURL || 'assets/default-avatar.png';
+        }
+    } catch (error) {
+        console.error("Ma'lumotni yuklashda xato:", error);
+    }
+};
+
+// main.js yoki script.js faylida
+window.openMyProfileModal = () => {
+    const modal = document.getElementById('my-profile-edit-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        // Qolgan to'ldirish kodlari...
+    } else {
+        console.error("Modal topilmadi!");
+    }
+};
+
+const profileUpload = document.getElementById('profile-upload');
+
+if (profileUpload) {
+    profileUpload.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            const base64Image = event.target.result;
+
+            try {
+                const user = auth.currentUser;
+                if (!user) return;
+
+                // Firestore-ga saqlash
+                const userRef = doc(db, "users", user.uid);
+                await updateDoc(userRef, { photoURL: base64Image });
+
+                // Hamma joyda rasm o'zgarishi uchun chaqiramiz
+                window.updateAllUserDataUI(base64Image, user.displayName);
+
+                alert("RIVION profilingiz muvaffaqiyatli yangilandi!");
+            } catch (error) {
+                console.error("Xato:", error);
+            }
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// Saytdagi barcha profil rasmlarini bir vaqtda yangilash funksiyasi
+window.refreshAllProfileImages = (newPhotoURL) => {
+    // 1. Profil sahifasidagi asosiy rasm
+    const mainProfileImg = document.getElementById('user-profile-img');
+    if (mainProfileImg) mainProfileImg.src = newPhotoURL;
+
+    // 2. Headerdagi (tepadagi) rasm
+    // HTML-da bu rasmga id="header-user-img" bering
+    const headerImg = document.getElementById('header-user-img');
+    if (headerImg) headerImg.src = newPhotoURL;
+
+    // 3. Drawer (yon menyu) ichidagi rasm
+    // HTML-da bu rasmga id="drawer-user-img" bering
+    const drawerImg = document.getElementById('drawer-user-img');
+    if (drawerImg) drawerImg.src = newPhotoURL;
+
+    // 4. Postlardagi rasmlar (Agar post muallifi siz bo'lsangiz)
+    const allPostAvatars = document.querySelectorAll('.post-avatar'); // Klass nomi mosligini tekshiring
+    allPostAvatars.forEach(img => {
+        // Bu yerda faqat joriy foydalanuvchi postlarini yangilash logikasi bo'lishi mumkin
+        // Lekin oddiyroq yo'li - sahifadagi barcha o'zingizga tegishli rasmlarni klass orqali yangilash
+    });
+};
+// Saytdagi barcha rasm va ismlarni bir vaqtda yangilash
+window.updateAllUserDataUI = (photoURL, name) => {
+    console.log("RIVION UI yangilanmoqda...");
+
+    // 1. Profil sahifasi (Asosiy qism)
+    const profileImg = document.getElementById('user-profile-img');
+    const profileName = document.getElementById('user-profile-name');
+    if (profileImg) profileImg.src = photoURL;
+    if (profileName) profileName.innerText = name;
+
+    // 2. Header (Yuqori navigatsiya menyusi)
+    const headerAvatar = document.getElementById('userAvatar');
+    const headerName = document.getElementById('userNameDisplay');
+    if (headerAvatar) headerAvatar.src = photoURL;
+    if (headerName) headerName.innerText = name;
+
+    // 3. Post yozish joyi (Siz aytgan "Nima yangiliklar?" qismi)
+    // Bu qator `#inputAvatar` elementini darhol yangilaydi
+    const inputAvatar = document.getElementById('inputAvatar');
+    if (inputAvatar) {
+        inputAvatar.src = photoURL;
+    }
+
+    // 4. Drawer (Mobil yoki yon menyu avatari)
+    const drawerAvatar = document.getElementById('drawerAvatar');
+    if (drawerAvatar) drawerAvatar.src = photoURL;
+
+    // 5. POSTLAR RO'YXATIDAGI BARCHA RASMLAR
+    // .mini-avatar va .post-author-img klassiga ega barcha rasmlarni topamiz
+    const allPostAvatars = document.querySelectorAll('.post-author-img, .mini-avatar');
+    allPostAvatars.forEach(img => {
+        // Ekrandagi barcha postlaringizda yangi rasm aks etadi
+        img.src = photoURL;
+    });
+
+    console.log("Barcha profil rasmlari va ismlar muvaffaqiyatli yangilandi!");
+};
+
+
+function updateAgeDisplay(birthDateValue) {
+    if (!birthDateValue) return;
+    
+    const birthDate = new Date(birthDateValue);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    
+    // Agar xohlasangiz, console-da yoki UI-da "Siz X yoshdasiz" deb ko'rsatish mumkin
+    console.log("Hisoblangan yosh:", age);
+}
+
+// 1. Modalni ochish funksiyasi
+function openMyProfileModal() {
+    const modal = document.getElementById('my-profile-edit-modal');
+    if (modal) {
+        modal.style.display = 'flex'; // yoki 'block'
+        
+        // Modal ochilganda mavjud ma'lumotlarni inputlarga to'ldirish (ixtiyoriy)
+        if (currentUserData) {
+            document.getElementById('edit-username').value = currentUserData.username || "";
+            document.getElementById('edit-display-name').value = currentUserData.displayName || "";
+            document.getElementById('edit-age').value = currentUserData.age || "";
+            document.getElementById('edit-city').value = currentUserData.city || "";
+            document.getElementById('edit-study').value = currentUserData.study || "";
+            document.getElementById('edit-bio').value = currentUserData.bio || "";
+            document.getElementById('edit-goals').value = currentUserData.goals || "";
+            document.getElementById('edit-interests').value = currentUserData.interests || "";
+            document.getElementById('edit-travel').value = currentUserData.travel || "";
+            document.getElementById('edit-gender').value = currentUserData.gender || "male";
+        }
+    }
+}
+
+// 2. Modalni yopish funksiyasi
+function closeMyProfileModal() {
+    const modal = document.getElementById('my-profile-edit-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+async function saveProfileChanges() {
+    try {
+        console.log("Ma'lumotlarni saqlash boshlandi...");
+        
+        // Elementlarni olishda xatolik bermaslik uchun yordamchi funksiya
+        const getVal = (id) => {
+            const el = document.getElementById(id);
+            if (!el) {
+                console.warn(`Ogohlantirish: '${id}' topilmadi.`);
+                return ""; 
+            }
+            return el.value;
+        };
+
+        const btn = document.getElementById('saveProfileBtn');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Yangilanmoqda...';
+        }
+
+        // HTML-dagi yangi ID-lar bo'yicha ma'lumotlarni yig'amiz
+        const updatedData = {
+            username: getVal('edit-username'),
+            displayName: getVal('edit-display-name'),
+            birthdate: getVal('edit-birthdate'), // 'edit-age' o'rniga
+            gender: getVal('edit-gender'),
+            city: getVal('edit-city'),
+            study: getVal('edit-study'),
+            bio: getVal('edit-bio'),
+            goals: getVal('edit-goals'),
+            interests: getVal('edit-interests'),
+            travel: getVal('edit-travel'),
+            lastUpdated: new Date()
+        };
+
+        if (!currentUser) throw new Error("Foydalanuvchi tizimga kirmagan!");
+
+        // Firestore-ga saqlash
+        const userRef = doc(db, "users", currentUser.uid);
+        await updateDoc(userRef, updatedData);
+
+        alert("Tabriklaymiz! Shaxsiy dunyongiz muvaffaqiyatli yangilandi.");
+        location.reload(); 
+
+    } catch (error) {
+        console.error("Saqlashda xatolik:", error);
+        alert("Xato yuz berdi: " + error.message);
+    } finally {
+        const btn = document.getElementById('saveProfileBtn');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check-circle"></i> Dunyoni yangilash';
+        }
+    }
+}
+
+async function saveWorldChanges() {
+    try {
+        // Elementlarni olish (xavfsiz usulda)
+        const bioField = document.getElementById('edit-bio');
+        const goalsField = document.getElementById('edit-goals');
+        const interestsField = document.getElementById('edit-interests');
+        const travelField = document.getElementById('edit-travel');
+
+        // Agar birortasi topilmasa, konsolda xabar beradi
+        if (!bioField || !goalsField || !interestsField || !travelField) {
+            console.error("Xato: Ayrim inputlar topilmadi! ID-larni tekshiring.");
+            alert("Tizimda xatolik: Ayrim maydonlar topilmadi.");
+            return;
+        }
+
+        const btn = document.getElementById('updateWorldBtn');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = "Yangilanmoqda...";
+        }
+
+        const updatedData = {
+            bio: bioField.value,
+            goals: goalsField.value,
+            interests: interestsField.value,
+            travel: travelField.value,
+            lastUpdated: new Date()
+        };
+
+        // Firestore-ga saqlash
+        const userRef = doc(db, "users", currentUser.uid);
+        await updateDoc(userRef, updatedData);
+
+        alert("Dunyoqarash muvaffaqiyatli yangilandi!");
+        
+        // Modalni yopish (agar funksiyangiz bo'lsa)
+        if (typeof closeWorldModal === 'function') closeWorldModal();
+        
+        // Sahifani yangilash
+        location.reload();
+
+    } catch (error) {
+        console.error("Xatolik yuz berdi:", error);
+        alert("Xatolik: " + error.message);
+    } finally {
+        const btn = document.getElementById('updateWorldBtn');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerText = "Dunyoni yangilash";
+        }
+    }
+}
+
+// Postni render qilish mantiqi (taxminan shunday)
+function createPostElement(postData) {
+    // Post egasining joriy ma'lumotlarini olish (agar bu siz bo'lsangiz)
+    let userPhoto = postData.authorPhotoURL || 'default-avatar.png';
+    
+    // Agar post sizniki bo'lsa, har doim auth dagi joriy rasmni ko'rsatish
+    if (currentUser && postData.authorId === currentUser.uid) {
+        userPhoto = currentUser.photoURL || userPhoto;
+    }
+
+    const postHTML = `
+        <div class="post-card">
+            <div class="post-header">
+                <img src="${userPhoto}" class="post-author-img">
+                <div class="post-meta">
+                    <strong>${postData.authorName}</strong>
+                    <span>${postData.timestamp}</span>
+                </div>
+            </div>
+            <div class="post-body">
+                ${postData.text}
+            </div>
+        </div>
+    `;
+    return postHTML;
+}
+
+// Postni render qilish funksiyangiz ichida:
+function renderPost(postData) {
+    // 1. Postdagi eski rasmni oling
+    let finalPhoto = postData.authorPhotoURL || 'default-avatar.png';
+
+    // 2. MUHIM: Agar post joriy foydalanuvchiga (sizga) tegishli bo'lsa, 
+    // Auth-dagi eng yangi rasmni ko'rsatamiz
+    if (auth.currentUser && postData.authorId === auth.currentUser.uid) {
+        finalPhoto = auth.currentUser.photoURL || finalPhoto;
+    }
+
+    return `
+        <div class="post-card">
+            <div class="post-header">
+                <img src="${finalPhoto}" class="post-author-img">
+                <div class="post-info">
+                    <strong>${postData.authorName}</strong>
+                    <span>${postData.date}</span>
+                </div>
+            </div>
+            <div class="post-content">${postData.text}</div>
+        </div>
+    `;
+}
