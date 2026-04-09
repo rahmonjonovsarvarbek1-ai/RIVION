@@ -1,13 +1,41 @@
 import { auth, db } from './firebase-config.js'; 
+// 1. Firebase Auth modullari (Sessiya va Login uchun)
 import { 
     signInWithPopup, 
     GoogleAuthProvider, 
     onAuthStateChanged,
     createUserWithEmailAndPassword,
-    signInWithEmailAndPassword 
+    signInWithEmailAndPassword,
+    setPersistence,           // Sessiyani yoqish uchun
+    browserLocalPersistence   // Brauzerda saqlash uchun
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+// 2. Firebase Firestore modullari (Bazaga ma'lumot yozish uchun)
+// BU YERGA setDoc QO'SHILDI - endi "setDoc is not defined" xatosi chiqmaydi
+import { 
+    doc, 
+    setDoc, 
+    getDoc, 
+    serverTimestamp 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+// Login funksiyangizni ichini quyidagicha o'zgartiring:
+async function loginUser(email, password) {
+    try {
+        // Avval sessiyani brauzerda saqlashni buyuramiz
+        await setPersistence(auth, browserLocalPersistence);
+        
+        // Keyin login qilamiz
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        
+        console.log("Muvaffaqiyatli kirdingiz:", user.uid);
+        window.location.href = 'main.html'; // Asosiy sahifaga o'tish
+    } catch (error) {
+        console.error("Login xatosi:", error.message);
+        alert("Email yoki parol xato!");
+    }
+}
 // --- 1. ELEMENTLARNI TANLAB OLISH ---
 const mainAuthBtn = document.getElementById('mainAuthBtn');
 const toggleAuth = document.getElementById('toggleAuth');
