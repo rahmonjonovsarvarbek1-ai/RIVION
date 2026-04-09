@@ -283,15 +283,12 @@
 
     <div id="main-chat-messages" class="messages-area"></div>
 
-    <div class="chat-footer" style="padding: 15px; border-top: 1px solid #222; background: #000;">
-    <div style="display: flex; align-items: center; background: #1a1a1a; padding: 5px 15px; border-radius: 25px;">
+    <div class="chat-footer" style="padding: 10px 15px; border-top: 1px solid #222; background: #000; width: 100%; box-sizing: border-box;">
+    <div style="display: flex; align-items: center; background: #1a1a1a; padding: 5px 15px; border-radius: 25px; width: 100%;">
         <input type="text" id="mainChatInput" placeholder="Xabar yozing..." 
-               style="flex: 1; background: none; border: none; color: #fff; outline: none; padding: 10px;">
+               style="flex: 1; min-width: 0; background: none; border: none; color: #fff; outline: none; padding: 10px;">
         
-        <button onclick="sendMainChatMessage()" 
-                style="background: none; border: none; color: #0084ff; font-size: 20px; cursor: pointer; padding-left: 10px;">
-            <i class="fas fa-paper-plane"></i>
-        </button>
+        <button id="sendBtn" onclick="sendMainChatMessage()"> ▶ </button>
     </div>
 </div>
 </div>

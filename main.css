@@ -981,9 +981,17 @@ textarea {
 .post-caption {
     font-size: 0.75rem;
     margin-bottom: 5px;
+    
+    /* Standart va Webkit variantlarini birga yozish ogohlantirishni kamaytiradi */
     display: -webkit-box;
-    -webkit-line-clamp: 2; /* Matnni 2 qatorda to'xtatadi */
+    display: box; /* Standart variant */
+    
+    line-clamp: 2; 
+    -webkit-line-clamp: 2;
+    
     -webkit-box-orient: vertical;
+    box-orient: vertical; /* Standart variant */
+    
     overflow: hidden;
 }
 
@@ -1189,7 +1197,7 @@ textarea {
 .chat-sidebar {
     width: 30%;
     border-right: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(0, 0, 0, 0.2);
+    background: rgb(18, 17, 17);
 }
 
 .chat-main {
@@ -2612,3 +2620,231 @@ button {
     gap: 10px;
     background: inherit; /* Card foni bilan bir xil bo'ladi */
 }
+
+/* Input yoniga tugma qo'shish yoki Enterni ulash */
+.chat-input-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+}
+
+#chat-input {
+    flex: 1; /* Input hamma joyni egallaydi */
+}
+
+/* Yuborish tugmasi uchun */
+.send-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+}
+
+.messages-area {
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    gap: 10px;
+    overflow-y: auto;
+    height: calc(100vh - 150px); /* Ekran balandligiga qarab sozlang */
+}
+
+.message {
+    max-width: 70%;
+    padding: 8px 15px;
+    border-radius: 15px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.my-message {
+    align-self: flex-end;
+    background: #0084ff;
+    color: white;
+    border-bottom-right-radius: 2px;
+}
+
+.other-message {
+    align-self: flex-start;
+    background: #333;
+    color: white;
+    border-bottom-left-radius: 2px;
+}
+
+/* Xabar yuborish tugmasi uchun maxsus stil */
+.chat-footer button {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    color: #0084ff !important; /* Ko'k rang */
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.chat-footer i.fas.fa-paper-plane {
+    font-family: "Font Awesome 5 Free" !important;
+    font-weight: 900;
+    font-style: normal;
+    display: inline-block !important;
+}
+
+.messages-area {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+    overflow-y: auto; /* Skroll chiqishi uchun */
+    height: calc(100vh - 150px); /* Balandlik berish shart */
+    background-color: #000; /* Fond qora bo'lsa */
+}
+
+.message {
+    padding: 10px 15px;
+    border-radius: 15px;
+    max-width: 70%;
+    word-wrap: break-word;
+    color: white; /* Matn rangi */
+}
+
+.sent {
+    align-self: flex-end;
+    background-color: #007bff; /* Yuborilgan xabar ko'k */
+}
+
+.received {
+    align-self: flex-start;
+    background-color: #333; /* Kelgan xabar kulrang */
+}
+
+@media (max-width: 768px) {
+    /* Chat oynasi boshida yashirin bo'ladi */
+    #active-chat-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--bg-color);
+        z-index: 2000;
+        display: none !important; /* Standart holatda yopiq */
+    }
+
+    /* Ochiq holat klassi */
+    #active-chat-container.mobile-show {
+        display: flex !important;
+    }
+
+    /* Orqaga qaytish tugmasi uchun joy */
+    .chat-header {
+        padding-left: 50px;
+    }
+}
+
+@media (max-width: 768px) {
+    #active-chat-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: var(--bg-color); /* Sizning asosiy qora foningiz */
+        z-index: 2000;
+        display: none !important; /* Boshida yopiq bo'ladi */
+        flex-direction: column;
+    }
+
+    /* Chat ochilganda ishlaydigan klass */
+    #active-chat-container.mobile-active {
+        display: flex !important;
+    }
+
+    /* Orqaga qaytish tugmasi uchun joy */
+    .chat-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 10px 15px;
+    }
+}
+@media (max-width: 768px) {
+    /* Chat konteyneri telefonda butun ekranni egallashi uchun */
+    #active-chat-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 9999; /* Sidebar-dan ustun turadi */
+        background-color: #000; /* Fon rangi */
+        display: none !important; /* Boshida yopiq bo'ladi */
+        flex-direction: column;
+    }
+
+    /* Chat ochilganda ishlaydigan klass */
+    #active-chat-container.mobile-active {
+        display: flex !important;
+    }
+
+    /* Orqaga qaytish tugmasi uchun Header-ni moslash */
+    .chat-header {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-bottom: 1px solid #333;
+    }
+}
+
+/* Faqat mobil qurilmalar uchun (max-width: 768px) */
+@media (max-width: 768px) {
+    #active-chat-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 10000; /* Sidebar-dan ustun turishi shart */
+        background-color: #000; /* Fon rangi qora */
+        display: none !important; /* Boshida yashirin */
+        flex-direction: column;
+    }
+
+    /* Chatga "mobile-active" klassi qo'shilganda ko'rinadi */
+    #active-chat-container.mobile-active {
+        display: flex !important;
+    }
+
+    /* Orqaga qaytish tugmasi uchun joy */
+    .chat-header {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        gap: 15px;
+    }
+}
+
+/* Faqat mobil qurilmalar uchun (max-width: 768px) */
+@media (max-width: 768px) {
+    #active-chat-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: #000; /* Fon rangi */
+        z-index: 9999; /* Sidebar-dan ustun turadi */
+        display: none !important; /* Boshida yashirin bo'ladi */
+        flex-direction: column;
+    }
+
+    /* Chatga "mobile-active" klassi qo'shilganda u ko'rinadi */
+    #active-chat-container.mobile-active {
+        display: flex !important;
+    }
+}
+
