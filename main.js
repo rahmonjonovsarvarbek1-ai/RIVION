@@ -388,9 +388,12 @@ onSnapshot(q, (snapshot) => {
                     </div>
                     
                     <div class="post-footer-mini" style="margin-top: 10px; display: flex; gap: 15px;">
-                        <button onclick="toggleLike('${postId}', ${isLiked})" class="mini-action-btn ${isLiked ? 'active-like' : ''}">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-                            <span>${data.likes?.length || 0}</span>
+                        <button onclick="toggleLike('${postId}', ${isLiked}, '${data.uid}', '${data.text?.replace(/'/g, "\\'") || ''}')" 
+                          class="mini-action-btn ${isLiked ? 'active-like' : ''}">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                          <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+                          </svg>
+                          <span>${data.likes?.length || 0}</span>
                         </button>
                         
                         <button class="mini-action-btn" onclick="toggleCommentBox('${postId}')">
@@ -417,39 +420,68 @@ onSnapshot(q, (snapshot) => {
 
 window.toggleLike = async (postId, currentlyLiked, authorId, postText) => {
     const user = auth.currentUser;
-    if (!user) return;
+    if (!user) {
+        console.warn("Xato: Foydalanuvchi tizimga kirmagan"); 
+        return;
+    }
 
     const postRef = doc(db, "posts", postId);
+    
     try {
-   
-     if (currentlyLiked) {
-            await updateDoc(postRef, { likes: arrayRemove(user.uid) });
+        if (currentlyLiked) {
+            // LIKENI OLIB TASHLASH
+            await updateDoc(postRef, { 
+                likes: arrayRemove(user.uid) 
+            });
+            console.log("Like olib tashlandi");
         } else {
-            // Like qo'shildi
-            await updateDoc(postRef, { likes: arrayUnion(user.uid) });
+            // LIKE QO'SHISH
+            await updateDoc(postRef, { 
+                likes: arrayUnion(user.uid) 
+            });
 
-            // BILDIRISHNOMA YUBORISH (Faqat boshqa odam bo'lsa)
-            if (authorId && authorId !== user.uid) {
-                await sendNotification(authorId, "like", postText || "Sizning postingiz");
+            // --- BILDIRISHNOMA LOGIKASI ---
+            console.log("Tekshirilmoqda:", { 
+                kelganAuthorId: authorId, 
+                sizningId: user.uid 
+            });
+
+            // authorId "undefined" yoki bo'sh emasligini tekshiramiz
+            if (authorId && authorId !== "undefined" && authorId !== user.uid) {
+                await window.sendNotification(authorId, "like", postText || "Sizning postingiz");
+                console.log("Bildirishnoma muvaffaqiyatli yuborildi ✅");
+            } else {
+                // Nega yuborilmaganini aniqlash uchun:
+                if (!authorId || authorId === "undefined") {
+                    console.error("XATO: authorId kelmadi! HTML qismida authorId o'rniga postData.uid bering.");
+                } else if (authorId === user.uid) {
+                    console.log("O'z postingizga like bosdingiz, bildirishnoma yuborilmadi.");
+                }
             }
         }
     } catch (err) {
-        console.error("Like xatosi:", err);
-  
+        console.error("Firestore bilan ishlashda xato:", err);
     }
 };
 
 window.addComment = async (postId, authorId, postText) => {
     const user = auth.currentUser;
-    if (!user) return;
+    if (!user) {
+        console.warn("Foydalanuvchi tizimga kirmagan");
+        return;
+    }
 
     const input = document.getElementById(`comment-input-${postId}`);
+    if (!input) {
+        console.error(`Xato: input topilmadi (comment-input-${postId})`);
+        return;
+    }
    
     const text = input.value.trim();
     if (text === "") return;
 
     try {
-   
+        // 1. Izohni Firestore-ga saqlash
         const commentRef = collection(db, "posts", postId, "comments");
         await addDoc(commentRef, {
             text: text,
@@ -459,14 +491,25 @@ window.addComment = async (postId, authorId, postText) => {
             time: serverTimestamp()
         });
 
-        // BILDIRISHNOMA YUBORISH
-        if (authorId && authorId !== user.uid) {
-            await sendNotification(authorId, "comment", text);
+        // 2. BILDIRISHNOMA YUBORISH
+        console.log("Izoh yuborilmoqda. Tekshiruv:", { authorId, currentUserId: user.uid });
+
+        // authorId mavjudligi va o'zi emasligini tekshirish
+        if (authorId && authorId !== "undefined" && authorId !== user.uid) {
+            // window.sendNotification orqali chaqirish ishonchliroq
+            await window.sendNotification(authorId, "comment", text);
+            console.log("Bildirishnoma yuborildi ✅");
+        } else {
+            if (!authorId || authorId === "undefined") {
+                console.error("XATO: authorId kelmadi! Izoh yozildi, lekin bildirishnoma ketmadi.");
+            } else if (authorId === user.uid) {
+                console.log("O'z postingizga izoh yozdingiz.");
+            }
         }
 
-        input.value = "";
+        input.value = ""; // Inputni tozalash
     } catch (err) {
-        console.error("Izoh xatosi:", err);
+        console.error("Izoh yuborishda umumiy xato:", err);
     }
 };
 
@@ -701,33 +744,53 @@ window.sendInterest = async (targetUid, targetName) => {
     }
 };
 
-// Bildirishnomalarni yuklash va ko'rsatish funksiyasi
 window.loadNotifications = () => {
-    const notifContainer = document.getElementById('notifications-list'); // HTMLdagi id ga qarang
+    const notifContainer = document.getElementById('notifications-list'); 
+    if (!notifContainer) return;
+
+    // Faqat o'zingizga tegishli bildirishnomalarni va vaqt bo'yicha saralab olish
+    const q = query(
+        collection(db, "notifications"),
+        where("toUid", "==", auth.currentUser.uid),
+        orderBy("createdAt", "desc")
+    );
     
-    onSnapshot(collection(db, "notifications"), (snapshot) => {
+    onSnapshot(q, (snapshot) => {
         notifContainer.innerHTML = "";
         
         snapshot.forEach((doc) => {
             const notif = doc.data();
             const notifId = doc.id;
+            let notifHTML = "";
 
-            // FAQAT funksiya ichida ishlatiladi:
+            // 1. Tanishish so'rovi (Interest)
             if (notif.type === "interest" && notif.status === "pending") {
-                const notifHTML = `
+                notifHTML = `
                     <div class="notification-item">
-                        <img src="${notif.fromPhoto}" class="notif-avatar">
+                        <img src="${notif.fromPhoto || 'default.png'}" class="notif-avatar">
                         <div class="notif-text">
-                            <p><strong>${notif.fromName}</strong> siz bilan tanishishga qiziqish bildirdi</p>
+                            <p><strong>${notif.fromName}</strong> siz bilan tanishmoqchi</p>
                             <div class="notif-actions">
-                                <button onclick="acceptInterest('${notifId}', '${notif.fromUid}')" class="agree-btn">Agree ✅</button>
+                                <button onclick="acceptInterest('${notifId}', '${notif.fromUid}')" class="agree-btn">Qabul qilish ✅</button>
                                 <button class="ignore-btn">Rad etish</button>
                             </div>
                         </div>
-                    </div>
-                `;
-                notifContainer.innerHTML += notifHTML;
+                    </div>`;
+            } 
+            // 2. Like va Comment bildirishnomalari
+            else if (notif.type === "like" || notif.type === "comment") {
+                const actionText = notif.type === "like" ? "postingizga like bosdi" : "izoh qoldirdi";
+                notifHTML = `
+                    <div class="notification-item">
+                        <img src="${notif.fromPhoto || 'default.png'}" class="notif-avatar">
+                        <div class="notif-text">
+                            <p><strong>${notif.fromName}</strong> ${actionText}</p>
+                            <span class="notif-preview">"${notif.postText || ''}"</span>
+                        </div>
+                    </div>`;
             }
+
+            notifContainer.innerHTML += notifHTML;
         });
     });
 };
@@ -904,7 +967,7 @@ onSnapshot(query(collection(db, "notifications"), orderBy("createdAt", "desc")),
     const user = auth.currentUser;
     if (!user) return;
 
-    // Faqat joriy foydalanuvchiga tegishli bildirishnomalarni filtrlash
+    // Faqat joriy foydalanuvchiga tegishli bildirishnomalar
     const myNotifs = snapshot.docs.filter(doc => doc.data().toUid === user.uid);
 
     if (myNotifs.length === 0) {
@@ -917,24 +980,44 @@ onSnapshot(query(collection(db, "notifications"), orderBy("createdAt", "desc")),
     myNotifs.forEach((doc) => {
         const notif = doc.data();
         const notifId = doc.id;
+        let contentHTML = ""; // Har xil turdagi xabarlar uchun matn
 
-        const notifHTML = `
-            <div class="notification-item ${notif.status === 'accepted' ? 'accepted' : ''}">
-                <div class="notif-user">
-                    <img src="${notif.fromPhoto}" class="notif-avatar">
-                    <div class="notif-info">
-                        <p><strong>${notif.fromName}</strong> siz bilan tanishmoqchi.</p>
-                        <span class="notif-time">${notif.createdAt?.toDate().toLocaleTimeString() || 'Hozir'}</span>
-                    </div>
+        // 1-HOLAT: TANISHISH (INTEREST)
+        if (notif.type === "interest") {
+            contentHTML = `
+                <div class="notif-info">
+                    <p><strong>${notif.fromName}</strong> siz bilan tanishmoqchi.</p>
+                    <span class="notif-time">${notif.createdAt?.toDate().toLocaleTimeString() || 'Hozir'}</span>
                 </div>
-                ${notif.status === 'pending' ? `
-                    <div class="notif-actions">
-                        <button onclick="acceptInterest('${notifId}', '${notif.fromUid}')" class="agree-btn">Do'st bo'lasizmi? ✅</button>
-                    </div>
-                ` : `<span class="status-tag">Do'stlar qatoriga qo'shildi</span>`}
+            </div>
+            ${notif.status === 'pending' ? `
+                <div class="notif-actions">
+                    <button onclick="acceptInterest('${notifId}', '${notif.fromUid}')" class="agree-btn">Do'st bo'lasizmi? ✅</button>
+                </div>
+            ` : `<span class="status-tag">Do'stlar qatoriga qo'shildi</span>`}`;
+        } 
+        
+        // 2-HOLAT: LIKE YOKI COMMENT
+        else if (notif.type === "like" || notif.type === "comment") {
+            const message = notif.type === "like" ? "postingizga like bosdi" : "izoh qoldirdi";
+            contentHTML = `
+                <div class="notif-info">
+                    <p><strong>${notif.fromName}</strong> ${message}.</p>
+                    <p class="notif-preview">${notif.postText || ""}</p>
+                    <span class="notif-time">${notif.createdAt?.toDate().toLocaleTimeString() || 'Hozir'}</span>
+                </div>
+            </div>`;
+        }
+
+        // Yakuniy HTMLni yig'ish
+        const fullHTML = `
+            <div class="notification-item ${notif.type}">
+                <div class="notif-user">
+                    <img src="${notif.fromPhoto || 'default-avatar.png'}" class="notif-avatar">
+                    ${contentHTML}
             </div>
         `;
-        notifList.innerHTML += notifHTML;
+        notifList.innerHTML += fullHTML;
     });
 });
 
@@ -1830,25 +1913,30 @@ window.loadMainChatMessages = (uid) => {
     });
 };
 
-// Bildirishnoma yuborish funksiyasi
-async function sendNotification(targetUserId, type, postContent) {
-    if (targetUserId === auth.currentUser.uid) return; // O'ziga o'zi bildirishnoma bormaydi
+window.sendNotification = async function(targetUserId, type, postText = "") {
+    // 1. Eng muhim tekshiruv: targetUserId borligini va u o'zingiz emasligingizni tekshirish
+    if (!targetUserId || targetUserId === "undefined" || targetUserId === auth.currentUser.uid) {
+        console.warn("Bildirishnoma yuborilmadi: targetUserId xato yoki o'zingizniki.", { targetUserId });
+        return;
+    }
 
     try {
-        await addDoc(collection(db, "notifications"), {
-            toUid: targetUserId,      // Kimga borishi kerak
+        const notifRef = collection(db, "notifications");
+        await addDoc(notifRef, {
+            toUid: targetUserId,
             fromUid: auth.currentUser.uid,
             fromName: auth.currentUser.displayName || "Foydalanuvchi",
             fromPhoto: auth.currentUser.photoURL || "",
-            type: type,               // "like" yoki "comment"
-            postText: postContent.substring(0, 30) + "...", // Postning qisqa matni
-            isRead: false,            // Yangi bildirishnoma ekanligi
+            type: type, // "like", "comment", "interest"
+            postText: postText,
+            isRead: false,
             createdAt: serverTimestamp()
         });
+        console.log(`%c ${type} bildirishnomasi muvaffaqiyatli yuborildi! ✅`, "color: green; font-weight: bold;");
     } catch (e) {
-        console.error("Notification xatosi:", e);
+        console.error("Firestore bildirishnoma xatosi:", e);
     }
-}
+};
 
 // --- BILDIRISHNOMALARNI TO'LIQ VA TO'G'RI VARIANTI ---
 onAuthStateChanged(auth, (user) => {
@@ -3288,3 +3376,63 @@ window.unfollowUser = async (targetUserId) => {
         console.error("Xato:", e);
     }
 };
+
+
+
+function listenAlerts() {
+    const alertsContainer = document.getElementById('alerts-list'); // HTML-dagi id
+    const q = query(
+        collection(db, "notifications"),
+        where("to", "==", auth.currentUser.uid),
+        orderBy("timestamp", "desc")
+    );
+
+    onSnapshot(q, (snapshot) => {
+        alertsContainer.innerHTML = ''; // Tozalash
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            alertsContainer.innerHTML += `
+                <div class="alert-item ${data.read ? '' : 'unread'}">
+                    <img src="user-icon.png" class="user-avatar">
+                    <div class="alert-info">
+                        <strong>${data.fromName}</strong> 
+                        ${getMessageByType(data.type)}
+                        <span class="alert-time">yozildi</span>
+                    </div>
+                </div>
+            `;
+        });
+    });
+}
+
+function getMessageByType(type) {
+    if(type === 'like') return "rasmingizga like bosdi";
+    if(type === 'comment') return "izoh qoldirdi";
+    if(type === 'follow') return "sizga obuna bo'ldi";
+    return "yangi bildirishnoma";
+}
+
+// Bildirishnomalarni tinglashni boshlash
+if (auth.currentUser) {
+    const q = query(
+        collection(db, "notifications"),
+        where("toUid", "==", auth.currentUser.uid),
+        orderBy("createdAt", "desc")
+    );
+
+    onSnapshot(q, (snapshot) => {
+        const alertsList = document.getElementById('alerts-list'); // ID to'g'riligini tekshiring
+        if (!alertsList) return;
+
+        alertsList.innerHTML = "";
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            alertsList.innerHTML += `
+                <div class="alert-item">
+                    <img src="${data.fromPhoto || 'default.png'}" style="width:40px; border-radius:50%">
+                    <p><strong>${data.fromName}</strong> ${data.type === 'like' ? 'like bosdi' : 'izoh qoldirdi'}</p>
+                </div>
+            `;
+        });
+    });
+}

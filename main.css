@@ -3229,3 +3229,20 @@ button {
     background: #363636;
     color: #ff4757; /* Hover bo'lganda yozuv qizaradi */
 }
+
+.unread-alert {
+    background-color: rgba(0, 123, 255, 0.05); /* O'qilmagan bildirishnoma foni */
+    border-left: 4px solid #007bff;
+}
+
+.alert-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #222;
+    transition: background 0.2s;
+}
+
+.alert-item:hover {
+    background-color: #1a1a1a;
+}
