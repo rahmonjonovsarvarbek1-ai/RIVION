@@ -87,10 +87,6 @@ window.openUserProfile = async (uid) => {
     }
 };
 
-/**
- * 2. Obuna bo'lish funksiyasi
- * targetUserId - siz obuna bo'lmoqchi bo'lgan odam
- */
 window.followUser = async (targetUserId) => {
     const currentUser = auth.currentUser;
     if (!currentUser) {
@@ -113,7 +109,21 @@ window.followUser = async (targetUserId) => {
             followers: arrayUnion(currentUserId)
         });
 
-        console.log("Muvaffaqiyatli obuna bo'lindi!");
+        // --- YANGI QISM: BILDIRISHNOMA YUBORISH ---
+        // 'notifications' kolleksiyasiga yangi xabar qo'shamiz
+        const notificationRef = collection(db, "notifications");
+        await addDoc(notificationRef, {
+            toUid: targetUserId,          // Kimga ketyapti (obuna bo'lingan odam)
+            fromUid: currentUserId,       // Kimdan ketyapti (Siz)
+            fromName: currentUser.displayName || "Foydalanuvchi", 
+            type: "follow",               // Turini 'follow' deb belgilaymiz
+            message: "sizga obuna bo'ldi", 
+            read: false,                  // Hali o'qilmagan
+            timestamp: serverTimestamp()  // Firebase server vaqti
+        });
+        // ------------------------------------------
+
+        console.log("Muvaffaqiyatli obuna bo'lindi va bildirishnoma yuborildi!");
     } catch (error) {
         console.error("Obuna bo'lishda xato:", error);
     }
@@ -3188,3 +3198,93 @@ if (currentUserId) {
         }
     });
 }
+
+const loadUserProfile = (uid) => {
+    // Firestore-dagi 'users' kolleksiyasidan hujjatni kuzatish
+    onSnapshot(doc(db, "users", uid), (docSnap) => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            console.log("Ma'lumotlar keldi:", data);
+
+            // HTML elementlarini yangilash
+            // ID-lar sizning HTML kodingizdagidek bo'lishi shart
+            const followersEl = document.getElementById('followers-count');
+            const followingEl = document.getElementById('following-count');
+            const postsEl = document.getElementById('post-count');
+
+            if (followersEl) followersEl.innerText = data.followers?.length || 0;
+            if (followingEl) followingEl.innerText = data.following?.length || 0;
+            if (postsEl) postsEl.innerText = data.postCount || 0;
+            
+            // Ismni ham bazadan chiqarish
+            const nameEl = document.getElementById('profile-name');
+            if (nameEl) nameEl.innerText = data.displayName || "Foydalanuvchi";
+        } else {
+            console.log("Xato: Firestore-da bu UID uchun hujjat topilmadi!");
+        }
+    });
+};
+
+// Foydalanuvchi login bo'lganda funksiyani chaqiramiz
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        loadUserProfile(user.uid);
+    }
+});
+
+// Ro'yxatni ko'rsatish funksiyasini shu ko'rinishda yangilang
+window.showConnections = async (type) => {
+    const modal = document.getElementById('connection-modal');
+    const listContainer = document.getElementById('users-list');
+    const title = document.getElementById('modal-title');
+    
+    title.innerText = type === 'followers' ? 'Obunachilar' : 'Obunalar';
+    listContainer.innerHTML = '<div style="color: #888; text-align: center; padding: 20px;">Yuklanmoqda...</div>';
+    modal.style.display = 'block';
+
+    const userSnap = await getDoc(doc(db, "users", auth.currentUser.uid));
+    const ids = userSnap.data()[type] || [];
+
+    if (ids.length === 0) {
+        listContainer.innerHTML = '<div style="color: #888; text-align: center; padding: 20px;">Hozircha hech kim yo\'q.</div>';
+        return;
+    }
+
+    listContainer.innerHTML = ''; // Tozalash
+    
+    for (const id of ids) {
+        const uSnap = await getDoc(doc(db, "users", id));
+        if (uSnap.exists()) {
+            const userData = uSnap.data();
+            // Yangilangan HTML strukturasi:
+            listContainer.innerHTML += `
+                <div class="user-item">
+                    <div class="user-info-side">
+                        <i class="fas fa-user-circle"></i>
+                        <span class="user-name-text">${userData.displayName || 'Foydalanuvchi'}</span>
+                    </div>
+                    ${type === 'following' ? 
+                        `<button class="unfollow-btn" onclick="unfollowUser('${id}')">O'chirish</button>` 
+                        : ''}
+                </div>
+            `;
+        }
+    }
+};
+// Obunani bekor qilish (Unfollow)
+window.unfollowUser = async (targetUserId) => {
+    if(!confirm("Obunani bekor qilmoqchimisiz?")) return;
+    
+    const currentUserRef = doc(db, "users", auth.currentUser.uid);
+    const targetUserRef = doc(db, "users", targetUserId);
+
+    try {
+        await updateDoc(currentUserRef, { following: arrayRemove(targetUserId) });
+        await updateDoc(targetUserRef, { followers: arrayRemove(auth.currentUser.uid) });
+        
+        alert("Obuna bekor qilindi!");
+        location.reload(); // Sahifani yangilash
+    } catch (e) {
+        console.error("Xato:", e);
+    }
+};

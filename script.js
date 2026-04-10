@@ -160,3 +160,15 @@ onAuthStateChanged(auth, (user) => {
             `;
     }
 });
+
+// 1. Funksiyani oddiy e'lon qilish
+function closeModal() {
+    const modal = document.getElementById('connection-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        console.log("Modal yopildi!");
+    }
+}
+
+// 2. UNI GLOBAL QILISH (Mana shu qator xatoni yo'qotadi)
+window.closeModal = closeModal;

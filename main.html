@@ -413,9 +413,17 @@
     </div>
 
 <div class="profile-stats-ui">
-    <div class="stat-box"><strong id="post-count">0</strong><span>Postlar</span></div>
-    <div class="stat-box"><strong id="followers-count">0</strong><span>Obunachilar</span></div>
-    <div class="stat-box"><strong id="following-count">0</strong><span>Obunalar</span></div>
+    <div class="stat-box">
+        <strong id="post-count">0</strong><span>Postlar</span>
+    </div>
+
+    <div class="stat-box" onclick="showConnections('followers')" style="cursor: pointer;">
+        <strong id="followers-count">0</strong><span>Obunachilar</span>
+    </div>
+
+    <div class="stat-box" onclick="showConnections('following')" style="cursor: pointer;">
+        <strong id="following-count">0</strong><span>Obunalar</span>
+    </div>
 </div>
 
     <div class="profile-actions">
@@ -449,6 +457,18 @@
         </aside>
 
     </main>
+
+     <div id="connection-modal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close-btn" 
+      onclick="document.getElementById('connection-modal').style.display='none'" 
+      style="cursor: pointer; font-size: 30px;">&times;</span>
+        <h3 id="modal-title">Ro'yxat</h3>
+        <div id="users-list">
+            </div>
+     </div>
+     </div>
+
 
     <div class="mobile-bottom-nav">
     <div class="m-nav-item active" data-section="home">

@@ -3103,3 +3103,129 @@ button {
     background-color: #0095f6 !important; /* Moviy rang - Instagram kabi */
     color: white !important;
 }
+
+/* Modal uchun umumiy box dizayni */
+#users-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 10px 5px;
+}
+
+/* Har bir foydalanuvchi qatori (Box ichida box) */
+.user-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #1e1e1e; /* To'q rangli box */
+    padding: 12px 15px;
+    border-radius: 12px;
+    border: 1px solid #333;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.user-item:hover {
+    border-color: #007bff; /* Tanlanganda ko'k hoshiya */
+    transform: translateY(-2px);
+}
+
+/* Foydalanuvchi ismi */
+.user-name {
+    color: #ffffff;
+    font-weight: 500;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* O'chirish (Unfollow) tugmasi dizayni */
+.unfollow-btn {
+    background: #ff4757;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+
+.unfollow-btn:hover {
+    background: #ff6b81;
+}
+
+/* Modal sarlavhasi */
+#modal-title {
+    text-align: center;
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+    color: #fff;
+    font-weight: 700;
+}
+
+/* Modal oynasining asosiy foni */
+#connection-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px); /* Fonni xiralashtirish - juda zamonaviy effekt */
+    animation: fadeIn 0.3s ease;
+}
+
+/* O'rtadagi Box */
+.modal-content {
+    background-color: #121212;
+    margin: 10vh auto;
+    padding: 24px;
+    border: 1px solid #333;
+    width: 90%;
+    max-width: 420px;
+    border-radius: 24px; /* Burchaklarni yumaloq qilish */
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    position: relative;
+}
+
+/* "X" tugmasi hover bo'lganda */
+.close-btn:hover {
+    color: #ff4757;
+    transform: rotate(90deg); /* Aylanish effekti */
+}
+
+/* Animatsiya */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Scrollbar-ni chiroyli qilish */
+#users-list::-webkit-scrollbar {
+    width: 5px;
+}
+#users-list::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 10px;
+}
+
+.unfollow-btn {
+    background: #262626;
+    color: #efefef;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.unfollow-btn:hover {
+    background: #363636;
+    color: #ff4757; /* Hover bo'lganda yozuv qizaradi */
+}
