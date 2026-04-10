@@ -3098,3 +3098,8 @@ button {
 /* Jins ikonkalari uchun ranglar */
 .fa-mars { color: #1d9bf0; } /* Erkak */
 .fa-venus { color: #f91880; } /* Ayol */
+
+.follow-btn {
+    background-color: #0095f6 !important; /* Moviy rang - Instagram kabi */
+    color: white !important;
+}

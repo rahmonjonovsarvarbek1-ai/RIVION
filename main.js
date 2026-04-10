@@ -1,15 +1,15 @@
 // 1. Supabase-ni import qilish
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
-// 2. Firebase Auth modullari (updateProfile SHU YERDA bo'lishi shart)
+// 2. Firebase Auth modullari
 import { 
     getAuth, 
     onAuthStateChanged, 
     signOut,
-    updateProfile // <--- TO'G'RI JOYI MANA SHU YER!
+    updateProfile 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// 3. Firestore modullari (Bu yerdan updateProfile-ni olib tashladik)
+// 3. Firestore modullari - Barcha kerakli funksiyalar shu yerda
 import { 
     collection, 
     addDoc, 
@@ -31,8 +31,93 @@ import {
     writeBatch 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// 4. O'zingizning konfiguratsiyangiz (Eski import qatoringizni biroz tartibladik)
-import { auth, db, supabase } from './firebase-config.js';
+// 4. O'zingizning konfiguratsiyangiz
+import { auth, db, supabase } from './firebase-config.js'; 
+
+// --- YANGI FUNKSIYALAR ---
+
+window.openUserProfile = async (uid) => {
+    if (!uid) return;
+
+    const home = document.getElementById('home-page');
+    const profile = document.getElementById('profile-page');
+
+    if (home) home.style.display = 'none';
+    if (profile) profile.style.display = 'block';
+
+    try {
+        const userRef = doc(db, "users", uid);
+        
+        // onSnapshot orqali real-vaqtda obunalar sonini kuzatamiz
+        onSnapshot(userRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const userData = docSnap.data();
+                
+                // 1. Ism va Bio-ni yangilash
+                const nameEl = document.getElementById('profile-name');
+                const bioEl = document.getElementById('profile-bio');
+                if (nameEl) nameEl.innerText = userData.authorName || userData.displayName || "Ismsiz";
+                if (bioEl) bioEl.innerText = userData.bio || "Bio ma'lumoti yo'q";
+
+                // 2. RAQAMLARNI YANGILASH (Sizda yetishmayotgan qism)
+                // HTML-dagi ID-laringizni tekshiring: followers-count va following-count bo'lishi kerak
+                const followersEl = document.getElementById('followers-count');
+                const followingEl = document.getElementById('following-count');
+                
+                if (followersEl) followersEl.innerText = userData.followers?.length || 0;
+                if (followingEl) followingEl.innerText = userData.following?.length || 0;
+
+                // 3. Tugmani sozlash
+                const actionBtn = document.getElementById('action-button');
+                if (actionBtn) {
+                    if (uid !== auth.currentUser?.uid) {
+                        // Agar allaqachon obuna bo'lgan bo'lsak, tugma matnini o'zgartirish
+                        const isFollowing = userData.followers?.includes(auth.currentUser.uid);
+                        actionBtn.innerText = isFollowing ? "Obunadan chiqish" : "Obuna bo'lish";
+                        actionBtn.onclick = () => window.followUser(uid);
+                    } else {
+                        actionBtn.innerText = "Profilni mukammallashtirish";
+                        actionBtn.onclick = () => console.log("Edit profile");
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error("Profil yuklashda xato:", error);
+    }
+};
+
+/**
+ * 2. Obuna bo'lish funksiyasi
+ * targetUserId - siz obuna bo'lmoqchi bo'lgan odam
+ */
+window.followUser = async (targetUserId) => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+        alert("Avval tizimga kiring!");
+        return;
+    }
+
+    const currentUserId = currentUser.uid;
+    const targetUserRef = doc(db, "users", targetUserId);
+    const currentUserRef = doc(db, "users", currentUserId);
+
+    try {
+        // 1. Sizning "following" ro'yxatingizga uni qo'shish
+        await updateDoc(currentUserRef, {
+            following: arrayUnion(targetUserId)
+        });
+
+        // 2. Uning "followers" ro'yxatiga sizni qo'shish
+        await updateDoc(targetUserRef, {
+            followers: arrayUnion(currentUserId)
+        });
+
+        console.log("Muvaffaqiyatli obuna bo'lindi!");
+    } catch (error) {
+        console.error("Obuna bo'lishda xato:", error);
+    }
+};
 
 let currentUser = null; 
 let selectedUserId = null; // Bu o'zgaruvchi xabar kimga ketishini saqlaydi
@@ -257,26 +342,42 @@ onSnapshot(q, (snapshot) => {
     snapshot.forEach((postDoc) => {
         const data = postDoc.data();
         const postId = postDoc.id;
-        const time = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleString() : "Hozirgina";
-        
-        // Foydalanuvchi like bosganmi yoki yo'q?
-        const isLiked = data.likes?.includes(auth.currentUser?.uid);
+        const authorId = data.authorId || data.userId || data.uid || postDoc.data().authorId; 
 
+        const time = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleString() : "Hozirgina";
+        const isLiked = data.likes?.includes(auth.currentUser?.uid);
+            
         postsList.innerHTML += `
             <div class="post-card horizontal-post">
-                <img src="${data.authorPhoto || 'https://via.placeholder.com/40'}" class="post-avatar-large">
+                <img src="${data.authorPhoto || 'https://via.placeholder.com/40'}" 
+                     class="post-avatar-large" 
+                     onclick="window.openUserProfile('${authorId}')" 
+                     style="cursor:pointer;">
                 
                 <div class="post-content-area">
-                    <div class="post-header-mini">
-                        <span class="post-author">${data.authorName}</span>
-                        <span class="post-time">${time}</span>
+                    <div class="post-header-mini" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <span class="post-author" 
+                                  onclick="window.openUserProfile('${authorId}')" 
+                                  style="cursor:pointer; font-weight:bold;">
+                                  ${data.authorName}
+                            </span>
+                            <span class="post-time" style="display: block; font-size: 11px;">${time}</span>
+                        </div>
+                        
+                        ${authorId !== auth.currentUser?.uid ? `
+                            <button onclick="window.followUser('${authorId}')" 
+                                    style="background: #0084ff; color: white; border: none; padding: 4px 10px; border-radius: 12px; font-size: 12px; cursor: pointer;">
+                                Obuna
+                            </button>
+                        ` : ''}
                     </div>
                     
-                    <div class="post-body-mini">
+                    <div class="post-body-mini" style="margin-top: 8px;">
                         <p>${data.content}</p>
                     </div>
                     
-                    <div class="post-footer-mini">
+                    <div class="post-footer-mini" style="margin-top: 10px; display: flex; gap: 15px;">
                         <button onclick="toggleLike('${postId}', ${isLiked})" class="mini-action-btn ${isLiked ? 'active-like' : ''}">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
                             <span>${data.likes?.length || 0}</span>
@@ -289,9 +390,7 @@ onSnapshot(q, (snapshot) => {
                     </div>
 
                     <div id="comment-box-${postId}" class="comment-section-mini" style="display: none; border-top: 1px solid #222; margin-top: 10px; padding-top: 10px;">
-                        <div id="comments-display-${postId}" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px;">
-                        </div>
-                        
+                        <div id="comments-display-${postId}" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px;"></div>
                         <div class="comment-input-wrapper" style="display: flex; gap: 8px; background: #1a1a1a; padding: 5px 12px; border-radius: 20px;">
                             <input type="text" id="comment-input-${postId}" placeholder="Fikr qoldiring..." 
                                    style="flex: 1; background: none; border: none; color: white; outline: none; font-size: 0.85rem;">
@@ -428,20 +527,42 @@ document.getElementById('logoutBtnDrawer').addEventListener('click', () => {
     }
 });
 
-// Funksiyani window obyektiga biriktiramiz
+// Comment bo'limini ko'rsatish/yashirish
 window.toggleCommentBox = (postId) => {
     const box = document.getElementById(`comment-box-${postId}`);
-    
     if (box.style.display === "none") {
         box.style.display = "block";
-        
-        // Postni ekranning o'rtasiga silliq olib kelish
-        box.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        
-        // Kommentariyalarni yuklash
-        if (window.loadComments) window.loadComments(postId);
+        loadComments(postId); // Commentlarni yuklash funksiyasini chaqirish
     } else {
         box.style.display = "none";
+    }
+};
+
+// Comment yuborish funksiyasi
+window.sendComment = async (postId) => {
+    const input = document.getElementById(`comment-input-${postId}`);
+    const text = input.value.trim();
+    
+    if (!text) return;
+
+    try {
+        const postRef = doc(db, "posts", postId);
+        const newComment = {
+            userId: auth.currentUser.uid,
+            userName: auth.currentUser.displayName || "User",
+            userPhoto: auth.currentUser.photoURL || "",
+            text: text,
+            createdAt: new Date()
+        };
+
+        await updateDoc(postRef, {
+            comments: arrayUnion(newComment),
+            commentsCount: increment(1)
+        });
+
+        input.value = ""; // Inputni tozalash
+    } catch (e) {
+        console.error("Xabar yuborishda xato:", e);
     }
 };
 
@@ -2508,18 +2629,27 @@ if (sendBtn) {
     });
 }
 
-onSnapshot(q, (snapshot) => {
-    const chatBox = document.getElementById('main-chat-messages');// Sizda ID boshqacha bo'lishi mumkin
-    chatBox.innerHTML = "";
-    
-    snapshot.forEach((doc) => {
-        const data = doc.data();
-        chatBox.innerHTML += `
-            <div class="message">
-                <p>${data.text}</p>  </div>
-        `;
-    });
-});
+window.openUserProfile = async (uid) => {
+    if (!uid || uid === "undefined") return;
+
+    // Sahifa ichidagi bo'limlarni topamiz
+    const homeSection = document.getElementById('home-page'); 
+    const profileSection = document.getElementById('profile-page'); 
+
+    // Bo'limlarni almashtiramiz (Yangi sahifaga o'tilmaydi!)
+    if (homeSection) homeSection.style.display = 'none';
+    if (profileSection) {
+        profileSection.style.display = 'block';
+        
+        // Bazadan o'sha foydalanuvchi ma'lumotlarini yuklash
+        const userDoc = await getDoc(doc(db, "users", uid));
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            document.getElementById('profile-name').innerText = userData.displayName || "Ismsiz";
+            // Boshqa elementlarni ham shu yerda yangilang...
+        }
+    }
+};
 
 // Xabarlar render bo'lib bo'lgandan keyin
 const chatContainer = document.getElementById('main-chat-messages');
@@ -2881,4 +3011,180 @@ function renderPost(postData) {
             <div class="post-content">${postData.text}</div>
         </div>
     `;
+}
+
+window.followUser = async (targetUserId) => {
+    // 1. ID tekshirish
+    if (!targetUserId || targetUserId === "undefined") {
+        console.error("Xato: Foydalanuvchi ID-si topilmadi!");
+        return;
+    }
+
+    const currentUserId = auth.currentUser?.uid;
+    if (!currentUserId) {
+        alert("Avval tizimga kiring!");
+        return;
+    }
+
+    if (currentUserId === targetUserId) {
+        alert("O'zingizga obuna bo'la olmaysiz!");
+        return;
+    }
+
+    try {
+        const targetUserRef = doc(db, "users", targetUserId);
+        const currentUserRef = doc(db, "users", currentUserId);
+
+        // 2. Bazada obunani yangilash
+        await updateDoc(currentUserRef, {
+            following: arrayUnion(targetUserId)
+        });
+
+        await updateDoc(targetUserRef, {
+            followers: arrayUnion(currentUserId)
+        });
+
+        // 3. BILDIRISHNOMA YUBORISH (Yangi qism)
+        const notificationRef = collection(db, "notifications");
+        await addDoc(notificationRef, {
+            toUid: targetUserId,             // Kimga boradi (obuna bo'lingan odam)
+            fromUid: currentUserId,          // Kimdan bordi (siz)
+            fromName: auth.currentUser.displayName || "Yangi foydalanuvchi",
+            type: "follow",                  // Bildirishnoma turi
+            timestamp: serverTimestamp(),    // Yuborilgan vaqti
+            read: false                      // O'qilmagan holatda
+        });
+
+        alert("Muvaffaqiyatli obuna bo'ldingiz!");
+    } catch (error) {
+        console.error("Obuna bo'lishda xato:", error);
+        alert("Foydalanuvchi ma'lumotlari bazada topilmadi.");
+    }
+};
+
+
+
+
+async function loadProfile() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetUserId = urlParams.get('id') || auth.currentUser?.uid;
+
+    if (!targetUserId) return;
+
+    try {
+        const userDoc = await getDoc(doc(db, "users", targetUserId));
+        if (userDoc.exists()) {
+            const data = userDoc.data();
+
+            // Elementlar borligini tekshirib, keyin yozamiz (Xatoni oldini oladi)
+            const nameEl = document.getElementById('profile-name');
+            const actionBtn = document.getElementById('action-button');
+
+            if (nameEl) nameEl.innerText = data.displayName || "Ismsiz foydalanuvchi";
+            
+            if (actionBtn) {
+                if (targetUserId === auth.currentUser.uid) {
+                    actionBtn.innerText = "Profilni mukammallashtirish";
+                } else {
+                    actionBtn.innerText = "Obuna bo'lish";
+                    actionBtn.onclick = () => window.followUser(targetUserId);
+                }
+            }
+        }
+    } catch (e) {
+        console.error("Profilni yuklashda xato:", e);
+    }
+}
+
+
+
+window.loadNotifications = async () => {
+    const currentUserId = auth.currentUser?.uid;
+    if (!currentUserId) return;
+
+    // 1. O'qilmagan xabarlarni "o'qilgan" (read: true) qilish
+    // Bu qizil nuqtani yo'qotish uchun kerak
+    const unreadQuery = query(
+        collection(db, "notifications"), 
+        where("toUid", "==", currentUserId),
+        where("read", "==", false)
+    );
+
+    try {
+        const unreadDocs = await getDocs(unreadQuery);
+        if (!unreadDocs.empty) {
+            const batch = writeBatch(db);
+            unreadDocs.forEach((docSnap) => {
+                batch.update(docSnap.ref, { read: true });
+            });
+            await batch.commit();
+        }
+    } catch (err) {
+        console.error("Xabarlarni yangilashda xato:", err);
+    }
+
+    // 2. Bildirishnomalarni ekranga chiqarish (Real-vaqtda)
+    const q = query(
+        collection(db, "notifications"), 
+        where("toUid", "==", currentUserId),
+        orderBy("timestamp", "desc")
+    );
+
+    onSnapshot(q, (snapshot) => {
+        const alertsList = document.getElementById('notifications-list'); 
+        if (!alertsList) return;
+        
+        alertsList.innerHTML = ""; 
+
+        if (snapshot.empty) {
+            alertsList.innerHTML = '<p class="empty-msg">Yangi bildirishnomalar mavjud emas.</p>';
+            return;
+        }
+
+        snapshot.forEach((doc) => {
+            const notif = doc.data();
+            const div = document.createElement('div');
+            div.style = "display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #333; transition: 0.3s;";
+            
+            div.innerHTML = `
+                <p style="margin: 0; color: white; font-size: 14px;">
+                    <strong>${notif.fromName}</strong> sizga obuna bo'ldi
+                </p>
+                <button onclick="window.followUser('${notif.fromUid}')" 
+                        style="background: #0084ff; color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold;">
+                    Qaytarish
+                </button>
+            `;
+            alertsList.appendChild(div);
+        });
+    });
+};
+
+// Menyuni almashtirish funksiyangizda
+function showNotifications() {
+    // Bo'limlarni ko'rsatish/yashirish kodlari...
+    window.loadNotifications(); // Bildirishnomalarni yuklashni boshlash
+}
+
+const currentUserId = auth.currentUser?.uid;
+
+if (currentUserId) {
+    // Faqat sizga tegishli va hali o'qilmagan xabarlarni filtrlaymiz
+    const q = query(
+        collection(db, "notifications"), 
+        where("toUid", "==", currentUserId),
+        where("read", "==", false)
+    );
+
+    onSnapshot(q, (snapshot) => {
+        const badge = document.getElementById('notification-badge');
+        if (badge) {
+            // Agar o'qilmagan xabarlar bo'lsa (snapshot bo'sh bo'lmasa) ko'rsatamiz
+            if (!snapshot.empty) {
+                badge.style.display = 'block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    });
 }
