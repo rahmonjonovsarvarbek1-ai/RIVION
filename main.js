@@ -160,15 +160,21 @@ onAuthStateChanged(auth, async (user) => {
         currentUser = user; 
         console.log("Siz tizimdasiz, UID:", user.uid);
         
-        // Asosiy UI elementlarini (header va h.k.) yangilash funksiyangiz
-        updateUserUI(user); 
-
-        try {
+         try {
             const userRef = doc(db, "users", user.uid);
             const userSnap = await getDoc(userRef);
 
+            // Boshlang'ich qiymatlarni Googledan olamiz
+            let finalPhoto = user.photoURL;
+            let finalName = user.displayName;
+
             if (userSnap.exists()) {
                 const userData = userSnap.data();
+
+                // 🔥 GOOGLE RASMI QAYTIB QOLMASLIGI UCHUN:
+                // Agar Firestore'da rasm bo'lsa, o'shani tanlaymiz
+                finalPhoto = userData.photoURL || user.photoURL;
+                finalName = userData.displayName || user.displayName;
 
                 // 1. MAJBURIY USERNAME TEKSHIRUVI
                 if (!userData.username) {
@@ -183,62 +189,51 @@ onAuthStateChanged(auth, async (user) => {
                     const verifiedTag = userData.isVerified === true ? `<svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #1d9bf0; margin-left: 5px; vertical-align: middle;"><path d="M22.5 12.5c0-1.58-.88-2.95-2.18-3.66.25-.9.4-1.84.4-2.84 0-3.04-2.46-5.5-5.5-5.5-1 0-1.94.27-2.74.75C11.77 1.03 10.4 0 9.5 0 6.46 0 4 2.46 4 5.5c0 1 .27 1.94.75 2.74C3.53 9.03 2.5 10.4 2.5 12.5c0 1.58.88 2.95 2.18 3.66-.25.9-.4 1.84-.4 2.84 0 3.04 2.46 5.5 5.5 5.5 1 0 1.94-.27 2.74-.75 1.22 1.22 2.58 2.25 3.5 2.25 3.04 0 5.5-2.46 5.5-5.5 0-1-.27-1.94-.75-2.74 1.22-.72 2.18-2.08 2.18-3.66zm-5 0l-5 5-2.5-2.5 1.41-1.41L11.5 13.59l3.59-3.59L17.5 12.5z"/></svg>` : '';
                     drawerName.innerHTML = `
                         <div style="display: flex; flex-direction: column;">
-                            <span style="font-weight: bold;">${userData.displayName || user.displayName} ${verifiedTag}</span>
+                            <span style="font-weight: bold;">${finalName} ${verifiedTag}</span>
                             <span style="font-size: 12px; color: #1d9bf0;">@${userData.username || 'username'}</span>
                         </div>
                     `;
                 }
-                if (drawerAvatar) drawerAvatar.src = userData.photoURL || user.photoURL || 'assets/default-avatar.png';
+                if (drawerAvatar) drawerAvatar.src = finalPhoto || 'assets/default-avatar.png';
 
                 // 3. PROFIL SAHIFASINI (FULL UI) YANGILASH
-                if (document.getElementById('user-profile-name')) {
-                    // Ism va Jins ikonkasini chiqarish
+                 if (document.getElementById('user-profile-name')) {
                     const genderIcon = userData.gender === 'male' ? '<i class="fas fa-mars" style="color: #1d9bf0; font-size: 16px; margin-left: 5px;"></i>' : 
                                      userData.gender === 'female' ? '<i class="fas fa-venus" style="color: #f91880; font-size: 16px; margin-left: 5px;"></i>' : '';
                     
-                    document.getElementById('user-profile-name').innerHTML = `${userData.displayName || user.displayName} ${genderIcon}`;
+                    document.getElementById('user-profile-name').innerHTML = `${finalName} ${genderIcon}`;
                     document.getElementById('user-profile-handle').innerText = userData.username ? `@${userData.username}` : "@username";
                     document.getElementById('user-profile-bio').innerText = userData.bio || "Hali ma'lumot kiritilmagan";
+                    document.getElementById('user-display-age').innerText = userData.age ? `${userData.age} yosh` : "Yoshingiz";
+                    document.getElementById('user-display-city').innerText = userData.city || "Davlat yoki shaxar";
+                    document.getElementById('user-display-study').innerText = userData.study || "O'qish joyi";
                     
-                    // Detail-items (Yosh, Shahar, O'qish)
-                    document.getElementById('user-display-age').innerText = userData.age ? `${userData.age} yosh` : "19 yosh";
-                    document.getElementById('user-display-city').innerText = userData.city || "Uzbekistan";
-                    document.getElementById('user-display-study').innerText = userData.study || "TATU";
-                    
-                    // Professional Kartochkalar (Gid)
-                    if (document.getElementById('user-display-goals'))
-                        document.getElementById('user-display-goals').innerText = userData.goals || "Katta maqsadlar sari yo'lda...";
-                    
-                    if (document.getElementById('user-display-interests'))
-                        document.getElementById('user-display-interests').innerText = userData.interests || "Coding, Design, Art";
-                    
-                    if (document.getElementById('user-display-travel'))
-                        document.getElementById('user-display-travel').innerText = userData.travel || "Yangi ufqlarni zabt etishni yoqtiradi";
-
-                    // Profil rasmi
-                    document.getElementById('user-profile-img').src = userData.photoURL || user.photoURL || 'assets/default-avatar.png';
+                    // Profil rasmi va Input (Nima yangiliklar) rasmi
+                    document.getElementById('user-profile-img').src = finalPhoto || 'assets/default-avatar.png';
+                    const inputAvatar = document.getElementById('inputAvatar');
+                    if (inputAvatar) inputAvatar.src = finalPhoto;
                 }
 
                 // Headerdagi (Tepadagi) rasm va ism
-                if (document.getElementById('userAvatar')) document.getElementById('userAvatar').src = userData.photoURL || user.photoURL;
-                if (document.getElementById('userNameDisplay')) document.getElementById('userNameDisplay').innerText = userData.displayName || user.displayName;
+                if (document.getElementById('userAvatar')) document.getElementById('userAvatar').src = finalPhoto;
+                if (document.getElementById('userNameDisplay')) document.getElementById('userNameDisplay').innerText = finalName;
+
+                // UI yangilash funksiyasi (agar mavjud bo'lsa)
+                if (typeof updateUserUI === 'function') updateUserUI(user);
 
             } else {
-                // Yangi foydalanuvchi bo'lsa, bazada hujjat yaratish
+                // Yangi foydalanuvchi bo'lsa
                 await setDoc(userRef, {
                     uid: user.uid,
                     displayName: user.displayName,
                     photoURL: user.photoURL,
                     email: user.email,
                     createdAt: new Date(),
-                    username: "", // Bo'sh qoldiramiz, modal ochilishi uchun
-                    age: "19",
-                    city: "Uzbekistan",
-                    study: "TATU",
-                    bio: "",
-                    goals: "",
-                    interests: "",
-                    travel: "",
+                    username: "",
+                    age: "yosh",
+                    city: "Davlat yoki shaxar",
+                    study: "Qayerda o'qiysiz?",
+                     bio: "",
                     gender: "male"
                 });
                 showSection('profile');
@@ -248,10 +243,7 @@ onAuthStateChanged(auth, async (user) => {
             console.error("Profil yuklashda xato:", error);
         }
 
-        // --- 4. BILDIRISHNOMALAR (SNAPSHOT) ---
-        // (Bu yerga o'zingizning badge va notifyList kodingizni qo'shing)
-
-     } else {
+      } else {
          currentUser = null;
         if (window.location.pathname.includes('main.html')) {
             window.location.href = 'index.html';
@@ -319,23 +311,43 @@ function updateUserUI(user) {
 // A. Post yuborish
 postBtn.addEventListener('click', async () => {
     const text = postText.value.trim();
-    if (!text) return alert("Oldin nimadir yozing!");
+    const user = auth.currentUser; // Foydalanuvchini olish
+
+    if (!text || !user) return alert("Oldin nimadir yozing!");
 
     try {
         postBtn.disabled = true;
+        postBtn.innerText = "⏳"; // Yuklanish belgisi
+
+        // 1. MAJBURIY: Firestore'dan foydalanuvchining YANGI profil rasmini olamiz
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        let finalPhoto = user.photoURL; // Agar bazada bo'lmasa, authdagini oladi
+
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            // Agar siz yangi rasm yuklagan bo'lsangiz, o'sha olinadi
+            finalPhoto = userData.photoURL || user.photoURL;
+        }
+
+        // 2. Postni bazaga yozish (finalPhoto bilan)
         await addDoc(collection(db, "posts"), {
-            authorName: auth.currentUser.displayName,
-            authorPhoto: auth.currentUser.photoURL,
+            authorName: user.displayName,
+            authorPhoto: finalPhoto, // <--- GOOGLE RASMI EMAS, YANGI RASM!
             content: text,
             createdAt: serverTimestamp(),
-            uid: auth.currentUser.uid,
-            likes: [] // Like'lar ro'yxati (bo'sh massiv)
+            uid: user.uid,
+            likes: []
         });
+
         postText.value = ""; 
+        console.log("Post muvaffaqiyatli yangi rasm bilan chiqdi! ✅");
+
     } catch (error) {
         console.error("Xato:", error);
+        alert("Xatolik yuz berdi!");
     } finally {
         postBtn.disabled = false;
+        postBtn.innerText = "Ulashish";
     }
 });
 
@@ -591,19 +603,28 @@ window.toggleCommentBox = (postId) => {
     }
 };
 
-// Comment yuborish funksiyasi
 window.sendComment = async (postId) => {
     const input = document.getElementById(`comment-input-${postId}`);
     const text = input.value.trim();
+    const user = auth.currentUser; // Foydalanuvchini olish
     
-    if (!text) return;
+    if (!text || !user) return;
 
     try {
+        // 1. Auth-dan emas, Firestore'dan foydalanuvchining yangi ma'lumotlarini olamiz
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        let finalPhoto = user.photoURL; // Default rasm
+
+        if (userDoc.exists()) {
+            // Agar Firestore'da yangi rasm bo'lsa, o'shani ishlatamiz
+            finalPhoto = userDoc.data().photoURL || user.photoURL;
+        }
+
         const postRef = doc(db, "posts", postId);
         const newComment = {
-            userId: auth.currentUser.uid,
-            userName: auth.currentUser.displayName || "User",
-            userPhoto: auth.currentUser.photoURL || "",
+            userId: user.uid,
+            userName: user.displayName || "User",
+            userPhoto: finalPhoto, // <--- MANA SHU YERDA YANGI RASM KETADI!
             text: text,
             createdAt: new Date()
         };
@@ -613,7 +634,8 @@ window.sendComment = async (postId) => {
             commentsCount: increment(1)
         });
 
-        input.value = ""; // Inputni tozalash
+        input.value = ""; 
+        console.log("Izoh yangi rasm bilan saqlandi! ✅");
     } catch (e) {
         console.error("Xabar yuborishda xato:", e);
     }
@@ -907,17 +929,17 @@ window.uploadDiscoveryPost = async () => {
 
     btn.disabled = true;
     btn.innerText = "Yuklanmoqda...";
-
-    // Rasmni o'qish (Base64 ko'rinishida saqlash - boshlanishiga)
+ 
     const reader = new FileReader();
     reader.readAsDataURL(fileInput.files[0]);
     reader.onload = async () => {
         try {
             await addDoc(collection(db, "discovery"), {
-                uid: user.uid,
+                uid: user.uid, // Profil rasmini yangilashda aynan shu ID kerak bo'ladi
                 userName: user.displayName,
-                userPhoto: user.photoURL,
-                postImage: reader.result, // Asosiy post rasmi
+                // Har doim eng yangi rasmni olish uchun bu yerda hozirgi URLni saqlaymiz
+                userPhoto: user.photoURL || 'assets/default-avatar.png', 
+                postImage: reader.result, 
                 bio: bio,
                 createdAt: serverTimestamp()
             });
@@ -925,9 +947,11 @@ window.uploadDiscoveryPost = async () => {
             closeDiscoveryModal();
             btn.disabled = false;
             btn.innerText = "E'lonni joylash";
+            alert("Muvaffaqiyatli joylandi!");
         } catch (err) {
             console.error(err);
             btn.disabled = false;
+            btn.innerText = "E'lonni joylash";
         }
     };
 };
@@ -3435,4 +3459,101 @@ if (auth.currentUser) {
             `;
         });
     });
+}
+
+// --- 1. RASMNI SAQLASH VA SINXRONIZATSIYA QILISH ---
+window.handleProfilePhotoChange = async (event) => {
+    const file = event.target.files[0];
+    const user = auth.currentUser;
+    if (!file || !user) return;
+
+    try {
+        console.log("Rasm yuklanmoqda...");
+        
+        // Storage'ga yuklash
+        const storageRef = ref(storage, `profiles/${user.uid}`);
+        await uploadBytes(storageRef, file);
+        const newUrl = await getDownloadURL(storageRef);
+
+        // Firestore 'users' kolleksiyasini yangilash
+        await updateDoc(doc(db, "users", user.uid), { photoURL: newUrl });
+        
+        // Auth profildagi rasmni yangilash
+        await updateProfile(user, { photoURL: newUrl });
+
+        console.log("Profil yangilandi, endi postlarni sinxronlash boshlandi...");
+
+        // --- MUHIM: BARCHA POSTLARDAGI RASMNI YANGILASH ---
+        const batch = writeBatch(db);
+        
+        // a) Foydalanuvchining hamma postlarini topish
+        const postsRef = collection(db, "posts");
+        const qPosts = query(postsRef, where("authorId", "==", user.uid));
+        const postDocs = await getDocs(qPosts);
+        
+        postDocs.forEach((post) => {
+            // Post ichidagi 'authorPhoto'ni yangilang
+            batch.update(post.ref, { authorPhoto: newUrl });
+        });
+
+        // b) Bildirishnomalardagi (Notifications) rasmni yangilash
+        const notifsRef = collection(db, "notifications");
+        const qNotifs = query(notifsRef, where("fromUid", "==", user.uid));
+        const notifDocs = await getDocs(qNotifs);
+        
+        notifDocs.forEach((notif) => {
+            batch.update(notif.ref, { fromPhoto: newUrl });
+        });
+
+        await batch.commit();
+        console.log("Hamma joyda rasm yangilandi! ✅");
+        
+        // Ekranni yangilash
+        window.updateProfileDisplay();
+        alert("Profil rasmi va barcha postlaringiz yangilandi!");
+
+    } catch (error) {
+        console.error("Xato yuz berdi:", error);
+    }
+};
+
+// --- PROFIL RASMINI O'ZGARTIRISH FUNKSIYASI ---
+async function uploadProfileImage(file) {
+    const user = auth.currentUser;
+    const storageRef = ref(storage, `users/${user.uid}/profile.jpg`);
+    
+    // 1. Rasmni Storage'ga yuklash
+    await uploadBytes(storageRef, file);
+    
+    // 2. Yangi rasmning URL manzilini olish
+    const newUrl = await getDownloadURL(storageRef);
+
+    // 3. Auth profildagi rasmni yangilash
+    await updateProfile(user, { photoURL: newUrl });
+
+    // 4. Firestore 'users' kolleksiyasini yangilash
+    await updateDoc(doc(db, "users", user.uid), { photoURL: newUrl });
+
+    // 🚀 --- MANA SHU YERGA SIZ SO'RAGAN KODNI QO'YASIZ --- 🚀
+    const discoveryRef = collection(db, "discovery");
+    const q = query(discoveryRef, where("uid", "==", user.uid));
+    const querySnapshot = await getDocs(q);
+
+    const batch = writeBatch(db);
+    querySnapshot.forEach((doc) => {
+        batch.update(doc.ref, { userPhoto: newUrl }); // Discovery'dagi rasmlarni yangilash
+    });
+    
+    // Agar postlaringiz 'posts' kolleksiyasida bo'lsa, buni ham qo'shing:
+    const postsRef = collection(db, "posts");
+    const qPosts = query(postsRef, where("authorId", "==", user.uid));
+    const postsSnapshot = await getDocs(qPosts);
+    postsSnapshot.forEach((doc) => {
+        batch.update(doc.ref, { authorPhoto: newUrl }); // Postlardagi rasmlarni yangilash
+    });
+
+    await batch.commit(); 
+    console.log("Hamma joyda rasm yangilandi!");
+    
+    location.reload(); // O'zgarishlar ko'rinishi uchun sahifani yangilash
 }
