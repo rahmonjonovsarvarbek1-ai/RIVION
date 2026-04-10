@@ -154,37 +154,46 @@ themeToggle.addEventListener('click', () => {
 });
 
 
-// --- 3. FOYDALANUVCHI HOLATINI TEKSHIRISH (PROFESSIONAL FULL) ---
+// --- 3. FOYDALANUVCHI HOLATINI TEKSHIRISH (PROFESSIONAL FULL & PERSISTENT PHOTO) ---
 onAuthStateChanged(auth, async (user) => {
     if (user && user.uid) { 
         currentUser = user; 
         console.log("Siz tizimdasiz, UID:", user.uid);
         
-         try {
+        try {
+            // 1. Firestore'dan ma'lumotni olamiz
             const userRef = doc(db, "users", user.uid);
             const userSnap = await getDoc(userRef);
 
-            // Boshlang'ich qiymatlarni Googledan olamiz
+            // Boshlang'ich qiymatlarni aniqlash
             let finalPhoto = user.photoURL;
             let finalName = user.displayName;
 
             if (userSnap.exists()) {
                 const userData = userSnap.data();
 
-                // 🔥 GOOGLE RASMI QAYTIB QOLMASLIGI UCHUN:
-                // Agar Firestore'da rasm bo'lsa, o'shani tanlaymiz
+                // 2. MAJBURIY RASM VA ISM USTUNLIGI
+                // Firestore-dagi rasm Googlenikidan har doim ustun bo'lishi kerak
                 finalPhoto = userData.photoURL || user.photoURL;
                 finalName = userData.displayName || user.displayName;
 
-                // 1. MAJBURIY USERNAME TEKSHIRUVI
-                if (!userData.username) {
-                    showSection('profile'); 
-                    if (typeof openMyProfileModal === 'function') openMyProfileModal();
+                // 🔥 MUHIM: Firebase Auth keshini ham Firestore-dagi yangi rasm bilan sinxronlaymiz.
+                if (user.photoURL !== finalPhoto) {
+                    updateProfile(user, { photoURL: finalPhoto }).catch(e => console.log("Kesh yangilanishda kechikdi"));
                 }
 
-                // 2. DRAWER (YON MENYU) YANGILASH
+                // 3. UI ELEMENTLARINI TO'G'RIDAN-TO'G'RI YANGILASH (Eski rasm chiqmasligi uchun)
+                
+                // Header va Yon menyu rasmlari
+                if (document.getElementById('userAvatar')) document.getElementById('userAvatar').src = finalPhoto;
+                if (document.getElementById('drawerAvatar')) document.getElementById('drawerAvatar').src = finalPhoto || 'assets/default-avatar.png';
+                
+                // "Nima yangiliklar?" (Post input) avatarini yangilash
+                const inputAvatar = document.getElementById('inputAvatar');
+                if (inputAvatar) inputAvatar.src = finalPhoto;
+
+                // Drawer Name (Ism va Verified tag)
                 const drawerName = document.getElementById('drawerName');
-                const drawerAvatar = document.getElementById('drawerAvatar');
                 if (drawerName) {
                     const verifiedTag = userData.isVerified === true ? `<svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #1d9bf0; margin-left: 5px; vertical-align: middle;"><path d="M22.5 12.5c0-1.58-.88-2.95-2.18-3.66.25-.9.4-1.84.4-2.84 0-3.04-2.46-5.5-5.5-5.5-1 0-1.94.27-2.74.75C11.77 1.03 10.4 0 9.5 0 6.46 0 4 2.46 4 5.5c0 1 .27 1.94.75 2.74C3.53 9.03 2.5 10.4 2.5 12.5c0 1.58.88 2.95 2.18 3.66-.25.9-.4 1.84-.4 2.84 0 3.04 2.46 5.5 5.5 5.5 1 0 1.94-.27 2.74-.75 1.22 1.22 2.58 2.25 3.5 2.25 3.04 0 5.5-2.46 5.5-5.5 0-1-.27-1.94-.75-2.74 1.22-.72 2.18-2.08 2.18-3.66zm-5 0l-5 5-2.5-2.5 1.41-1.41L11.5 13.59l3.59-3.59L17.5 12.5z"/></svg>` : '';
                     drawerName.innerHTML = `
@@ -194,10 +203,9 @@ onAuthStateChanged(auth, async (user) => {
                         </div>
                     `;
                 }
-                if (drawerAvatar) drawerAvatar.src = finalPhoto || 'assets/default-avatar.png';
 
-                // 3. PROFIL SAHIFASINI (FULL UI) YANGILASH
-                 if (document.getElementById('user-profile-name')) {
+                // 4. PROFIL SAHIFASINI YANGILASH
+                if (document.getElementById('user-profile-name')) {
                     const genderIcon = userData.gender === 'male' ? '<i class="fas fa-mars" style="color: #1d9bf0; font-size: 16px; margin-left: 5px;"></i>' : 
                                      userData.gender === 'female' ? '<i class="fas fa-venus" style="color: #f91880; font-size: 16px; margin-left: 5px;"></i>' : '';
                     
@@ -207,19 +215,25 @@ onAuthStateChanged(auth, async (user) => {
                     document.getElementById('user-display-age').innerText = userData.age ? `${userData.age} yosh` : "Yoshingiz";
                     document.getElementById('user-display-city').innerText = userData.city || "Davlat yoki shaxar";
                     document.getElementById('user-display-study').innerText = userData.study || "O'qish joyi";
-                    
-                    // Profil rasmi va Input (Nima yangiliklar) rasmi
                     document.getElementById('user-profile-img').src = finalPhoto || 'assets/default-avatar.png';
-                    const inputAvatar = document.getElementById('inputAvatar');
-                    if (inputAvatar) inputAvatar.src = finalPhoto;
                 }
 
-                // Headerdagi (Tepadagi) rasm va ism
-                if (document.getElementById('userAvatar')) document.getElementById('userAvatar').src = finalPhoto;
+                // Header ism display
                 if (document.getElementById('userNameDisplay')) document.getElementById('userNameDisplay').innerText = finalName;
 
-                // UI yangilash funksiyasi (agar mavjud bo'lsa)
-                if (typeof updateUserUI === 'function') updateUserUI(user);
+                // Username tekshiruvi (Modal ochish)
+                if (!userData.username) {
+                    showSection('profile'); 
+                    if (typeof openMyProfileModal === 'function') openMyProfileModal();
+                }
+
+                // 🔥 ENG MUHIM QADAM: updateUserUI funksiyasini faqat Firestore ma'lumotlari bilan chaqiramiz
+                // Agar eski updateUserUI(user) ni chaqirsangiz, u rasmning ustidan eski Googlenikini yozib yuboradi.
+                // Shuning uchun uni Firestore ma'lumotlarini kutib chaqirish kerak.
+                if (typeof updateUserUI === 'function') {
+                    // updateUserUI ichida user.photoURL ishlatilgan bo'lsa, uni finalPhoto bilan almashtirishni unutmang
+                    updateUserUI({ ...user, photoURL: finalPhoto, displayName: finalName });
+                }
 
             } else {
                 // Yangi foydalanuvchi bo'lsa
@@ -228,12 +242,12 @@ onAuthStateChanged(auth, async (user) => {
                     displayName: user.displayName,
                     photoURL: user.photoURL,
                     email: user.email,
-                    createdAt: new Date(),
-                    username: "",
+                    createdAt: serverTimestamp(),
+                    username: "", 
                     age: "yosh",
                     city: "Davlat yoki shaxar",
                     study: "Qayerda o'qiysiz?",
-                     bio: "",
+                    bio: "",
                     gender: "male"
                 });
                 showSection('profile');
@@ -243,8 +257,8 @@ onAuthStateChanged(auth, async (user) => {
             console.error("Profil yuklashda xato:", error);
         }
 
-      } else {
-         currentUser = null;
+    } else {
+        currentUser = null;
         if (window.location.pathname.includes('main.html')) {
             window.location.href = 'index.html';
         }
