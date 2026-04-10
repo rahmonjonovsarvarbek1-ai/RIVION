@@ -1276,29 +1276,42 @@ window.searchUsers = async (val) => {
         console.error("Qidiruvda xato:", error);
     }
 };
-
-// 2. Profilni Modalda ochish
+ 
 window.viewUserProfile = (userId, name, photo, username) => {
-    // Ma'lumotlarni to'ldirish
-    document.getElementById('p-modal-name').innerText = name;
-    document.getElementById('p-modal-username').innerText = "@" + username;
-    document.getElementById('p-modal-img').src = photo || 'default-avatar.png';
+    // 1. Agar bu o'zimiz bo'lsak, modalni emas, o'zimizning profil bo'limini ochamiz
+    if (auth.currentUser && userId === auth.currentUser.uid) {
+        showSection('profile');
+        return;
+    }
 
-    // TUGMALARNI JONLANTIRISH (Eng muhim joyi!)
+    // 2. Modal elementlarini to'ldirish
+    const modalName = document.getElementById('p-modal-name');
+    const modalUser = document.getElementById('p-modal-username');
+    const modalImg = document.getElementById('p-modal-img');
+
+    if (modalName) modalName.innerText = name;
+    if (modalUser) modalUser.innerText = "@" + (username || "username");
+    if (modalImg) modalImg.src = photo || 'assets/default-avatar.png';
+
+    // 3. Tugmalarni foydalanuvchi ID-si bilan jonlantirish
     const actionsBox = document.querySelector('.profile-actions-box');
-    actionsBox.innerHTML = `
-        <button onclick="handleChatFromProfile('${userId}')" class="btn-chat">
-            <i class="fas fa-comment"></i> Chatga o'tish
-        </button>
-        <button onclick="handleFriendRequest('${userId}')" class="btn-friend" id="friendBtn">
-            <i class="fas fa-user-plus"></i> Do'st bo'lish
-        </button>
-        <button onclick="handleBlockUser('${userId}')" class="btn-block">
-            <i class="fas fa-ban"></i> Bloklash
-        </button>
-    `;
+    if (actionsBox) {
+        actionsBox.innerHTML = `
+            <button onclick="handleChatFromProfile('${userId}')" class="btn-chat">
+                <i class="fas fa-comment"></i> Chatga o'tish
+            </button>
+            <button onclick="handleFriendRequest('${userId}')" class="btn-friend" id="friendBtn">
+                <i class="fas fa-user-plus"></i> Do'st bo'lish
+            </button>
+            <button onclick="handleBlockUser('${userId}')" class="btn-block">
+                <i class="fas fa-ban"></i> Bloklash
+            </button>
+        `;
+    }
 
-    document.getElementById('user-profile-modal').style.display = 'block';
+    // 4. Modalni ko'rsatish
+    const modal = document.getElementById('user-profile-modal');
+    if (modal) modal.style.display = 'block';
 };
 
 window.handleChatFromProfile = (userId) => {
@@ -3123,28 +3136,40 @@ function createPostElement(postData) {
     `;
     return postHTML;
 }
-
-// Postni render qilish funksiyangiz ichida:
-function renderPost(postData) {
-    // 1. Postdagi eski rasmni oling
+ 
+ window.renderPost = function(postData) {
+    // 1. Ma'lumotlarni olish
     let finalPhoto = postData.authorPhotoURL || 'default-avatar.png';
+    const authorName = postData.authorName || 'Foydalanuvchi';
+    const authorUsername = postData.authorUsername || 'username';
+    const authorId = postData.authorId;
 
-    // 2. MUHIM: Agar post joriy foydalanuvchiga (sizga) tegishli bo'lsa, 
-    // Auth-dagi eng yangi rasmni ko'rsatamiz
-    if (auth.currentUser && postData.authorId === auth.currentUser.uid) {
+    // 2. O'zimizning rasmimizni yangilash
+    if (auth.currentUser && authorId === auth.currentUser.uid) {
         finalPhoto = auth.currentUser.photoURL || finalPhoto;
+    }
+
+    // 3. DIQQAT: Agar bosilganda kirmasa, konsolda mana bu xabarni ko'rasiz
+    if (!authorId) {
+        console.warn("XATO: Postda authorId mavjud emas!", postData);
     }
 
     return `
         <div class="post-card">
             <div class="post-header">
-                <img src="${finalPhoto}" class="post-author-img">
+                <img src="${finalPhoto}" 
+                     class="post-author-img" 
+                     style="cursor: pointer; position: relative; z-index: 5;" 
+                     onclick="viewUserProfile('${authorId}', '${authorName.replace(/'/g, "\\'")}', '${finalPhoto}', '${authorUsername}')">
                 <div class="post-info">
-                    <strong>${postData.authorName}</strong>
-                    <span>${postData.date}</span>
+                    <strong style="cursor: pointer;" 
+                            onclick="viewUserProfile('${authorId}', '${authorName.replace(/'/g, "\\'")}', '${finalPhoto}', '${authorUsername}')">
+                        ${authorName}
+                    </strong>
+                    <span>${postData.date || 'hozir'}</span>
                 </div>
             </div>
-            <div class="post-content">${postData.text}</div>
+            <div class="post-content" style="margin-top: 10px;">${postData.text || ''}</div>
         </div>
     `;
 }
