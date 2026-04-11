@@ -3668,25 +3668,40 @@ function listenToNews() {
     });
 }
 
-// 2. Top Foydalanuvchilarni yuklash
 function listenToTopUsers() {
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, orderBy("followersCount", "desc"), limit(15));
+    const listContainer = document.getElementById('top-users-list');
+    if (!listContainer) return;
+
+    // 'users' kolleksiyasidan ballari bo'yicha eng yuqori 10 tasini olish
+    const q = query(
+        collection(db, "users"),
+        orderBy("points", "desc"), 
+        limit(10)
+    );
 
     onSnapshot(q, (snapshot) => {
-        const container = document.getElementById('top-users-list');
-        container.innerHTML = '';
+        listContainer.innerHTML = ''; // Tozalash
 
         snapshot.forEach((doc) => {
             const user = doc.data();
-            container.innerHTML += `
-                <div class="top-user-item">
-                    <div class="top-user-avatar">
-                        <img src="${user.photoURL || 'assets/images/default.png'}">
+            const userHtml = `
+                <div class="top-user-item" style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #1a1a1a; border-radius: 10px; margin-bottom: 8px;">
+                    <div style="display: flex; align-items: center;">
+                        <img src="${user.profilePic || 'assets/default-avatar.png'}" 
+                             style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right: 12px;"
+                             onerror="this.src='https://ui-avatars.com/api/?name=${user.username || 'U'}&background=007bff&color=fff'">
+                        <div>
+                            <p style="margin: 0; color: #fff; font-size: 14px; font-weight: bold;">${user.username || 'Foydalanuvchi'}</p>
+                            <span style="font-size: 12px; color: #777;">@${user.username ? user.username.toLowerCase() : 'user'}</span>
+                        </div>
                     </div>
-                    <p style="font-size: 11px; margin-top: 5px;">${user.displayName?.split(' ')[0]}</p>
+                    <div style="text-align: right;">
+                        <span style="color: #007bff; font-weight: bold;">${user.points || 0}</span>
+                        <p style="margin: 0; font-size: 10px; color: #555;">BALL</p>
+                    </div>
                 </div>
             `;
+            listContainer.insertAdjacentHTML('beforeend', userHtml);
         });
     });
 }

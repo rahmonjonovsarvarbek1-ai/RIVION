@@ -1,9 +1,19 @@
-// 1. Firebase modullari
+// firebase-config.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-// 2. Supabase kutubxonasini import qilish (CDN orqali)
+import { 
+    getFirestore, 
+    collection, 
+    addDoc, 
+    updateDoc, 
+    doc, 
+    query, 
+    where, 
+    orderBy, 
+    onSnapshot, 
+    serverTimestamp,
+    limit 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 
 const firebaseConfig = {
@@ -16,17 +26,18 @@ const firebaseConfig = {
   measurementId: "G-EMZNS9H62S"
 };
 
-// Firebase-ni ishga tushirish
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
-// 3. Supabase-ni ishga tushirish
-// Project Settings -> API bo'limidan olgan ANON KEY-ni shu yerga qo'ying
 const supabaseUrl = 'https://bcgwrbfsfrcxiyhpajve.supabase.co';
 const supabaseKey = 'sb_publishable_yu9Pqq7bNOJhWt7nV8ITfQ_uqNK1n-a'; 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Boshqa fayllarda ishlatish uchun eksport qilamiz
-export { auth, db, googleProvider, signInWithPopup, signOut, onAuthStateChanged, supabase };
+// Barcha kerakli modullarni markaziy tarzda eksport qilamiz
+export { 
+    auth, db, googleProvider, signInWithPopup, signOut, onAuthStateChanged, 
+    supabase, collection, addDoc, updateDoc, doc, query, where, orderBy, 
+    onSnapshot, serverTimestamp, limit 
+};
