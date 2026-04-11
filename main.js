@@ -34,6 +34,27 @@ import {
 // 4. O'zingizning konfiguratsiyangiz
 import { auth, db, supabase } from './firebase-config.js'; 
 
+async function checkAdminStatus(uid) {
+    const adminPanel = document.getElementById('admin-news-panel');
+    if (!adminPanel) return;
+
+    try {
+        // Aynan yangi ochilgan 'admins' kolleksiyasidan tekshiramiz
+        const adminDocRef = doc(db, "admins", uid);
+        const adminDocSnap = await getDoc(adminDocRef);
+
+        if (adminDocSnap.exists() && adminDocSnap.data().isAdmin === true) {
+            adminPanel.style.display = 'block';
+            console.log("Admin tasdiqlandi! ✅");
+        } else {
+            adminPanel.style.display = 'none';
+            console.log("Siz admin emassiz (Admins kolleksiyasida yo'qsiz).");
+        }
+    } catch (error) {
+        console.error("Admin tekshirishda xatolik:", error);
+    }
+}
+
 // --- YANGI FUNKSIYALAR ---
 
 window.openUserProfile = async (uid) => {
@@ -159,82 +180,67 @@ onAuthStateChanged(auth, async (user) => {
         currentUser = user; 
         
         try {
+            // 1. Foydalanuvchi asosiy ma'lumotlarini olish
             const userRef = doc(db, "users", user.uid);
             const userSnap = await getDoc(userRef);
 
-            // Default qiymatlar
-            let finalPhoto = user.photoURL || 'assets/default-avatar.png';
-            let finalName = user.displayName || "Foydalanuvchi";
-
             if (userSnap.exists()) {
-                const userData = userSnap.data(); // 🔥 userData mana shu blok ichida aniqlangan
-                console.log("Ma'lumotlar keldi:", userData);
+                const userData = userSnap.data();
+                
+                // --- ADMINLIKNI TEKSHIRISH (Faqat root 'admins' kolleksiyasidan) ---
+                const adminPanel = document.getElementById('admin-news-panel');
+                if (adminPanel) {
+                    // Bu yerda db, "admins" - bu asosiy kolleksiya bo'lishi shart!
+                    const adminRef = doc(db, "admins", user.uid);
+                    const adminSnap = await getDoc(adminRef);
 
-                // 1. Ma'lumotlarni bazadan yangilash
-                finalPhoto = userData.photoURL || user.photoURL || 'assets/default-avatar.png';
-                finalName = userData.displayName || user.displayName;
+                    if (adminSnap.exists() && adminSnap.data().isAdmin === true) {
+                        adminPanel.style.display = 'block';
+                        console.log("Admin tasdiqlandi ✅"); 
+                    } else {
+                        adminPanel.style.display = 'none';
+                        console.log("Oddiy foydalanuvchi 👤");
+                    }
+                }
 
-               // 🔥 ADMIN PANEL TEKSHIRUVI (To'g'ridan-to'g'ri va massiv ichini tekshiradi)
-const adminPanel = document.getElementById('admin-news-panel');
+                // 2. UI elementlarni yangilash (Avatar va Ism)
+                const finalPhoto = userData.photoURL || user.photoURL || 'assets/default-avatar.png';
+                const finalName = userData.displayName || user.displayName || "Foydalanuvchi";
 
-if (adminPanel && userData) {
-    // 1. Asosiy maydonni tekshirish
-    let currentRole = userData.role;
-
-    // 2. Agar asosiyda bo'lmasa, following ichidan qidirish
-    if (!currentRole && userData.following) {
-        // Agar following obyekt bo'lsa
-        if (userData.following.role) {
-            currentRole = userData.following.role;
-        } 
-        // Agar following massiv bo'lsa (sizda shunday ko'rinayapti)
-        else if (Array.isArray(userData.following)) {
-            const adminObj = userData.following.find(item => item && item.role === 'admin');
-            if (adminObj) currentRole = 'admin';
-        }
-    }
-
-    console.log("Aniqlangan rol:", currentRole);
-
-    if (currentRole === 'admin') {
-        adminPanel.style.display = 'block';
-        console.log("Admin tasdiqlandi ✅");
-    } else {
-        adminPanel.style.display = 'none';
-        console.log("Rol topilmadi: ", currentRole);
-    }
-}
-
-                // 3. UI elementlarni yangilash (Avatarlar)
                 const avatarIds = ['userAvatar', 'drawerAvatar', 'inputAvatar', 'user-profile-img'];
                 avatarIds.forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.src = finalPhoto;
                 });
 
-                if (document.getElementById('userNameDisplay')) {
-                    document.getElementById('userNameDisplay').innerText = finalName;
-                }
+                const userNameDisplay = document.getElementById('userNameDisplay');
+                if (userNameDisplay) userNameDisplay.innerText = finalName;
 
-                // 4. Profil sahifasidagi ma'lumotlar
-                if (document.getElementById('user-profile-name')) {
+                // 3. Profil sahifasi (main.html bo'lsa)
+                const profileName = document.getElementById('user-profile-name');
+                if (profileName) {
                     const genderIcon = userData.gender === 'male' ? '<i class="fas fa-mars" style="color: #1d9bf0; margin-left: 5px;"></i>' : 
                                      userData.gender === 'female' ? '<i class="fas fa-venus" style="color: #f91880; margin-left: 5px;"></i>' : '';
                     
-                    document.getElementById('user-profile-name').innerHTML = `${finalName} ${genderIcon}`;
-                    document.getElementById('user-profile-handle').innerText = userData.username ? `@${userData.username}` : "@username";
-                    document.getElementById('user-profile-bio').innerText = userData.bio || "Hali ma'lumot kiritilmagan";
-                    document.getElementById('user-display-age').innerText = userData.age ? `${userData.age} yosh` : "-- yosh";
-                    document.getElementById('user-display-city').innerText = userData.city || "Shahar kiritilmagan";
-                    document.getElementById('user-display-study').innerText = userData.study || "O'qish yoki Ish joyi";
+                    profileName.innerHTML = `${finalName} ${genderIcon}`;
+                    
+                    if(document.getElementById('user-profile-handle')) 
+                        document.getElementById('user-profile-handle').innerText = userData.username ? `@${userData.username}` : "@username";
+                    
+                    if(document.getElementById('user-profile-bio'))
+                        document.getElementById('user-profile-bio').innerText = userData.bio || "Hali ma'lumot kiritilmagan";
+                    
+                    if(document.getElementById('user-display-age'))
+                        document.getElementById('user-display-age').innerText = userData.age ? `${userData.age} yosh` : "-- yosh";
+                    
+                    if(document.getElementById('user-display-city'))
+                        document.getElementById('user-display-city').innerText = userData.city || "Shahar kiritilmagan";
+                    
+                    if(document.getElementById('user-display-study'))
+                        document.getElementById('user-display-study').innerText = userData.study || "O'qish yoki Ish joyi";
                 }
 
-                // Professional Grid
-                if (document.getElementById('user-display-goals')) document.getElementById('user-display-goals').innerText = userData.goals || "Maqsadlar...";
-                if (document.getElementById('user-display-interests')) document.getElementById('user-display-interests').innerText = userData.interests || "Qiziqishlar...";
-                if (document.getElementById('user-display-travel')) document.getElementById('user-display-travel').innerText = userData.travel || "Sayohatlar...";
-
-                // 5. Drawer (Verified icon bilan)
+                // 4. Drawer (Verified icon bilan)
                 const drawerName = document.getElementById('drawerName');
                 if (drawerName) {
                     const verified = userData.isVerified === true ? `<svg viewBox="0 0 24 24" style="width: 18px; fill: #1d9bf0; margin-left: 5px; vertical-align: middle;"><path d="M22.5 12.5c0-1.58-.88-2.95-2.18-3.66.25-.9.4-1.84.4-2.84 0-3.04-2.46-5.5-5.5-5.5-1 0-1.94.27-2.74.75C11.77 1.03 10.4 0 9.5 0 6.46 0 4 2.46 4 5.5c0 1 .27 1.94.75 2.74C3.53 9.03 2.5 10.4 2.5 12.5c0 1.58.88 2.95 2.18 3.66-.25.9-.4 1.84-.4 2.84 0 3.04 2.46 5.5 5.5 5.5 1 0 1.94-.27 2.74-.75 1.22 1.22 2.58 2.25 3.5 2.25 3.04 0 5.5-2.46 5.5-5.5 0-1-.27-1.94-.75-2.74 1.22-.72 2.18-2.08 2.18-3.66zm-5 0l-5 5-2.5-2.5 1.41-1.41L11.5 13.59l3.59-3.59L17.5 12.5z"/></svg>` : '';
@@ -245,24 +251,28 @@ if (adminPanel && userData) {
                         </div>
                     `;
                 }
+                
+                // 5. Profil qo'shimcha ma'lumotlarini (followers/posts) yuklash
+                if (typeof loadUserProfile === "function") {
+                    loadUserProfile(user.uid);
+                }
 
-             } else {
-                // Yangi foydalanuvchi yaratish
+            } else {
+                // Yangi foydalanuvchi bo'lsa
                 await setDoc(userRef, {
                     uid: user.uid,
-                    displayName: user.displayName,
-                    photoURL: user.photoURL,
+                    displayName: user.displayName || "Foydalanuvchi",
+                    photoURL: user.photoURL || "",
                     email: user.email,
                     createdAt: serverTimestamp(),
-                     username: "", 
-                    gender: "male",
-                    role: "user" 
-                 });
+                    username: "", 
+                    gender: "male"
+                });
             }
         } catch (error) {
-            console.error("Profil yuklashda xato:", error);
+            console.error("Mantiqiy xatolik:", error);
         }
-     } else {
+    } else {
         currentUser = null;
         if (window.location.pathname.includes('main.html')) {
             window.location.href = 'index.html';
@@ -3762,33 +3772,3 @@ async function fixMyRole() {
     }
 }
 
-// 🔥 YANGI ADMIN TEKSHIRUV FUNKSIYASI
-async function checkAdminStatus(userUid) {
-    const adminPanel = document.getElementById('admin-news-panel');
-    
-    if (!adminPanel) return;
-
-    try {
-        // Yangi ochgan 'admins' kolleksiyangdan hujjatni olamiz
-        const adminRef = doc(db, "admins", userUid);
-        const adminSnap = await getDoc(adminRef);
-
-        if (adminSnap.exists() && adminSnap.data().isAdmin === true) {
-            adminPanel.style.display = 'block';
-            console.log("Admin tasdiqlandi! ✅");
-        } else {
-            adminPanel.style.display = 'none';
-            console.log("Siz admin emassiz 👤");
-        }
-    } catch (error) {
-        console.error("Adminlikni tekshirishda xatolik:", error);
-    }
-}
-
-// 2. Foydalanuvchi tizimga kirgan joyda buni chaqir:
-auth.onAuthStateChanged((user) => {
-    if (user) {
-        // Foydalanuvchi ma'lumotlarini yuklash bilan birga adminlikni ham tekshir
-        checkAdminStatus(user.uid);
-    }
-});
