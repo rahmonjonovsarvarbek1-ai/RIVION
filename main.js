@@ -176,109 +176,125 @@ themeToggle.addEventListener('click', () => {
 
 
 onAuthStateChanged(auth, async (user) => {
-    if (user && user.uid) { 
-        currentUser = user; 
-        
-        try {
-            // 1. Foydalanuvchi asosiy ma'lumotlarini olish
-            const userRef = doc(db, "users", user.uid);
-            const userSnap = await getDoc(userRef);
-
-            if (userSnap.exists()) {
-                const userData = userSnap.data();
-                
-                // --- ADMINLIKNI TEKSHIRISH (Faqat root 'admins' kolleksiyasidan) ---
-                const adminPanel = document.getElementById('admin-news-panel');
-                if (adminPanel) {
-                    // Bu yerda db, "admins" - bu asosiy kolleksiya bo'lishi shart!
-                    const adminRef = doc(db, "admins", user.uid);
-                    const adminSnap = await getDoc(adminRef);
-
-                    if (adminSnap.exists() && adminSnap.data().isAdmin === true) {
-                        adminPanel.style.display = 'block';
-                        console.log("Admin tasdiqlandi ✅"); 
-                    } else {
-                        adminPanel.style.display = 'none';
-                        console.log("Oddiy foydalanuvchi 👤");
-                    }
-                }
-
-                // 2. UI elementlarni yangilash (Avatar va Ism)
-                const finalPhoto = userData.photoURL || user.photoURL || 'assets/default-avatar.png';
-                const finalName = userData.displayName || user.displayName || "Foydalanuvchi";
-
-                const avatarIds = ['userAvatar', 'drawerAvatar', 'inputAvatar', 'user-profile-img'];
-                avatarIds.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.src = finalPhoto;
-                });
-
-                const userNameDisplay = document.getElementById('userNameDisplay');
-                if (userNameDisplay) userNameDisplay.innerText = finalName;
-
-                // 3. Profil sahifasi (main.html bo'lsa)
-                const profileName = document.getElementById('user-profile-name');
-                if (profileName) {
-                    const genderIcon = userData.gender === 'male' ? '<i class="fas fa-mars" style="color: #1d9bf0; margin-left: 5px;"></i>' : 
-                                     userData.gender === 'female' ? '<i class="fas fa-venus" style="color: #f91880; margin-left: 5px;"></i>' : '';
-                    
-                    profileName.innerHTML = `${finalName} ${genderIcon}`;
-                    
-                    if(document.getElementById('user-profile-handle')) 
-                        document.getElementById('user-profile-handle').innerText = userData.username ? `@${userData.username}` : "@username";
-                    
-                    if(document.getElementById('user-profile-bio'))
-                        document.getElementById('user-profile-bio').innerText = userData.bio || "Hali ma'lumot kiritilmagan";
-                    
-                    if(document.getElementById('user-display-age'))
-                        document.getElementById('user-display-age').innerText = userData.age ? `${userData.age} yosh` : "-- yosh";
-                    
-                    if(document.getElementById('user-display-city'))
-                        document.getElementById('user-display-city').innerText = userData.city || "Shahar kiritilmagan";
-                    
-                    if(document.getElementById('user-display-study'))
-                        document.getElementById('user-display-study').innerText = userData.study || "O'qish yoki Ish joyi";
-                }
-
-                // 4. Drawer (Verified icon bilan)
-                const drawerName = document.getElementById('drawerName');
-                if (drawerName) {
-                    const verified = userData.isVerified === true ? `<svg viewBox="0 0 24 24" style="width: 18px; fill: #1d9bf0; margin-left: 5px; vertical-align: middle;"><path d="M22.5 12.5c0-1.58-.88-2.95-2.18-3.66.25-.9.4-1.84.4-2.84 0-3.04-2.46-5.5-5.5-5.5-1 0-1.94.27-2.74.75C11.77 1.03 10.4 0 9.5 0 6.46 0 4 2.46 4 5.5c0 1 .27 1.94.75 2.74C3.53 9.03 2.5 10.4 2.5 12.5c0 1.58.88 2.95 2.18 3.66-.25.9-.4 1.84-.4 2.84 0 3.04 2.46 5.5 5.5 5.5 1 0 1.94-.27 2.74-.75 1.22 1.22 2.58 2.25 3.5 2.25 3.04 0 5.5-2.46 5.5-5.5 0-1-.27-1.94-.75-2.74 1.22-.72 2.18-2.08 2.18-3.66zm-5 0l-5 5-2.5-2.5 1.41-1.41L11.5 13.59l3.59-3.59L17.5 12.5z"/></svg>` : '';
-                    drawerName.innerHTML = `
-                        <div style="display: flex; flex-direction: column;">
-                            <span style="font-weight: bold;">${finalName} ${verified}</span>
-                            <span style="font-size: 12px; color: #1d9bf0;">@${userData.username || 'username'}</span>
-                        </div>
-                    `;
-                }
-                
-                // 5. Profil qo'shimcha ma'lumotlarini (followers/posts) yuklash
-                if (typeof loadUserProfile === "function") {
-                    loadUserProfile(user.uid);
-                }
-
-            } else {
-                // Yangi foydalanuvchi bo'lsa
-                await setDoc(userRef, {
-                    uid: user.uid,
-                    displayName: user.displayName || "Foydalanuvchi",
-                    photoURL: user.photoURL || "",
-                    email: user.email,
-                    createdAt: serverTimestamp(),
-                    username: "", 
-                    gender: "male"
-                });
-            }
-        } catch (error) {
-            console.error("Mantiqiy xatolik:", error);
-        }
-    } else {
+    if (!user || !user.uid) {
         currentUser = null;
         if (window.location.pathname.includes('main.html')) {
             window.location.href = 'index.html';
         }
+        return;
+    }
+
+    currentUser = user;
+    console.log("Tizimga kirildi:", user.uid);
+
+    try {
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+
+        let userData;
+
+        if (userSnap.exists()) {
+            userData = userSnap.data();
+        } else {
+            // Yangi foydalanuvchi poydevorini yaratish
+            userData = {
+                uid: user.uid,
+                displayName: user.displayName || "Foydalanuvchi",
+                photoURL: user.photoURL || 'assets/default-avatar.png',
+                email: user.email,
+                createdAt: serverTimestamp(),
+                username: user.email ? user.email.split('@')[0] : "user_" + Math.floor(Math.random() * 1000),
+                gender: "male",
+                points: 0,
+                isVerified: false
+            };
+            await setDoc(userRef, userData);
+        }
+
+        // --- 1. ADMIN PANELNI BOSHQARISH ---
+        updateAdminPanel(user.uid);
+
+        // --- 2. UI YANGILASH (AVATARLAR VA ISMLAR) ---
+        updateGlobalUI(userData, user);
+
+        // --- 3. PROFIL SAHIFASI (MA'LUMOTLAR) ---
+        if (document.getElementById('user-profile-name')) {
+            updateProfilePage(userData);
+        }
+
+        // --- 4. QO'SHIMCHA BACKEND FUNKSIYALAR ---
+        if (typeof loadUserProfile === "function") {
+            loadUserProfile(user.uid);
+        }
+
+    } catch (error) {
+        console.error("Backend ulanishda jiddiy xato:", error);
     }
 });
+
+// --- Yordamchi Funksiyalar (Kodni toza saqlash uchun) ---
+
+async function updateAdminPanel(uid) {
+    const adminPanel = document.getElementById('admin-news-panel');
+    if (!adminPanel) return;
+
+    try {
+        const adminRef = doc(db, "admins", uid);
+        const adminSnap = await getDoc(adminRef);
+        adminPanel.style.display = (adminSnap.exists() && adminSnap.data().isAdmin) ? 'block' : 'none';
+        if (adminSnap.exists()) console.log("Admin huquqi tasdiqlandi ✅");
+    } catch (e) {
+        adminPanel.style.display = 'none';
+    }
+}
+
+function updateGlobalUI(userData, fbUser) {
+    const photo = userData.photoURL || fbUser.photoURL || 'assets/default-avatar.png';
+    const name = userData.displayName || fbUser.displayName || "Foydalanuvchi";
+
+    // Avatarlar
+    ['userAvatar', 'drawerAvatar', 'inputAvatar', 'user-profile-img'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.src = photo;
+    });
+
+    // Ismlar
+    const nameDisplay = document.getElementById('userNameDisplay');
+    if (nameDisplay) nameDisplay.innerText = name;
+
+    // Drawer Verification
+    const drawerName = document.getElementById('drawerName');
+    if (drawerName) {
+        const verified = userData.isVerified ? `<svg viewBox="0 0 24 24" style="width: 16px; fill: #1d9bf0; margin-left: 4px;"><path d="M22.5 12.5c0-1.58-.88-2.95-2.18-3.66.25-.9.4-1.84.4-2.84 0-3.04-2.46-5.5-5.5-5.5-1 0-1.94.27-2.74.75C11.77 1.03 10.4 0 9.5 0 6.46 0 4 2.46 4 5.5c0 1 .27 1.94.75 2.74C3.53 9.03 2.5 10.4 2.5 12.5c0 1.58.88 2.95 2.18 3.66-.25.9-.4 1.84-.4 2.84 0 3.04 2.46 5.5 5.5 5.5 1 0 1.94-.27 2.74-.75 1.22 1.22 2.58 2.25 3.5 2.25 3.04 0 5.5-2.46 5.5-5.5 0-1-.27-1.94-.75-2.74 1.22-.72 2.18-2.08 2.18-3.66zm-5 0l-5 5-2.5-2.5 1.41-1.41L11.5 13.59l3.59-3.59L17.5 12.5z"/></svg>` : '';
+        drawerName.innerHTML = `
+            <div style="line-height: 1.2;">
+                <div style="font-weight: bold; display: flex; align-items: center;">${name} ${verified}</div>
+                <div style="font-size: 12px; color: #71767b;">@${userData.username || 'user'}</div>
+            </div>
+        `;
+    }
+}
+
+function updateProfilePage(data) {
+    const genderIcons = {
+        male: '<i class="fas fa-mars" style="color: #1d9bf0; margin-left: 5px;"></i>',
+        female: '<i class="fas fa-venus" style="color: #f91880; margin-left: 5px;"></i>'
+    };
+
+    const sets = {
+        'user-profile-name': `${data.displayName || 'Foydalanuvchi'} ${genderIcons[data.gender] || ''}`,
+        'user-profile-handle': data.username ? `@${data.username}` : "@username",
+        'user-profile-bio': data.bio || "Hali ma'lumot kiritilmagan",
+        'user-display-age': data.age ? `${data.age} yosh` : "-- yosh",
+        'user-display-city': data.city || "Shahar kiritilmagan",
+        'user-display-study': data.study || "O'qish yoki Ish joyi"
+    };
+
+    for (const [id, value] of Object.entries(sets)) {
+        const el = document.getElementById(id);
+        if (el) id.includes('name') ? el.innerHTML = value : el.innerText = value;
+    }
+}
 
 window.filterSearch = function(type) {
     const newsBlock = document.querySelector('.news-block');
@@ -3046,31 +3062,42 @@ function closeMyProfileModal() {
     if (modal) modal.style.display = 'none';
 }
 
-async function saveProfileChanges() {
+window.saveProfileChanges = async () => {
     try {
         console.log("Ma'lumotlarni saqlash boshlandi...");
         
-        // Elementlarni olishda xatolik bermaslik uchun yordamchi funksiya
-        const getVal = (id) => {
-            const el = document.getElementById(id);
-            if (!el) {
-                console.warn(`Ogohlantirish: '${id}' topilmadi.`);
-                return ""; 
-            }
-            return el.value;
-        };
+        if (!auth.currentUser) {
+            alert("Xato: Avval tizimga kiring!");
+            return;
+        }
 
         const btn = document.getElementById('saveProfileBtn');
         if (btn) {
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Yangilanmoqda...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saqlanmoqda...';
         }
 
-        // HTML-dagi yangi ID-lar bo'yicha ma'lumotlarni yig'amiz
+        // Elementlardan qiymat olish uchun xavfsiz funksiya
+        const getVal = (id) => {
+            const el = document.getElementById(id);
+            return el ? el.value.trim() : ""; 
+        };
+
+        // Yoshni tug'ilgan sanadan hisoblash
+        const birthdate = getVal('edit-birthdate');
+        let calculatedAge = "";
+        if (birthdate) {
+            const birthYear = new Date(birthdate).getFullYear();
+            const currentYear = new Date().getFullYear();
+            calculatedAge = currentYear - birthYear;
+        }
+
+        // Barcha ma'lumotlarni bitta ob'ektga yig'amiz
         const updatedData = {
-            username: getVal('edit-username'),
+            username: getVal('edit-username').toLowerCase(),
             displayName: getVal('edit-display-name'),
-            birthdate: getVal('edit-birthdate'), // 'edit-age' o'rniga
+            birthdate: birthdate,
+            age: calculatedAge, // Bazada yosh son ko'rinishida saqlanadi
             gender: getVal('edit-gender'),
             city: getVal('edit-city'),
             study: getVal('edit-study'),
@@ -3078,21 +3105,21 @@ async function saveProfileChanges() {
             goals: getVal('edit-goals'),
             interests: getVal('edit-interests'),
             travel: getVal('edit-travel'),
-            lastUpdated: new Date()
+            lastUpdated: serverTimestamp() // Firebase server vaqti
         };
 
-        if (!currentUser) throw new Error("Foydalanuvchi tizimga kirmagan!");
+        // Firestore-ga yuborish
+        const userRef = doc(db, "users", auth.currentUser.uid);
+        
+        // setDoc merge:true bilan hamma maydonlarni beton qiladi
+        await setDoc(userRef, updatedData, { merge: true });
 
-        // Firestore-ga saqlash
-        const userRef = doc(db, "users", currentUser.uid);
-        await updateDoc(userRef, updatedData);
-
-        alert("Tabriklaymiz! Shaxsiy dunyongiz muvaffaqiyatli yangilandi.");
+        alert("Tabriklaymiz! Profilingiz muvaffaqiyatli yangilandi. ✅");
         location.reload(); 
 
     } catch (error) {
-        console.error("Saqlashda xatolik:", error);
-        alert("Xato yuz berdi: " + error.message);
+        console.error("Saqlashda jiddiy xato:", error);
+        alert("Xatolik yuz berdi: " + error.message);
     } finally {
         const btn = document.getElementById('saveProfileBtn');
         if (btn) {
@@ -3100,60 +3127,7 @@ async function saveProfileChanges() {
             btn.innerHTML = '<i class="fas fa-check-circle"></i> Dunyoni yangilash';
         }
     }
-}
-
-async function saveWorldChanges() {
-    try {
-        // Elementlarni olish (xavfsiz usulda)
-        const bioField = document.getElementById('edit-bio');
-        const goalsField = document.getElementById('edit-goals');
-        const interestsField = document.getElementById('edit-interests');
-        const travelField = document.getElementById('edit-travel');
-
-        // Agar birortasi topilmasa, konsolda xabar beradi
-        if (!bioField || !goalsField || !interestsField || !travelField) {
-            console.error("Xato: Ayrim inputlar topilmadi! ID-larni tekshiring.");
-            alert("Tizimda xatolik: Ayrim maydonlar topilmadi.");
-            return;
-        }
-
-        const btn = document.getElementById('updateWorldBtn');
-        if (btn) {
-            btn.disabled = true;
-            btn.innerText = "Yangilanmoqda...";
-        }
-
-        const updatedData = {
-            bio: bioField.value,
-            goals: goalsField.value,
-            interests: interestsField.value,
-            travel: travelField.value,
-            lastUpdated: new Date()
-        };
-
-        // Firestore-ga saqlash
-        const userRef = doc(db, "users", currentUser.uid);
-        await updateDoc(userRef, updatedData);
-
-        alert("Dunyoqarash muvaffaqiyatli yangilandi!");
-        
-        // Modalni yopish (agar funksiyangiz bo'lsa)
-        if (typeof closeWorldModal === 'function') closeWorldModal();
-        
-        // Sahifani yangilash
-        location.reload();
-
-    } catch (error) {
-        console.error("Xatolik yuz berdi:", error);
-        alert("Xatolik: " + error.message);
-    } finally {
-        const btn = document.getElementById('updateWorldBtn');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerText = "Dunyoni yangilash";
-        }
-    }
-}
+};
 
 // Postni render qilish mantiqi (taxminan shunday)
 function createPostElement(postData) {
