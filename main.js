@@ -162,22 +162,28 @@ onAuthStateChanged(auth, async (user) => {
             const userRef = doc(db, "users", user.uid);
             const userSnap = await getDoc(userRef);
 
-            // 1. Boshlang'ich qiymat (Googledan zaxira sifatida)
             let finalPhoto = user.photoURL;
             let finalName = user.displayName;
 
             if (userSnap.exists()) {
                 const userData = userSnap.data();
 
-                // 🔥 ASOSIY YECHIM: Firestore ma'lumotlarini mutlaq ustun qo'yamiz.
-                // Agar Firestore-da rasm bo'lsa, Googlenikini umuman ishlatmaymiz.
+                // 1. Rasm va ismni Firestore-dan olish
                 finalPhoto = userData.photoURL || user.photoURL || 'assets/default-avatar.png';
                 finalName = userData.displayName || user.displayName;
 
-                // 🛑 DIQQAT: updateProfile(...) funksiyasi olib tashlandi!
-                // Aynan shu funksiya rasmning 5-10 minutda qaytib qolishiga sabab bo'layotgan edi.
+                // 🔥 2. ADMIN PANEL TEKSHIRUVI (Yangi qism)
+                // Admin panelini faqat role === 'admin' bo'lganda ko'rsatamiz
+                const adminPanel = document.getElementById('admin-news-panel');
+                if (adminPanel) {
+                    if (userData.role === 'admin') {
+                        adminPanel.style.display = 'block';
+                    } else {
+                        adminPanel.style.display = 'none';
+                    }
+                }
 
-                // 3. Umumiy UI elementlarni yangilash
+                // 3. UI elementlarni yangilash (Avatar va Name)
                 const avatarIds = ['userAvatar', 'drawerAvatar', 'inputAvatar', 'user-profile-img'];
                 avatarIds.forEach(id => {
                     const el = document.getElementById(id);
@@ -232,7 +238,8 @@ onAuthStateChanged(auth, async (user) => {
                     createdAt: serverTimestamp(),
                     username: "", 
                     age: "", city: "", study: "", bio: "", goals: "", interests: "", travel: "",
-                    gender: "male"
+                    gender: "male",
+                    role: "user" // Default holatda oddiy foydalanuvchi
                 });
                 showSection('profile');
                 if (typeof openMyProfileModal === 'function') openMyProfileModal();
@@ -3591,3 +3598,118 @@ async function uploadProfileImage(file) {
     location.reload(); // O'zgarishlar ko'rinishi uchun sahifani yangilash
 }
 
+// 1. Yangiliklarni Real-time yuklash
+function listenToNews() {
+    const newsRef = collection(db, "posts"); // "posts" kolleksiyasidan olamiz
+    // Oxirgi 10 ta eng yangi postni olish
+    const q = query(newsRef, orderBy("createdAt", "desc"), limit(10));
+
+    onSnapshot(q, (snapshot) => {
+        const container = document.getElementById('today-news-container');
+        container.innerHTML = ''; // Tozalash
+
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            container.innerHTML += `
+                <div class="news-card glass">
+                    <img src="${data.imageUrl || 'assets/images/news-placeholder.jpg'}" class="news-image">
+                    <div class="news-info">
+                        <span class="news-tag">Trend</span>
+                        <p style="font-size: 14px; margin: 5px 0;">${data.text ? data.text.substring(0, 80) : 'RIVION yangiligi...'}...</p>
+                        <small style="color: #666;">${new Date(data.createdAt?.toDate()).toLocaleDateString()}</small>
+                    </div>
+                </div>
+            `;
+        });
+    });
+}
+
+// 2. Top Foydalanuvchilarni yuklash
+function listenToTopUsers() {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, orderBy("followersCount", "desc"), limit(15));
+
+    onSnapshot(q, (snapshot) => {
+        const container = document.getElementById('top-users-list');
+        container.innerHTML = '';
+
+        snapshot.forEach((doc) => {
+            const user = doc.data();
+            container.innerHTML += `
+                <div class="top-user-item">
+                    <div class="top-user-avatar">
+                        <img src="${user.photoURL || 'assets/images/default.png'}">
+                    </div>
+                    <p style="font-size: 11px; margin-top: 5px;">${user.displayName?.split(' ')[0]}</p>
+                </div>
+            `;
+        });
+    });
+}
+
+// Bo'lim ochilganda funksiyalarni ishga tushirish
+listenToNews();
+listenToTopUsers();
+
+async function publishNews() {
+    const textInput = document.getElementById('news-text');
+    const imageInput = document.getElementById('news-image-url');
+    
+    if (!textInput.value.trim()) {
+        alert("Iltimos, yangilik matnini kiriting!");
+        return;
+    }
+
+    try {
+        await addDoc(collection(db, "posts"), {
+            text: textInput.value,
+            imageUrl: imageInput.value || "",
+            createdAt: serverTimestamp(),
+            type: "news",
+            authorId: auth.currentUser.uid,
+            isTrend: true
+        });
+
+        alert("Yangilik jonli efirga chiqdi! ✅");
+        textInput.value = "";
+        imageInput.value = "";
+    } catch (error) {
+        console.error("Xatolik:", error);
+        alert("Xato yuz berdi. Ruxsatni tekshiring!");
+    }
+}
+
+// Global qilish (HTML-dagi onclick ishlashi uchun)
+window.publishNews = publishNews;
+
+function filterSearch(type) {
+    // 1. Hamma filtr-tugmalardan 'active' klassini olib tashlaymiz
+    const filters = document.querySelectorAll('.filter-item');
+    filters.forEach(item => item.classList.remove('active'));
+
+    // 2. Bosilgan tugmaga 'active' klassini qo'shamiz
+    event.currentTarget.classList.add('active');
+
+    // 3. Kontent bloklarini olamiz
+    const newsBlock = document.querySelector('.news-block');
+    const topUsersBlock = document.querySelector('.top-users-block');
+
+    // 4. Tanlangan turga qarab ko'rsatamiz yoki yashiramiz
+    if (type === 'all') {
+        newsBlock.style.display = 'block';
+        topUsersBlock.style.display = 'block';
+    } else if (type === 'news') {
+        newsBlock.style.display = 'block';
+        topUsersBlock.style.display = 'none';
+    } else if (type === 'top') {
+        newsBlock.style.display = 'none';
+        topUsersBlock.style.display = 'block';
+    } else if (type === 'reklama') {
+        // Hozircha reklama bo'limi bo'sh bo'lsa, ikkalasini ham yashirib tursang bo'ladi
+        newsBlock.style.display = 'none';
+        topUsersBlock.style.display = 'none';
+    }
+}
+
+// Funksiyani global qilish (HTML-dagi onclick ishlashi uchun)
+window.filterSearch = filterSearch;
