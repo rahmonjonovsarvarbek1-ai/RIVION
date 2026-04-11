@@ -154,89 +154,76 @@ themeToggle.addEventListener('click', () => {
 });
 
 
-// --- 3. FOYDALANUVCHI HOLATINI TEKSHIRISH (PROFESSIONAL FULL & PERSISTENT PHOTO) ---
 onAuthStateChanged(auth, async (user) => {
     if (user && user.uid) { 
         currentUser = user; 
-        console.log("Siz tizimdasiz, UID:", user.uid);
         
         try {
-            // 1. Firestore'dan ma'lumotni olamiz
             const userRef = doc(db, "users", user.uid);
             const userSnap = await getDoc(userRef);
 
-            // Boshlang'ich qiymatlarni aniqlash
+            // 1. Boshlang'ich qiymat (Googledan zaxira sifatida)
             let finalPhoto = user.photoURL;
             let finalName = user.displayName;
 
             if (userSnap.exists()) {
                 const userData = userSnap.data();
 
-                // 2. MAJBURIY RASM VA ISM USTUNLIGI
-                // Firestore-dagi rasm Googlenikidan har doim ustun bo'lishi kerak
-                finalPhoto = userData.photoURL || user.photoURL;
+                // 🔥 ASOSIY YECHIM: Firestore ma'lumotlarini mutlaq ustun qo'yamiz.
+                // Agar Firestore-da rasm bo'lsa, Googlenikini umuman ishlatmaymiz.
+                finalPhoto = userData.photoURL || user.photoURL || 'assets/default-avatar.png';
                 finalName = userData.displayName || user.displayName;
 
-                // 🔥 MUHIM: Firebase Auth keshini ham Firestore-dagi yangi rasm bilan sinxronlaymiz.
-                if (user.photoURL !== finalPhoto) {
-                    updateProfile(user, { photoURL: finalPhoto }).catch(e => console.log("Kesh yangilanishda kechikdi"));
+                // 🛑 DIQQAT: updateProfile(...) funksiyasi olib tashlandi!
+                // Aynan shu funksiya rasmning 5-10 minutda qaytib qolishiga sabab bo'layotgan edi.
+
+                // 3. Umumiy UI elementlarni yangilash
+                const avatarIds = ['userAvatar', 'drawerAvatar', 'inputAvatar', 'user-profile-img'];
+                avatarIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.src = finalPhoto;
+                });
+
+                if (document.getElementById('userNameDisplay')) {
+                    document.getElementById('userNameDisplay').innerText = finalName;
                 }
 
-                // 3. UI ELEMENTLARINI TO'G'RIDAN-TO'G'RI YANGILASH (Eski rasm chiqmasligi uchun)
-                
-                // Header va Yon menyu rasmlari
-                if (document.getElementById('userAvatar')) document.getElementById('userAvatar').src = finalPhoto;
-                if (document.getElementById('drawerAvatar')) document.getElementById('drawerAvatar').src = finalPhoto || 'assets/default-avatar.png';
-                
-                // "Nima yangiliklar?" (Post input) avatarini yangilash
-                const inputAvatar = document.getElementById('inputAvatar');
-                if (inputAvatar) inputAvatar.src = finalPhoto;
+                // 4. Profil sahifasidagi ma'lumotlar
+                if (document.getElementById('user-profile-name')) {
+                    const genderIcon = userData.gender === 'male' ? '<i class="fas fa-mars" style="color: #1d9bf0; margin-left: 5px;"></i>' : 
+                                     userData.gender === 'female' ? '<i class="fas fa-venus" style="color: #f91880; margin-left: 5px;"></i>' : '';
+                    
+                    document.getElementById('user-profile-name').innerHTML = `${finalName} ${genderIcon}`;
+                    document.getElementById('user-profile-handle').innerText = userData.username ? `@${userData.username}` : "@username";
+                    document.getElementById('user-profile-bio').innerText = userData.bio || "Hali ma'lumot kiritilmagan";
+                    document.getElementById('user-display-age').innerText = userData.age ? `${userData.age} yosh` : "-- yosh";
+                    document.getElementById('user-display-city').innerText = userData.city || "Shahar kiritilmagan";
+                    document.getElementById('user-display-study').innerText = userData.study || "O'qish yoki Ish joyi";
+                }
 
-                // Drawer Name (Ism va Verified tag)
+                // Professional Grid qismlari
+                if (document.getElementById('user-display-goals')) document.getElementById('user-display-goals').innerText = userData.goals || "Katta maqsadlar sari yo'lda...";
+                if (document.getElementById('user-display-interests')) document.getElementById('user-display-interests').innerText = userData.interests || "Coding, Design, Art";
+                if (document.getElementById('user-display-travel')) document.getElementById('user-display-travel').innerText = userData.travel || "Yangi ufqlarni zabt etishni yoqtiradi";
+
+                // 5. Drawer Name va Username
                 const drawerName = document.getElementById('drawerName');
                 if (drawerName) {
-                    const verifiedTag = userData.isVerified === true ? `<svg viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: #1d9bf0; margin-left: 5px; vertical-align: middle;"><path d="M22.5 12.5c0-1.58-.88-2.95-2.18-3.66.25-.9.4-1.84.4-2.84 0-3.04-2.46-5.5-5.5-5.5-1 0-1.94.27-2.74.75C11.77 1.03 10.4 0 9.5 0 6.46 0 4 2.46 4 5.5c0 1 .27 1.94.75 2.74C3.53 9.03 2.5 10.4 2.5 12.5c0 1.58.88 2.95 2.18 3.66-.25.9-.4 1.84-.4 2.84 0 3.04 2.46 5.5 5.5 5.5 1 0 1.94-.27 2.74-.75 1.22 1.22 2.58 2.25 3.5 2.25 3.04 0 5.5-2.46 5.5-5.5 0-1-.27-1.94-.75-2.74 1.22-.72 2.18-2.08 2.18-3.66zm-5 0l-5 5-2.5-2.5 1.41-1.41L11.5 13.59l3.59-3.59L17.5 12.5z"/></svg>` : '';
+                    const verified = userData.isVerified === true ? `<svg viewBox="0 0 24 24" style="width: 18px; fill: #1d9bf0; margin-left: 5px; vertical-align: middle;"><path d="M22.5 12.5c0-1.58-.88-2.95-2.18-3.66.25-.9.4-1.84.4-2.84 0-3.04-2.46-5.5-5.5-5.5-1 0-1.94.27-2.74.75C11.77 1.03 10.4 0 9.5 0 6.46 0 4 2.46 4 5.5c0 1 .27 1.94.75 2.74C3.53 9.03 2.5 10.4 2.5 12.5c0 1.58.88 2.95 2.18 3.66-.25.9-.4 1.84-.4 2.84 0 3.04 2.46 5.5 5.5 5.5 1 0 1.94-.27 2.74-.75 1.22 1.22 2.58 2.25 3.5 2.25 3.04 0 5.5-2.46 5.5-5.5 0-1-.27-1.94-.75-2.74 1.22-.72 2.18-2.08 2.18-3.66zm-5 0l-5 5-2.5-2.5 1.41-1.41L11.5 13.59l3.59-3.59L17.5 12.5z"/></svg>` : '';
                     drawerName.innerHTML = `
                         <div style="display: flex; flex-direction: column;">
-                            <span style="font-weight: bold;">${finalName} ${verifiedTag}</span>
+                            <span style="font-weight: bold;">${finalName} ${verified}</span>
                             <span style="font-size: 12px; color: #1d9bf0;">@${userData.username || 'username'}</span>
                         </div>
                     `;
                 }
 
-                // 4. PROFIL SAHIFASINI YANGILASH
-                if (document.getElementById('user-profile-name')) {
-                    const genderIcon = userData.gender === 'male' ? '<i class="fas fa-mars" style="color: #1d9bf0; font-size: 16px; margin-left: 5px;"></i>' : 
-                                     userData.gender === 'female' ? '<i class="fas fa-venus" style="color: #f91880; font-size: 16px; margin-left: 5px;"></i>' : '';
-                    
-                    document.getElementById('user-profile-name').innerHTML = `${finalName} ${genderIcon}`;
-                    document.getElementById('user-profile-handle').innerText = userData.username ? `@${userData.username}` : "@username";
-                    document.getElementById('user-profile-bio').innerText = userData.bio || "Hali ma'lumot kiritilmagan";
-                    document.getElementById('user-display-age').innerText = userData.age ? `${userData.age} yosh` : "Yoshingiz";
-                    document.getElementById('user-display-city').innerText = userData.city || "Davlat yoki shaxar";
-                    document.getElementById('user-display-study').innerText = userData.study || "O'qish joyi";
-                    document.getElementById('user-profile-img').src = finalPhoto || 'assets/default-avatar.png';
-                }
-
-                // Header ism display
-                if (document.getElementById('userNameDisplay')) document.getElementById('userNameDisplay').innerText = finalName;
-
-                // Username tekshiruvi (Modal ochish)
-                if (!userData.username) {
-                    showSection('profile'); 
-                    if (typeof openMyProfileModal === 'function') openMyProfileModal();
-                }
-
-                // 🔥 ENG MUHIM QADAM: updateUserUI funksiyasini faqat Firestore ma'lumotlari bilan chaqiramiz
-                // Agar eski updateUserUI(user) ni chaqirsangiz, u rasmning ustidan eski Googlenikini yozib yuboradi.
-                // Shuning uchun uni Firestore ma'lumotlarini kutib chaqirish kerak.
                 if (typeof updateUserUI === 'function') {
-                    // updateUserUI ichida user.photoURL ishlatilgan bo'lsa, uni finalPhoto bilan almashtirishni unutmang
                     updateUserUI({ ...user, photoURL: finalPhoto, displayName: finalName });
                 }
 
             } else {
-                // Yangi foydalanuvchi bo'lsa
+                // Yangi foydalanuvchi bazasini yaratish
                 await setDoc(userRef, {
                     uid: user.uid,
                     displayName: user.displayName,
@@ -244,14 +231,11 @@ onAuthStateChanged(auth, async (user) => {
                     email: user.email,
                     createdAt: serverTimestamp(),
                     username: "", 
-                    age: "yosh",
-                    city: "Davlat yoki shaxar",
-                    study: "Qayerda o'qiysiz?",
-                    bio: "",
+                    age: "", city: "", study: "", bio: "", goals: "", interests: "", travel: "",
                     gender: "male"
                 });
                 showSection('profile');
-                openMyProfileModal();
+                if (typeof openMyProfileModal === 'function') openMyProfileModal();
             }
         } catch (error) {
             console.error("Profil yuklashda xato:", error);
@@ -1480,6 +1464,19 @@ window.saveProfileChanges = async () => {
         return;
     }
 
+    // --- YOSHNI HISOBLASH FUNKSIYASI ---
+    const calculateAge = (birthDateString) => {
+        if (!birthDateString) return "";
+        const today = new Date();
+        const birthDate = new Date(birthDateString);
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        return age;
+    };
+
     const saveBtn = document.getElementById('saveProfileBtn');
     if (saveBtn) {
         saveBtn.disabled = true;
@@ -1498,14 +1495,14 @@ window.saveProfileChanges = async () => {
             return el.value.trim();
         };
 
-        // 1. Yangi rasm URL-ini aniqlaymiz (agar yangi yuklangan bo'lsa)
-        // Agarda sizda rasm yuklashdan kelgan global o'zgaruvchi bo'lsa, shuni ishlating
         const newPhotoURL = window.currentUploadedPhotoURL || user.photoURL;
+        const birthdateValue = getSafeValue('edit-birthdate'); // "2000-03-13" kabi formatda keladi
 
         const updatedData = {
             username: getSafeValue('edit-username').toLowerCase(),
             displayName: getSafeValue('edit-display-name'),
-            birthdate: getSafeValue('edit-birthdate'), 
+            birthdate: birthdateValue, 
+            age: calculateAge(birthdateValue), // 🔥 YOSHNI SANADAN HISOBLAB SAQLAYMIZ
             gender: getSafeValue('edit-gender'),
             city: getSafeValue('edit-city'),
             study: getSafeValue('edit-study'),
@@ -1513,30 +1510,26 @@ window.saveProfileChanges = async () => {
             goals: getSafeValue('edit-goals'),
             interests: getSafeValue('edit-interests'),
             travel: getSafeValue('edit-travel'),
-            photoURL: newPhotoURL, // Rasmni bazaga ham saqlaymiz
+            photoURL: newPhotoURL,
             lastUpdate: serverTimestamp()
         };
 
-        // 2. Firebase Auth profilini ham yangilaymiz (Header va boshqa joylar uchun)
+        // Auth profilini yangilash
         await updateProfile(user, {
             displayName: updatedData.displayName,
             photoURL: newPhotoURL
         });
 
-        // 3. Firestore-ga saqlaymiz
+        // Firestore-ga saqlash
         await setDoc(userRef, updatedData, { merge: true });
 
-        // 4. MUHIM: UI-ni darhol yangilash (Sahifa yangilanishidan oldin)
         if (typeof window.updateAllUserDataUI === 'function') {
             window.updateAllUserDataUI(newPhotoURL, updatedData.displayName);
         }
         
-        alert("Profil va rasm muvaffaqiyatli saqlandi!");
-        
+        alert("Profil muvaffaqiyatli yangilandi!");
         if (typeof closeMyProfileModal === 'function') closeMyProfileModal();
         
-        // Agar hamma joy birdaiga o'zgargan bo'lsa, reload shart emas, 
-        // lekin keshni tozalash uchun qoldirishingiz mumkin:
         location.reload(); 
         
     } catch (error) {
@@ -2957,20 +2950,21 @@ window.updateAllUserDataUI = (photoURL, name) => {
 };
 
 
-function updateAgeDisplay(birthDateValue) {
-    if (!birthDateValue) return;
-    
-    const birthDate = new Date(birthDateValue);
+function calculateAge(birthDateString) {
+    if (!birthDateString) return "--";
+     
     const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
+    const birthDate = new Date(birthDateString); // Inputdan kelgan sana
     
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    // Agar tug'ilgan oy hali kelmagan bo'lsa yoki oy kelgan-u kun kelmagan bo'lsa, 1 yil ayiramiz
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
         age--;
     }
     
-    // Agar xohlasangiz, console-da yoki UI-da "Siz X yoshdasiz" deb ko'rsatish mumkin
-    console.log("Hisoblangan yosh:", age);
+    return age;
 }
 
 // 1. Modalni ochish funksiyasi
@@ -3596,3 +3590,4 @@ async function uploadProfileImage(file) {
     
     location.reload(); // O'zgarishlar ko'rinishi uchun sahifani yangilash
 }
+
