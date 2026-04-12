@@ -849,7 +849,7 @@ onSnapshot(query(collection(db, "discovery"), orderBy("createdAt", "desc")), (sn
                 <p class="discovery-bio">${data.bio}</p>
                 ${!isMe ? `
                     <button onclick="sendInterest('${data.uid}', '${data.userName}')" class="interest-btn">
-                        👋 Qiziqish bildirish
+                         Qiziqish bildirish
                     </button>
                 ` : '<span class="my-badge">Sizning profilingiz</span>'}
             </div>
@@ -906,7 +906,7 @@ onSnapshot(query(collection(db, "discovery"), orderBy("createdAt", "desc")), (sn
                     <span class="user-name">${data.userName}</span>
                     <p class="discovery-bio">${data.bio}</p>
                     <button onclick="sendInterest('${data.uid}', '${data.userName}')" class="interest-btn">
-                        👋 Qiziqish bildirish
+                         Qiziqish bildirish
                     </button>
                 </div>
             </div>
@@ -974,7 +974,7 @@ onSnapshot(query(collection(db, "discovery"), orderBy("createdAt", "desc")), (sn
                     <p class="post-caption">${data.bio}</p>
                     
                     <button onclick="sendInterest('${data.uid}', '${data.userName}')" class="network-action-btn">
-                        👋 Qiziqish bildirish
+                         Qiziqish bildirish
                     </button>
                 </div>
             </div>
@@ -1050,44 +1050,61 @@ window.sendMainChatMessage = async function() {
     const input = document.getElementById('mainChatInput');
     const message = input.value.trim();
     
-    // Agar xabar bo'sh bo'lsa, foydalanuvchi tizimga kirmagan bo'lsa yoki 
-    // hozirgina bitta xabar yuborilayotgan bo'lsa - TO'XTATAMIZ
-    if (!message || !currentUser || !selectedUserId || isSendingMessage) {
+    if (!message || !currentUser || !window.selectedUserId || isSendingMessage) {
         return;
     }
 
     try {
-        isSendingMessage = true; // "Yuborish boshlandi" deb belgilaymiz
-        
-        const chatId = getChatId(currentUser.uid, selectedUserId);
+        isSendingMessage = true; 
+        const chatId = getChatId(currentUser.uid, window.selectedUserId);
+         
         const messageData = {
             text: message,
             senderId: currentUser.uid, 
             timestamp: serverTimestamp()
         };
 
-        // Inputni darhol tozalaymiz, foydalanuvchi ikkinchi marta bosishga ulgurmasin
-        input.value = ""; 
+         input.value = ""; 
 
+        // 1. Xabarni yuborish (Suhbat ichiga)
         await addDoc(collection(db, "chats", chatId, "messages"), messageData);
-        
-        console.log("Xabar muvaffaqiyatli ketdi");
+
+        // 2. MUHIM: Inbox ro'yxatida ko'rinishi uchun asosiy chat hujjatini yangilash
+        // Bu qism "Xabarlar" bo'limida suhbatdoshni chiqarib beradi
+        const chatRef = doc(db, "chats", chatId);
+        await setDoc(chatRef, {
+            participants: [currentUser.uid, window.selectedUserId],
+            lastMessage: message,
+            lastTimestamp: serverTimestamp(),
+            // Suhbatdosh ismini va rasmini keyinchalik oson olish uchun saqlaymiz
+            usersInfo: {
+                [currentUser.uid]: {
+                    name: currentUser.displayName || "Men",
+                    photo: currentUser.photoURL || ""
+                },
+                [window.selectedUserId]: {
+                    name: document.getElementById('main-chat-user-name').innerText,
+                    photo: document.getElementById('main-chat-user-img').src
+                }
+            }
+        }, { merge: true });
+
+        console.log("Xabar va Inbox yangilandi!");
 
     } catch (error) {
         console.error("Yuborishda xato:", error);
-        // Agar xato bo'lsa, xabarni inputga qaytarib qo'yishimiz mumkin
-        input.value = message; 
+         input.value = message; 
     } finally {
-        isSendingMessage = false; // Har qanday holatda ham oxirida "yo'l"ni ochamiz
+        isSendingMessage = false;
     }
 };
 
-// 2. Chat ID yaratish (Doim bir xil tartibda: kichik ID + katta ID)
+// 2. Chat ID yaratish (O'zgarishsiz qoladi)
 function getChatId(uid1, uid2) {
     return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
 }
 
-// 3. Enter bosilganda ham xabar ketsin
+// 3. Enter hodisasi (O'zgarishsiz qoladi)
 document.getElementById('mainChatInput').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         sendMainChatMessage();
@@ -1331,27 +1348,25 @@ window.viewUserProfile = (userId, name, photo, username) => {
 window.handleChatFromProfile = async (userId, userName, userPhoto) => {
     if (!userId) return;
 
-    // 1. Bo'limlarni boshqarish
-    const home = document.getElementById('home-section');
+     const home = document.getElementById('home-section');
     const chatSection = document.getElementById('chat-section');
+    const chatWindow = document.getElementById('active-chat-window'); // Chat oynasini olamiz
 
-    if (home && chatSection) {
-        // Profil turgan joyni yopish va chat bo'limini ko'rsatish
+     if (home && chatSection) {
         home.style.setProperty('display', 'none', 'important');
         chatSection.style.setProperty('display', 'flex', 'important');
 
-        console.log("Chat bo'limiga o'tildi. Foydalanuvchi:", userName);
+        // MOBIL UCHUN: Chat oynasini sidebar ustiga chiqarish
+        if (window.innerWidth <= 768 && chatWindow) {
+            chatWindow.classList.add('active'); // CSS-dagi fixed pozitsiyani yoqadi
+            chatWindow.style.display = 'flex';
+        }
 
-        // 2. MUHIM: Aynan o'sha foydalanuvchi bilan chat oynasini ochish
-        // Buning uchun openFullChat funksiyasini chaqiramiz
         if (typeof openFullChat === 'function') {
             openFullChat(userId, userName, userPhoto);
         } else {
             console.error("Xato: openFullChat funksiyasi topilmadi!");
-        }
-
-    } else {
-        console.error("Xato: ID-li elementlar topilmadi!");
+         }
     }
 };
 
@@ -1660,49 +1675,33 @@ let currentActiveChatId = null; // Kim bilan gaplashayotganimizni saqlaydi
 
 
 
-// 1. Chatga kirish
-async function selectUserForChat(userId, userName = "Foydalanuvchi", userPhoto = "assets/default-avatar.png") {
-    if (!userId) return;
-    
-    // Global o'zgaruvchini yangilash
-    currentActiveChatId = userId;
+window.selectUserForChat = async function(userId, userName, userPhoto) {
+    // 1. Agar userId bo'lmasa, hech narsani ochmaymiz
+    if (!userId || userId === "null" || userId === undefined) return;
 
-    const chatWindow = document.getElementById('chatWindow');
-    const sidebar = document.getElementById('chatSidebar');
-    const noChat = document.getElementById('no-chat-selected');
-    const activeContainer = document.getElementById('active-chat-container');
+    window.selectedUserId = userId; 
 
-    // Mobil qurilmalar uchun UI boshqaruvi
-    if (window.innerWidth <= 768) {
-        if (chatWindow) chatWindow.classList.add('active');
-        if (sidebar) sidebar.style.display = 'none';
+    const chatWindow = document.getElementById('active-chat-window');
+    const inboxView = document.getElementById('chat-inbox-view');
+
+    if (chatWindow) {
+        // Faqat shu yerda ko'rsatamiz
+        chatWindow.classList.add('active');
+        chatWindow.style.display = "flex"; 
     }
 
-    // "Chat tanlanmagan" yozuvini yashirib, asosiy chatni ko'rsatish
-    if (noChat) noChat.style.display = 'none';
-    if (activeContainer) activeContainer.style.display = 'flex';
+    // Header yangilash
+    document.getElementById('main-chat-user-name').innerText = userName || "Foydalanuvchi";
+    document.getElementById('main-chat-user-img').src = (userPhoto && userPhoto !== "null") ? userPhoto : 'assets/default-avatar.png';
 
-    // Headerdagi ma'lumotlarni darhol yangilash (Foydalanuvchi kutib qolmasligi uchun)
-    const nameEl = document.getElementById('main-chat-user-name');
-    const imgEl = document.getElementById('main-chat-user-img');
-    
-    if (nameEl) nameEl.innerText = userName;
-    if (imgEl) imgEl.src = userPhoto;
-
-    // Firebase'dan xabarlarni yuklash
-    console.log(`Chat yuklanmoqda: ${userName} (${userId})`);
-    
+    // Xabarlarni yuklash
     if (typeof loadMainMessages === 'function') {
-        loadMainMessages(userId);
-    } else {
-        console.error("Xato: loadMainMessages funksiyasi topilmadi!");
+         loadMainMessages(userId);
     }
-}
+};
+ 
 
-
-
-
-
+ 
 // 3. Xabarlarni Real-time yuklash (Professional onSnapshot)
 function loadMainMessages(targetUserId) {
     const currentUid = auth.currentUser.uid;
@@ -1874,21 +1873,62 @@ async function loadMyChats() {
     });
 }
 
-// 1. Kontaktlarni qidirish
 document.getElementById('searchContact').addEventListener('input', async (e) => {
-    const term = e.target.value.toLowerCase();
+    const term = e.target.value.trim();
     const list = document.getElementById('contactsList');
+    const recentList = document.getElementById('recent-chats-list'); // Inbox ro'yxati
     
     if (term.length > 0) {
-        const q = query(collection(db, "users"), where("displayName", ">=", term));
+        // Qidiruv boshlanganda Inboxni yashiramiz
+        if (recentList) recentList.style.display = 'none';
+        list.style.display = 'block';
+
+        const q = query(collection(db, "users"), 
+            where("displayName", ">=", term),
+            where("displayName", "<=", term + "\uf8ff")
+        );
+        
         const snap = await getDocs(q);
-        list.innerHTML = "";
+        list.innerHTML = ""; 
+        
         snap.forEach(doc => {
             const user = doc.data();
-            renderContact(user);
+            const userId = doc.id;
+
+            const contactItem = document.createElement('div');
+            contactItem.className = 'contact-item'; 
+            contactItem.innerHTML = `
+                <div class="avatar-wrapper">
+                    <img src="${user.photoURL || 'assets/default-avatar.png'}" alt="">
+                </div>
+                <div class="contact-info">
+                    <h4>${user.displayName}</h4>
+                    <p>${user.bio || 'Suhbatni boshlash...'}</p>
+                </div>
+            `;
+
+            contactItem.addEventListener('click', () => {
+                if (typeof window.selectUserForChat === 'function') {
+                    // Tanlanganda qidiruvni tozalash
+                    e.target.value = "";
+                    list.style.display = 'none';
+                    if (recentList) recentList.style.display = 'block';
+                    
+                    // Chat oynasini ochish
+                    window.selectUserForChat(userId, user.displayName, user.photoURL);
+                }
+            });
+
+            list.appendChild(contactItem);
         });
     } else {
-        loadMyChats(); // Qidiruv bo'sh bo'lsa, eski chatlarni qaytarish
+        // Qidiruv bo'sh bo'lsa, hammasini joyiga qaytaramiz
+        list.innerHTML = "";
+        list.style.display = 'none';
+        if (recentList) {
+            recentList.style.display = 'block';
+            loadRecentChats(); // Inboxni qayta yuklash
+        }
     }
 });
 
@@ -3636,24 +3676,7 @@ async function uploadProfileImage(file) {
     }
 };
 
-window.backToInbox = function() {
-    console.log("Ro'yxatga qaytilmoqda...");
-    
-    const inbox = document.getElementById('chat-inbox-view');
-    const conversation = document.getElementById('chat-conversation-view');
 
-    if (inbox && conversation) {
-        // Klasslarni olib tashlaymiz
-        inbox.classList.remove('is-hidden');
-        conversation.classList.remove('is-open');
-        
-        // CSS transition ishlashi uchun majburiy uslublar
-        conversation.style.transform = "translateX(100%)";
-        inbox.style.transform = "translateX(0)";
-        inbox.style.opacity = "1";
-        inbox.style.filter = "none";
-    }
-};
 
 // Shunchaki "function showSection..." emas, mana bunday yozing:
 window.showSection = function(sectionId) {
@@ -3682,5 +3705,98 @@ function loadMyInbox() {
             // O'sha odamning ism-rasmini olish (users kolleksiyasidan)
             renderInboxItem(otherUserId, chatData.lastMessage);
         });
+    });
+}
+
+
+
+// Bu funksiyani o'chirib turing, u xatolikka sabab bo'lyapti
+/* function openChat() {
+    const chatWindow = document.getElementById('active-chat-window');
+    if (window.innerWidth <= 768) {
+        chatWindow.classList.add('active');
+    }
+}
+*/
+
+
+
+// selectUserForChat ichida:
+const chatWindow = document.getElementById('active-chat-window');
+const inboxView = document.getElementById('chat-inbox-view');
+
+if (window.innerWidth <= 768) {
+    if (chatWindow) {
+        // Avval displayni flex qilamiz, keyin klass qo'shamiz
+        chatWindow.style.setProperty('display', 'flex', 'important');
+        chatWindow.classList.add('active');
+        console.log("Chat oynasi faollashtirildi");
+    }
+    if (inboxView) {
+        inboxView.style.setProperty('display', 'none', 'important');
+    }
+}
+
+
+// main.js faylining eng oxiriga yoki boshiga, boshqa funksiyalardan tashqariga qo'ying
+window.backToInbox = function() {
+    console.log("Tugma bosildi!");
+    const chatWindow = document.getElementById('active-chat-window');
+    const inboxView = document.getElementById('chat-inbox-view');
+
+    if (chatWindow && inboxView) {
+        chatWindow.classList.remove('active');
+        chatWindow.style.display = 'none';
+        inboxView.style.display = 'block';
+    } else {
+        console.log("Xato: Elementlar topilmadi");
+    }
+};
+
+
+function loadRecentChats() {
+    const list = document.getElementById('recent-chats-list');
+    if (!currentUser || !list) return;
+
+    console.log("Inbox yuklanmoqda...");
+
+    // Faqat siz qatnashgan chatlarni oxirgi xabar vaqti bo'yicha saralab olamiz
+    const q = query(
+        collection(db, "chats"),
+        where("participants", "array-contains", currentUser.uid),
+        orderBy("lastTimestamp", "desc")
+    );
+
+    onSnapshot(q, (snapshot) => {
+        list.innerHTML = "";
+        
+        if (snapshot.empty) {
+    // Backtick ( ` ) ishlatsangiz "yo'q" so'zidagi belgi xato bermaydi
+    list.innerHTML = `<p style="color: #888; text-align: center; padding: 20px;">Hali xabarlar yo'q</p>`;
+    return;
+}
+
+        snapshot.forEach((doc) => {
+            const chat = doc.data();
+            const otherUserId = chat.participants.find(id => id !== currentUser.uid);
+            const otherUserInfo = chat.usersInfo ? chat.usersInfo[otherUserId] : {};
+
+            const item = document.createElement('div');
+            item.className = 'contact-item'; // CSS klassingizga moslang
+            item.innerHTML = `
+                <div class="avatar-wrapper">
+                    <img src="${otherUserInfo.photo || 'assets/default-avatar.png'}">
+                </div>
+                <div class="contact-info">
+                    <h4>${otherUserInfo.name || 'Foydalanuvchi'}</h4>
+                    <p>${chat.lastMessage || 'Xabar yuborildi'}</p>
+                </div>
+            `;
+
+            item.onclick = () => window.selectUserForChat(otherUserId, otherUserInfo.name, otherUserInfo.photo);
+            list.appendChild(item);
+        });
+    }, (error) => {
+        console.error("Inbox yuklashda xato:", error);
     });
 }

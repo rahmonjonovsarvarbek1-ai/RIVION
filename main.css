@@ -3628,3 +3628,402 @@ button {
     color: #8e8e8e;
     font-size: 14px;
 }
+
+.insta-chat-container {
+    display: flex;
+    height: 100vh; /* Ekran bo'yi baravar */
+    background: #fff;
+    border: 1px solid #dbdbdb;
+    overflow: hidden;
+}
+
+/* Inbox (Chap tomondagi ro'yxat) */
+#chat-inbox-view {
+    width: 350px; /* Statsionar kompyuterda kengligi */
+    border-right: 1px solid #dbdbdb;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header-main {
+    padding: 20px;
+    border-bottom: 1px solid #dbdbdb;
+}
+
+.search-bar-wrapper {
+    background: #efefef;
+    border-radius: 10px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+}
+
+.search-bar-wrapper input {
+    background: transparent;
+    border: none;
+    margin-left: 10px;
+    outline: none;
+    width: 100%;
+}
+
+/* Faol chat oynasi (O'ng tomon) */
+.chat-window {
+    flex: 1; /* Qolgan hamma joyni egallaydi */
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+}
+
+/* Xabarlar maydoni */
+.messages-display {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    background: #3e3c3c;
+}
+
+/* Xabarlar dizayni (Instagram uslubida) */
+.message {
+    max-width: 70%;
+    padding: 10px 15px;
+    margin-bottom: 8px;
+    border-radius: 20px;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+.my-message {
+    align-self: flex-end;
+    background-color: #3797f0;
+    color: #fff;
+    border-bottom-right-radius: 4px;
+}
+
+.other-message {
+    align-self: flex-start;
+    background-color: #efefef;
+    color: #262626;
+    border-bottom-left-radius: 4px;
+}
+
+/* Footer (Input qismi) */
+.active-chat-footer {
+    padding: 15px;
+    border-top: 1px solid #dbdbdb;
+}
+
+.chat-input-container {
+    display: flex;
+    align-items: center;
+    border: 1px solid #dbdbdb;
+    border-radius: 25px;
+    padding: 5px 15px;
+}
+
+.input-wrapper {
+    flex: 1;
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    outline: none;
+}
+
+/* Mobil moslashuvchanlik */
+@media (max-width: 768px) {
+    #chat-inbox-view.active { width: 100%; display: block; }
+    #chat-inbox-view { display: none; }
+    .chat-window { display: none; width: 100%; }
+    .chat-window.active { display: flex; }
+}
+
+/* Mobil qurilmalar uchun (Ekran 768px dan kichik bo'lganda) */
+@media (max-width: 768px) {
+    .insta-chat-container {
+        flex-direction: column; /* Yonma-yon emas, ustma-ust */
+        height: 100vh;
+        border: none;
+    }
+
+    #chat-inbox-view {
+        width: 100% !important; /* To'liq ekran */
+        display: block;
+    }
+
+    #active-chat-window {
+        width: 100% !important;
+        position: fixed; /* Chat oynasini Inbox'ning ustiga qo'yamiz */
+        top: 0;
+        left: 0;
+        height: 100%;
+        z-index: 1000;
+        display: none; /* Dastlab yashirin turadi */
+    }
+
+    /* Chat ochilganda ko'rsatish uchun klass */
+    #active-chat-window.mobile-active {
+        display: flex;
+    }
+
+    .back-btn {
+        display: block !important; /* Orqaga qaytish tugmasini faqat telefonda ko'rsatish */
+    }
+}
+
+@media screen and (max-width: 768px) {
+    /* Asosiy konteyner */
+    .insta-chat-container {
+        display: block !important;
+        position: relative !important;
+        overflow: hidden !important;
+        width: 100% !important;
+        height: 100vh !important;
+    }
+
+    /* Chat ro'yxati */
+    #chatSidebar {
+        width: 100% !important;
+        float: none !important;
+        display: block !important;
+    }
+
+    /* Chat oynasi - hamma narsadan ustun qatlam */
+    #chatWindow {
+        position: fixed !important; /* Ekranga yopishib turadi */
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 100000 !important; /* Juda yuqori qatlam */
+        background-color: #000000 !important; /* Sizning qora dizayningiz */
+        display: none !important; 
+    }
+
+    /* Chat faollashganda */
+    #chatWindow.active {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    /* Konteynerni mobilga moslaymiz */
+    .insta-chat-container {
+        display: block !important; 
+        position: relative !important;
+        height: 100vh !important;
+    }
+
+    /* Ro'yxat (Inbox) qismi */
+    #chat-inbox-view {
+        width: 100% !important;
+        display: block !important;
+    }
+
+    /* Chat oynasi - Sidebar ustidan chiqishi uchun */
+    #active-chat-window {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        z-index: 9999 !important; /* Eng yuqori qatlam */
+        background-color: #000 !important;
+        display: none; /* Dastlab yashirin */
+    }
+
+    /* Chat ochilganda ko'rinishi */
+    #active-chat-window.active {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    /* Orqaga qaytish tugmasini ko'rsatish */
+    .back-btn {
+        display: block !important;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    /* Qaytish tugmasi stili */
+    .back-btn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: none;
+        color: rgb(53, 50, 50);
+        font-size: 1.2rem;
+        padding: 10px;
+        margin-right: 10px;
+        cursor: pointer;
+        outline: none;
+    }
+
+    /* Chat headerini to'g'irlash */
+    .active-chat-header {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+    }
+}
+
+/* Kompyuterda qaytish tugmasini yashirib turamiz */
+@media screen and (min-width: 769px) {
+    .back-btn {
+        display: none !important;
+    }
+}
+
+/* Header asosiy konteyneri */
+.active-chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 15px;
+    background-color: #151515; /* Fon rangi */
+    border-bottom: 1px solid #333;
+}
+
+/* Chap tomondagi elementlar (tugma + profil) */
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* Elementlar orasidagi masofa */
+}
+
+/* Orqaga qaytish tugmasi */
+.back-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 5px;
+}
+
+/* Profil va ism qismi */
+.user-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.avatar-wrapper {
+    position: relative;
+    width: 40px;
+    height: 40px;
+}
+
+#main-chat-user-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Ism va Online yozuvi */
+.text-info {
+    display: flex;
+    flex-direction: column; /* Ism tepada, online pastda */
+}
+
+#main-chat-user-name {
+    color: #fff;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.status-text {
+    color: #4CAF50; /* Yashil rang */
+    font-size: 12px;
+}
+
+.inbox-container {
+    padding: 10px;
+    overflow-y: auto;
+    height: calc(100vh - 150px);
+}
+
+.chat-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.2s;
+    margin-bottom: 5px;
+}
+
+.chat-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.chat-item .avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 15px;
+    object-fit: cover;
+}
+
+.chat-info {
+    flex: 1;
+    border-bottom: 1px solid #222;
+    padding-bottom: 8px;
+}
+
+.chat-info h4 {
+    margin: 0;
+    color: #fff;
+    font-size: 16px;
+}
+
+.chat-info p {
+    margin: 5px 0 0;
+    color: #343131;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.inbox-list-wrapper {
+    overflow-y: auto;
+    height: calc(100vh - 160px); /* Ekran bo'yicha moslashish */
+}
+
+/* Boshida chat mutlaqo ko'rinmasligi kerak */
+.chat-window {
+    display: none !important;
+}
+
+/* Faqatgina active bo'lganda ko'rinadi */
+.chat-window.active {
+    display: flex !important;
+}
+
+/* 1. Boshida chat oynasi mutlaqo ko'rinmasligi shart */
+#active-chat-window {
+    display: none !important;
+}
+
+/* 2. Faqatgina .active klassi qo'shilganda flex bo'lib ochiladi */
+#active-chat-window.active {
+    display: flex !important;
+}
+
+/* 3. Inbox va Chat oynasi bir-biriga xalaqit bermasligi uchun */
+.insta-chat-container {
+    display: flex;
+    position: relative;
+    overflow: hidden;
+}
+
