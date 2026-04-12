@@ -65,12 +65,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="menu-icon"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
         <span>Qiziqishlar</span>
     </div>
-    <div class="menu-item" data-section="chat" onclick="showSection('chat')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="menu-icon">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-        </svg>
-        <span>Chat</span>
-    </div>
+    
     <div class="menu-item">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="menu-icon"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
         <span>Ma'lumot</span>
@@ -117,6 +112,12 @@
         <li data-section="meetings">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
             <span>Meetings</span>
+        </li>
+        <li data-section="chat" onclick="showSection('chat')">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>Chat</span>
         </li>
         <li data-section="notifications">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
@@ -243,49 +244,62 @@
 </div>
 
            <div id="chat-section" class="content-section">
-    <div class="chat-main-wrapper glass" id="chatWrapper">
-        <div class="chat-sidebar" id="chatSidebar">
-            <div class="sidebar-header-custom">
-                <h3>Xabarlar</h3>
-                <div class="search-chat">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="searchContact" placeholder="Kontaktlarni qidirish...">
-                </div>
-            </div>
-            <div id="contactsList" class="inbox-scroll-area">
-                </div>
-        </div>
-
-        <div class="chat-window-main" id="chatWindow">
-            <div id="no-chat-selected" class="empty-chat-state">
-                <div class="empty-icon">💬</div>
-                <h4>Muloqotni boshlash uchun kontaktni tanlang</h4>
-            </div>
-
-           <div id="active-chat-container" class="mobile-chat-view">
-    <div class="chat-header">
-        <button onclick="closeChat()" class="back-btn">
-            <i class="fas fa-arrow-left"></i>
-        </button>
-        <img id="main-chat-user-img" src="assets/default-avatar.png">
-        <div class="user-info">
-            <span id="main-chat-user-name">Foydalanuvchi</span>
-            <small>online</small>
-        </div>
-    </div>
-
-    <div id="main-chat-messages" class="messages-area"></div>
-
-    <div class="chat-footer" style="padding: 10px 15px; border-top: 1px solid #222; background: #000; width: 100%; box-sizing: border-box;">
-    <div style="display: flex; align-items: center; background: #1a1a1a; padding: 5px 15px; border-radius: 25px; width: 100%;">
-        <input type="text" id="mainChatInput" placeholder="Xabar yozing..." 
-               style="flex: 1; min-width: 0; background: none; border: none; color: #fff; outline: none; padding: 10px;">
+    <div class="insta-chat-container">
         
-        <button id="sendBtn" onclick="sendMainChatMessage()"> ▶ </button>
+        <div id="chat-inbox-view" class="chat-view active">
+            <div class="chat-header-main">
+                <h3>Xabarlar</h3>
+                <div class="search-bar-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchContact" placeholder="Qidirish...">
+                </div>
+            </div>
+            <div id="contactsList" class="inbox-list">
+                </div>
+        </div>
+
+        <div class="active-chat-header">
+    <div class="header-left">
+        <button onclick="backToInbox()" class="back-btn">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        
+        <div class="user-meta" onclick="viewUserProfile()">
+            <div class="avatar-wrapper">
+                <img id="main-chat-user-img" src="assets/default-avatar.png">
+                <span class="online-badge"></span>
+            </div>
+            <div class="text-info">
+                <span id="main-chat-user-name">Foydalanuvchi</span>
+                <span class="status-text">online</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="header-right">
+        <button class="header-icon-btn info-btn"><i class="fas fa-info-circle"></i></button>
     </div>
 </div>
+
+            <div id="main-chat-messages" class="messages-display"></div>
+
+            <div class="active-chat-footer">
+    <div class="chat-input-container">
+        <button class="icon-btn camera-btn">
+            <i class="fas fa-camera"></i>
+        </button>
+
+        <div class="input-wrapper">
+            <input type="text" id="mainChatInput" placeholder="Xabar yozing..." autocomplete="off">
+        </div>
+
+        <button id="sendBtn" class="send-icon-btn" onclick="sendMainChatMessage()">
+            <i class="fab fa-telegram-plane">▶</i>
+        </button>
+    </div>
 </div>
         </div>
+
     </div>
 </div>
 
@@ -474,6 +488,13 @@
         <span>Meet</span>
     </div>
     
+    <div class="m-nav-item" data-section="chat" onclick="showSection('chat')">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span>Chat</span>
+    </div>
+
     <div class="m-nav-item" data-section="notifications" style="position: relative;">
         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>

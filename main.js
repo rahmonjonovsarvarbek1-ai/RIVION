@@ -1043,32 +1043,42 @@ onSnapshot(query(collection(db, "notifications"), orderBy("createdAt", "desc")),
     });
 });
 
-let currentChatId = null; // Hozirgi chat ID-si
+// Funksiyadan tashqarida bitta o'zgaruvchi ochamiz
+let isSendingMessage = false;
 
 window.sendMainChatMessage = async function() {
-    const input = document.getElementById('mainChatInput'); // HTML-da ID shunaqami?
+    const input = document.getElementById('mainChatInput');
     const message = input.value.trim();
     
-    if (!message || !currentUser || !selectedUserId) {
-        console.log("XATO: Ma'lumot yetarli emas!", { message, currentUser, selectedUserId });
+    // Agar xabar bo'sh bo'lsa, foydalanuvchi tizimga kirmagan bo'lsa yoki 
+    // hozirgina bitta xabar yuborilayotgan bo'lsa - TO'XTATAMIZ
+    if (!message || !currentUser || !selectedUserId || isSendingMessage) {
         return;
     }
 
     try {
+        isSendingMessage = true; // "Yuborish boshlandi" deb belgilaymiz
+        
         const chatId = getChatId(currentUser.uid, selectedUserId);
         const messageData = {
-            text: message,         // <--- Kichik harflarda 'text'
+            text: message,
             senderId: currentUser.uid, 
             timestamp: serverTimestamp()
         };
 
-        console.log("Yuborilayotgan ma'lumot:");
-        console.table(messageData); // Konsolda buni tekshiring!
+        // Inputni darhol tozalaymiz, foydalanuvchi ikkinchi marta bosishga ulgurmasin
+        input.value = ""; 
 
         await addDoc(collection(db, "chats", chatId, "messages"), messageData);
-        input.value = ""; 
+        
+        console.log("Xabar muvaffaqiyatli ketdi");
+
     } catch (error) {
         console.error("Yuborishda xato:", error);
+        // Agar xato bo'lsa, xabarni inputga qaytarib qo'yishimiz mumkin
+        input.value = message; 
+    } finally {
+        isSendingMessage = false; // Har qanday holatda ham oxirida "yo'l"ni ochamiz
     }
 };
 
@@ -1191,23 +1201,43 @@ function loadInbox() {
     });
 }
 
-// Chatni ochish (Lichka bosilganda yoki Inbox'dan tanlanganda)
 window.openFullChat = (roomId, name, photo) => {
     const wrapper = document.getElementById('chatWrapper');
     const noChat = document.getElementById('no-chat-selected');
     const activeChat = document.getElementById('active-chat-container');
+    const messagesDisplay = document.getElementById('main-chat-messages');
 
-    // Mobile'da sidebar-ni yopib, chatni ko'rsatish
+    if (!wrapper || !activeChat) {
+        console.error("Xato: Chat elementlari topilmadi!");
+        return;
+    }
+
+    // 1. Mobile-da sidebar-ni yopib, chatni ko'rsatish
     wrapper.classList.add('is-chat-open');
 
-    // UI yangilash
+    // 2. UI-ni tayyorlash
     noChat.style.display = 'none';
     activeChat.style.display = 'flex';
-    document.getElementById('main-chat-user-name').innerText = name;
-    document.getElementById('main-chat-user-img').src = photo;
 
-    // Firebase'dan xabarlarni yuklash (Avvalgi kodingiz kabi)
-    loadMessages(roomId); 
+    // 3. Ma'lumotlarni to'ldirish (Rasm bo'lmasa default rasmni qo'yish)
+    document.getElementById('main-chat-user-name').innerText = name || "Foydalanuvchi";
+    document.getElementById('main-chat-user-img').src = photo || 'assets/default-avatar.png';
+
+    // 4. MUHIM: Yangi chat ochilganda eski xabarlarni tozalab tashlash
+    // Aks holda yangi xabarlar yuklanguncha eski odamning xabarlari ko'rinib turadi
+    if (messagesDisplay) {
+        messagesDisplay.innerHTML = '<div class="chat-loader">Yuklanmoqda...</div>';
+    }
+
+    // 5. Global o'zgaruvchini yangilash (Xabar yuborishda kerak bo'ladi)
+    window.selectedUserId = roomId; 
+
+    // 6. Xabarlarni yuklash
+    if (typeof loadMessages === 'function') {
+        loadMessages(roomId);
+    } else {
+        console.warn("loadMessages funksiyasi topilmadi!");
+    }
 };
 
 
@@ -1298,22 +1328,30 @@ window.viewUserProfile = (userId, name, photo, username) => {
     if (modal) modal.style.display = 'block';
 };
 
-window.handleChatFromProfile = (userId) => {
+window.handleChatFromProfile = async (userId, userName, userPhoto) => {
     if (!userId) return;
 
-    // Elementlar borligini tekshirib olamiz
+    // 1. Bo'limlarni boshqarish
     const home = document.getElementById('home-section');
-    const chat = document.getElementById('chat-section');
+    const chatSection = document.getElementById('chat-section');
 
-    if (home && chat) {
-        home.style.display = 'none';
-        chat.style.display = 'block';
-        console.log("Chat ochildi:", userId);
-        // loadDirectChat(userId); // Bu funksiya bo'lsa chaqiring
+    if (home && chatSection) {
+        // Profil turgan joyni yopish va chat bo'limini ko'rsatish
+        home.style.setProperty('display', 'none', 'important');
+        chatSection.style.setProperty('display', 'flex', 'important');
+
+        console.log("Chat bo'limiga o'tildi. Foydalanuvchi:", userName);
+
+        // 2. MUHIM: Aynan o'sha foydalanuvchi bilan chat oynasini ochish
+        // Buning uchun openFullChat funksiyasini chaqiramiz
+        if (typeof openFullChat === 'function') {
+            openFullChat(userId, userName, userPhoto);
+        } else {
+            console.error("Xato: openFullChat funksiyasi topilmadi!");
+        }
+
     } else {
-        // Agar bu xato chiqsa, demak HTML-da id'lar noto'g'ri qo'yilgan
-        console.error("Xato: 'home-section' yoki 'chat-section' ID-li elementlar topilmadi!");
-        alert("Xatolik: Sahifa tuzilishi noto'g'ri. Iltimos, HTML-ni tekshiring.");
+        console.error("Xato: ID-li elementlar topilmadi!");
     }
 };
 
@@ -1620,28 +1658,13 @@ window.handleFriendRequest = async (requestId, action) => {
 
 let currentActiveChatId = null; // Kim bilan gaplashayotganimizni saqlaydi
 
-// 1. Profil modalidan chatni ochish
-window.handleChatFromProfile = async (userId) => {
-    if (!userId) return;
 
-    // UI-ni almashtirish
-    const home = document.getElementById('home-section');
-    const chat = document.getElementById('chat-section');
-    const modal = document.getElementById('user-profile-modal');
-
-    if (home && chat) {
-        home.style.display = 'none';
-        chat.style.display = 'block';
-        if (modal) modal.style.display = 'none'; // Modalni yopish
-
-        // Foydalanuvchini tanlash va yuklash
-        selectUserForChat(userId);
-    }
-};
 
 // 1. Chatga kirish
-async function selectUserForChat(userId) {
+async function selectUserForChat(userId, userName = "Foydalanuvchi", userPhoto = "assets/default-avatar.png") {
     if (!userId) return;
+    
+    // Global o'zgaruvchini yangilash
     currentActiveChatId = userId;
 
     const chatWindow = document.getElementById('chatWindow');
@@ -1649,30 +1672,34 @@ async function selectUserForChat(userId) {
     const noChat = document.getElementById('no-chat-selected');
     const activeContainer = document.getElementById('active-chat-container');
 
+    // Mobil qurilmalar uchun UI boshqaruvi
     if (window.innerWidth <= 768) {
-        chatWindow.classList.add('active');
-        sidebar.style.display = 'none';
+        if (chatWindow) chatWindow.classList.add('active');
+        if (sidebar) sidebar.style.display = 'none';
     }
 
-    noChat.style.display = 'none';
-    activeContainer.style.display = 'flex';
+    // "Chat tanlanmagan" yozuvini yashirib, asosiy chatni ko'rsatish
+    if (noChat) noChat.style.display = 'none';
+    if (activeContainer) activeContainer.style.display = 'flex';
 
-    // Foydalanuvchi ma'lumotlarini yuklash (Firebase)
-    // Bu yerda getDoc funksiyangizni ishlating...
-    loadMainMessages(userId);
-}
+    // Headerdagi ma'lumotlarni darhol yangilash (Foydalanuvchi kutib qolmasligi uchun)
+    const nameEl = document.getElementById('main-chat-user-name');
+    const imgEl = document.getElementById('main-chat-user-img');
+    
+    if (nameEl) nameEl.innerText = userName;
+    if (imgEl) imgEl.src = userPhoto;
 
-// 2. Orqaga qaytish (Instagram uslubida)
-function backToSidebar() {
-    const chatWindow = document.getElementById('chatWindow');
-    const sidebar = document.getElementById('chatSidebar');
-
-    chatWindow.classList.remove('active');
-    if (window.innerWidth <= 768) {
-        chatWindow.style.display = 'none';
-        sidebar.style.display = 'flex';
+    // Firebase'dan xabarlarni yuklash
+    console.log(`Chat yuklanmoqda: ${userName} (${userId})`);
+    
+    if (typeof loadMainMessages === 'function') {
+        loadMainMessages(userId);
+    } else {
+        console.error("Xato: loadMainMessages funksiyasi topilmadi!");
     }
 }
+
+
 
 
 
@@ -3590,3 +3617,70 @@ async function uploadProfileImage(file) {
     
     location.reload(); // O'zgarishlar ko'rinishi uchun sahifani yangilash
  }
+
+ window.openUserChat = function(uid, name, photo) {
+    // 1. Ma'lumotlarni to'ldirish
+    document.getElementById('main-chat-user-name').innerText = name;
+    document.getElementById('main-chat-user-img').src = photo || 'assets/default-avatar.png';
+    
+    // 2. Oynalarni almashtirish (Slide effekti)
+    const inbox = document.getElementById('chat-inbox-view');
+    const conversation = document.getElementById('chat-conversation-view');
+    
+    inbox.classList.add('is-hidden');
+    conversation.classList.add('is-open');
+    
+    // 3. Xabarlarni yuklashni boshlash
+    if(typeof startRivionChat === 'function') {
+        startRivionChat(uid);
+    }
+};
+
+window.backToInbox = function() {
+    console.log("Ro'yxatga qaytilmoqda...");
+    
+    const inbox = document.getElementById('chat-inbox-view');
+    const conversation = document.getElementById('chat-conversation-view');
+
+    if (inbox && conversation) {
+        // Klasslarni olib tashlaymiz
+        inbox.classList.remove('is-hidden');
+        conversation.classList.remove('is-open');
+        
+        // CSS transition ishlashi uchun majburiy uslublar
+        conversation.style.transform = "translateX(100%)";
+        inbox.style.transform = "translateX(0)";
+        inbox.style.opacity = "1";
+        inbox.style.filter = "none";
+    }
+};
+
+// Shunchaki "function showSection..." emas, mana bunday yozing:
+window.showSection = function(sectionId) {
+    console.log("Bo'lim almashmoqda:", sectionId);
+    // qolgan kodlar...
+};
+
+// Inbox ro'yxatini yuklash
+function loadMyInbox() {
+    const list = document.getElementById('contactsList');
+    
+    // Faqat siz qatnashgan chatlarni filtrlab olamiz
+    const q = query(
+        collection(db, "chats"), 
+        where("users", "array-contains", currentUser.uid),
+        orderBy("lastTimestamp", "desc") // Oxirgi xabar kelganlar tepaga chiqadi
+    );
+
+    onSnapshot(q, (snapshot) => {
+        list.innerHTML = ""; // Ro'yxatni yangilash
+        snapshot.forEach((doc) => {
+            const chatData = doc.data();
+            // Chatdagi ikkinchi odamning ID-sini topish
+            const otherUserId = chatData.users.find(id => id !== currentUser.uid);
+            
+            // O'sha odamning ism-rasmini olish (users kolleksiyasidan)
+            renderInboxItem(otherUserId, chatData.lastMessage);
+        });
+    });
+}
