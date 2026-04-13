@@ -4069,3 +4069,59 @@ button {
 .follow-btn-main:hover {
     background: #0056b3;
 }
+
+/* Telefonlar uchun (Ekran kengligi 600px dan kichik bo'lganda) */
+@media screen and (max-width: 600px) {
+    #all-users-grid {
+        grid-template-columns: 1fr 1fr; /* 2 ta ustunli setka */
+        gap: 10px; /* Oradagi masofa */
+        padding: 10px;
+    }
+
+    .user-discover-card {
+        padding: 12px;
+        border-radius: 15px; /* Biroq kichikroq radius */
+    }
+
+    .discover-avatar {
+        width: 60px; /* Telefon uchun avatar hajmi */
+        height: 60px;
+    }
+
+    .discover-name {
+        font-size: 13px; /* Kichikroq shrift */
+    }
+
+    .view-prof-btn, .follow-btn-main {
+        padding: 6px;
+        font-size: 11px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .preview-card.glass {
+        width: 95%; /* Chetdan ozgina joy qolishi uchun */
+        padding: 20px 15px;
+        max-height: 90vh; /* Ekrandan chiqib ketmasligi uchun */
+        overflow-y: auto; /* Agar ma'lumot ko'p bo'lsa, skroll bo'ladi */
+    }
+
+    #p-modal-img {
+        width: 90px;
+        height: 90px;
+    }
+
+    .user-info-row {
+        flex-wrap: wrap; /* Ma'lumotlar sig'masa pastga tushadi */
+        gap: 10px;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr; /* Maqsad va qiziqishlar bitta ustun bo'lib qoladi */
+    }
+
+    .info-box.wide {
+        grid-column: span 1;
+    }
+}
+
