@@ -4216,3 +4216,63 @@ button {
     font-size: 24px;
     cursor: pointer;
 }
+
+/* Asosiy konteyner */
+#all-users-grid {
+    display: grid;
+    /* Telefonda 2 ta ustun, kattaroq ekranda avtomatik ko'payadi */
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+    gap: 12px;
+    padding: 15px;
+    background: #000;
+}
+
+/* Karta dizayni */
+.user-discover-card {
+    background: #121212;
+    border-radius: 20px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid #222;
+    /* Telefon ekranida karta siqilib qolmasligi uchun */
+    min-width: 0; 
+}
+
+/* Avatar o'lchami */
+.discover-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+}
+
+/* Ism uzun bo'lsa pastga tushib ketmasligi uchun */
+.discover-name {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 12px;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Tugmalar - telefonda bosishga qulay bo'lishi kerak */
+.view-prof-btn, .follow-btn-main {
+    width: 100%;
+    padding: 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    margin-bottom: 6px;
+}
+
+.view-prof-btn { background: #222; color: #ccc; }
+.follow-btn-main { background: #007bff; color: #fff; }
