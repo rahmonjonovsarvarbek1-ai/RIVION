@@ -3968,3 +3968,104 @@ button {
 .unread-chat {
     background: rgba(0, 123, 255, 0.1); /* Yangi xabari bor chatni biroz ajratib ko'rsatadi */
 }
+
+.post-actions-group {
+    display: flex;
+    flex-direction: column; /* Tugmalarni ustma-ust qo'yadi */
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.network-follow-btn {
+    background: #007bff; /* Home-dagi ko'k rang */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.network-follow-btn:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+}
+
+.all-users-container {
+    margin-top: 25px;
+}
+
+.section-title {
+    color: #fff;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.users-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 qatorli grid */
+    gap: 15px;
+}
+
+.user-discover-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 15px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.discover-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+    object-fit: cover;
+    border: 2px solid #007bff;
+}
+
+.discover-name {
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    display: block;
+    margin-bottom: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.discover-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.view-prof-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.follow-btn-main {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.follow-btn-main:hover {
+    background: #0056b3;
+}

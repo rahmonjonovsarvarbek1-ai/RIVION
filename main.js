@@ -39,7 +39,7 @@ import { auth, db, supabase } from './firebase-config.js';
 window.openUserProfile = async (uid) => {
     if (!uid) return;
 
-    const home = document.getElementById('home-page');
+    const home = document.getElementById('search-section'); // Qidiruvdan kirayotganimiz uchun
     const profile = document.getElementById('profile-page');
 
     if (home) home.style.display = 'none';
@@ -48,37 +48,47 @@ window.openUserProfile = async (uid) => {
     try {
         const userRef = doc(db, "users", uid);
         
-        // onSnapshot orqali real-vaqtda obunalar sonini kuzatamiz
         onSnapshot(userRef, (docSnap) => {
             if (docSnap.exists()) {
                 const userData = docSnap.data();
                 
-                // 1. Ism va Bio-ni yangilash
-                const nameEl = document.getElementById('profile-name');
-                const bioEl = document.getElementById('profile-bio');
-                if (nameEl) nameEl.innerText = userData.authorName || userData.displayName || "Ismsiz";
-                if (bioEl) bioEl.innerText = userData.bio || "Bio ma'lumoti yo'q";
+                // 1. Ma'lumotlarni to'ldirish
+                document.getElementById('profile-name').innerText = userData.displayName || "Ismsiz";
+                document.getElementById('profile-bio').innerText = userData.bio || "Bio ma'lumoti yo'q";
+                // Profil rasmi va bannerini ham yangilashni unutmang
+                if(userData.photoURL) document.getElementById('profile-avatar').src = userData.photoURL;
 
-                // 2. RAQAMLARNI YANGILASH (Sizda yetishmayotgan qism)
-                // HTML-dagi ID-laringizni tekshiring: followers-count va following-count bo'lishi kerak
-                const followersEl = document.getElementById('followers-count');
-                const followingEl = document.getElementById('following-count');
-                
-                if (followersEl) followersEl.innerText = userData.followers?.length || 0;
-                if (followingEl) followingEl.innerText = userData.following?.length || 0;
+                // 2. Raqamlar (Followers/Following)
+                document.getElementById('followers-count').innerText = userData.followers?.length || 0;
+                document.getElementById('following-count').innerText = userData.following?.length || 0;
 
-                // 3. Tugmani sozlash
-                const actionBtn = document.getElementById('action-button');
-                if (actionBtn) {
-                    if (uid !== auth.currentUser?.uid) {
-                        // Agar allaqachon obuna bo'lgan bo'lsak, tugma matnini o'zgartirish
-                        const isFollowing = userData.followers?.includes(auth.currentUser.uid);
-                        actionBtn.innerText = isFollowing ? "Obunadan chiqish" : "Obuna bo'lish";
-                        actionBtn.onclick = () => window.followUser(uid);
-                    } else {
-                        actionBtn.innerText = "Profilni mukammallashtirish";
-                        actionBtn.onclick = () => console.log("Edit profile");
-                    }
+                // 3. TUGMALAR MANTIQI
+                const actionContainer = document.getElementById('profile-action-container'); 
+                if (!actionContainer) return;
+
+                if (uid === auth.currentUser?.uid) {
+                    // BU MENING PROFILIM
+                    actionContainer.innerHTML = `
+                        <button class="edit-profile-btn" onclick="openEditModal()">
+                            Profilni mukammallashtirish
+                        </button>
+                    `;
+                } else {
+                    // BU BOSHQA FOYDALANUVCHI PROFILI
+                    const isFollowing = userData.followers?.includes(auth.currentUser.uid);
+                    
+                    actionContainer.innerHTML = `
+                        <div style="display: flex; gap: 10px; width: 100%;">
+                            <button class="follow-btn-profile" onclick="window.followUser('${uid}')" 
+                                    style="flex: 1; background: ${isFollowing ? '#333' : '#007bff'}">
+                                ${isFollowing ? "Obunadan chiqish" : "Obuna bo'lish"}
+                            </button>
+                            <button class="chat-btn-profile" onclick="window.goToChat('${uid}')" 
+                                    style="flex: 1; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                                Chatga o'tish
+                            </button>
+                        </div>
+                    `;
                 }
             }
         });
@@ -893,21 +903,40 @@ window.sendInterest = async (targetUid, targetName) => {
     }
 };
 
-// Feedni chiqarish (Har doim o'zinikida ham tugma chiqishi uchun)
 onSnapshot(query(collection(db, "discovery"), orderBy("createdAt", "desc")), (snapshot) => {
-    const discoveryFeed = document.getElementById('discovery-feed');
-    discoveryFeed.innerHTML = "";
+    const feed = document.getElementById('discovery-feed');
+    feed.className = "discovery-list"; 
+    feed.innerHTML = "";
+    
     snapshot.forEach((doc) => {
         const data = doc.data();
-        discoveryFeed.innerHTML += `
-            <div class="discovery-card horizontal-post">
-                <img src="${data.userPhoto}" class="discovery-avatar">
-                <div class="post-content-area">
-                    <span class="user-name">${data.userName}</span>
-                    <p class="discovery-bio">${data.bio}</p>
-                    <button onclick="sendInterest('${data.uid}', '${data.userName}')" class="interest-btn">
-                         Qiziqish bildirish
-                    </button>
+        
+        // Hozirgi foydalanuvchi o'ziga o'zi obuna bo'la olmaydi
+        const isOwnPost = auth.currentUser && auth.currentUser.uid === data.uid;
+        const followBtnHtml = isOwnPost ? '' : `
+            <button onclick="followUser('${data.uid}')" class="network-follow-btn">
+                Obuna bo'lish
+            </button>
+        `;
+
+        feed.innerHTML += `
+            <div class="network-post">
+                <div class="post-user-info">
+                    <img src="${data.userPhoto}" style="width:20px; height:20px; border-radius:50%;">
+                    <span>${data.userName}</span>
+                </div>
+                
+                <img src="${data.postImage}" class="post-main-img">
+                
+                <div class="post-details">
+                    <p class="post-caption">${data.bio}</p>
+                    
+                    <div class="post-actions-group">
+                        <button onclick="sendInterest('${data.uid}', '${data.userName}')" class="network-action-btn">
+                             Qiziqish bildirish
+                        </button>
+                        ${followBtnHtml}
+                    </div>
                 </div>
             </div>
         `;
@@ -956,11 +985,20 @@ window.uploadDiscoveryPost = async () => {
 
 onSnapshot(query(collection(db, "discovery"), orderBy("createdAt", "desc")), (snapshot) => {
     const feed = document.getElementById('discovery-feed');
-    feed.className = "discovery-list"; // Grid klassini qo'shamiz
+    feed.className = "discovery-list"; 
     feed.innerHTML = "";
     
     snapshot.forEach((doc) => {
         const data = doc.data();
+        
+        // Hozirgi foydalanuvchi o'ziga o'zi obuna bo'la olmaydi
+        const isOwnPost = auth.currentUser && auth.currentUser.uid === data.uid;
+        const followBtnHtml = isOwnPost ? '' : `
+            <button onclick="followUser('${data.uid}')" class="network-follow-btn">
+                Obuna bo'lish
+            </button>
+        `;
+
         feed.innerHTML += `
             <div class="network-post">
                 <div class="post-user-info">
@@ -973,9 +1011,12 @@ onSnapshot(query(collection(db, "discovery"), orderBy("createdAt", "desc")), (sn
                 <div class="post-details">
                     <p class="post-caption">${data.bio}</p>
                     
-                    <button onclick="sendInterest('${data.uid}', '${data.userName}')" class="network-action-btn">
-                         Qiziqish bildirish
-                    </button>
+                    <div class="post-actions-group">
+                        <button onclick="sendInterest('${data.uid}', '${data.userName}')" class="network-action-btn">
+                             Qiziqish bildirish
+                        </button>
+                        ${followBtnHtml}
+                    </div>
                 </div>
             </div>
         `;
@@ -1311,41 +1352,51 @@ window.searchUsers = async (val) => {
     }
 };
  
-window.viewUserProfile = (userId, name, photo, username) => {
-    // 1. Agar bu o'zimiz bo'lsak, modalni emas, o'zimizning profil bo'limini ochamiz
+window.viewUserProfile = async (userId) => {
+    // 1. O'zining profili bo'lsa, to'g'ridan-to'g'ri bo'limga o'tish
     if (auth.currentUser && userId === auth.currentUser.uid) {
         showSection('profile');
         return;
     }
 
-    // 2. Modal elementlarini to'ldirish
-    const modalName = document.getElementById('p-modal-name');
-    const modalUser = document.getElementById('p-modal-username');
-    const modalImg = document.getElementById('p-modal-img');
-
-    if (modalName) modalName.innerText = name;
-    if (modalUser) modalUser.innerText = "@" + (username || "username");
-    if (modalImg) modalImg.src = photo || 'assets/default-avatar.png';
-
-    // 3. Tugmalarni foydalanuvchi ID-si bilan jonlantirish
-    const actionsBox = document.querySelector('.profile-actions-box');
-    if (actionsBox) {
-        actionsBox.innerHTML = `
-            <button onclick="handleChatFromProfile('${userId}')" class="btn-chat">
-                <i class="fas fa-comment"></i> Chatga o'tish
-            </button>
-            <button onclick="handleFriendRequest('${userId}')" class="btn-friend" id="friendBtn">
-                <i class="fas fa-user-plus"></i> Do'st bo'lish
-            </button>
-            <button onclick="handleBlockUser('${userId}')" class="btn-block">
-                <i class="fas fa-ban"></i> Bloklash
-            </button>
-        `;
-    }
-
-    // 4. Modalni ko'rsatish
+    // Modalni topish
     const modal = document.getElementById('user-profile-modal');
-    if (modal) modal.style.display = 'block';
+    if (!modal) return;
+
+    try {
+        // 2. Bazadan foydalanuvchi ma'lumotlarini olish
+        const userSnap = await getDoc(doc(db, "users", userId));
+        
+        if (userSnap.exists()) {
+            const data = userSnap.data();
+
+            // 3. Modal elementlarini to'ldirish (undefined bo'lmasligi uchun default qiymatlar bilan)
+            document.getElementById('p-modal-name').innerText = data.displayName || "Ismsiz";
+            document.getElementById('p-modal-username').innerText = "@" + (data.username || "foydalanuvchi");
+            document.getElementById('p-modal-img').src = data.photoURL || 'assets/default-avatar.png';
+
+            // 4. Tugmalarni yangilash
+            const actionsBox = document.querySelector('.profile-actions-box');
+            if (actionsBox) {
+                actionsBox.innerHTML = `
+                    <button onclick="handleChatFromProfile('${userId}')" class="btn-chat">
+                        <i class="fas fa-comment"></i> Chatga o'tish
+                    </button>
+                    <button onclick="handleFriendRequest('${userId}')" class="btn-friend">
+                        <i class="fas fa-user-plus"></i> Do'st bo'lish
+                    </button>
+                    <button onclick="window.openUserProfile('${userId}')" class="btn-full-profile">
+                        To'liq profil
+                    </button>
+                `;
+            }
+
+            // Modalni ko'rsatish
+            modal.style.display = 'block';
+        }
+    } catch (error) {
+        console.error("Profilni yuklashda xatolik:", error);
+    }
 };
 
 window.handleChatFromProfile = async (userId, userName, userPhoto) => {
@@ -3840,3 +3891,34 @@ window.showSection = function(sectionId) {
     }
 }
 
+function loadAllUsers() {
+    const usersGrid = document.getElementById('all-users-grid');
+    
+    // Foydalanuvchilar ro'yxatini olish (masalan, birinchi 20 tasini)
+    const q = query(collection(db, "users"), limit(20));
+
+    onSnapshot(q, (snapshot) => {
+        usersGrid.innerHTML = "";
+        snapshot.forEach((doc) => {
+            const userData = doc.data();
+            
+            // O'zimizni ro'yxatda ko'rsatmaslik uchun
+            if(auth.currentUser && doc.id === auth.currentUser.uid) return;
+
+            usersGrid.innerHTML += `
+                <div class="user-discover-card">
+                    <img src="${userData.photoURL || 'assets/default-avatar.png'}" class="discover-avatar">
+                    <span class="discover-name">${userData.displayName}</span>
+                    
+                    <div class="discover-actions">
+                        <button class="view-prof-btn" onclick="viewUserProfile('${doc.id}')">Profilni ko'rish</button>
+                        <button class="follow-btn-main" onclick="followUser('${doc.id}')">Obuna bo'lish</button>
+                    </div>
+                </div>
+            `;
+        });
+    });
+}
+
+// Sahifa yuklanganda ishga tushirish
+loadAllUsers();
