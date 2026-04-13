@@ -3632,8 +3632,8 @@ button {
 .insta-chat-container {
     display: flex;
     height: 100vh; /* Ekran bo'yi baravar */
-    background: #fff;
-    border: 1px solid #dbdbdb;
+    background: #000000;
+    border: 1px solid #000000;
     overflow: hidden;
 }
 
