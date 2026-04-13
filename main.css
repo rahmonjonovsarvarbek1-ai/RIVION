@@ -3681,7 +3681,7 @@ button {
     padding: 20px;
     display: flex;
     flex-direction: column;
-    background: #3e3c3c;
+    background: #0e0e0e;
 }
 
 /* Xabarlar dizayni (Instagram uslubida) */
@@ -3733,193 +3733,186 @@ button {
     outline: none;
 }
 
-/* Mobil moslashuvchanlik */
-@media (max-width: 768px) {
-    #chat-inbox-view.active { width: 100%; display: block; }
-    #chat-inbox-view { display: none; }
-    .chat-window { display: none; width: 100%; }
-    .chat-window.active { display: flex; }
-}
-
-/* Mobil qurilmalar uchun (Ekran 768px dan kichik bo'lganda) */
-@media (max-width: 768px) {
-    .insta-chat-container {
-        flex-direction: column; /* Yonma-yon emas, ustma-ust */
-        height: 100vh;
-        border: none;
-    }
-
-    #chat-inbox-view {
-        width: 100% !important; /* To'liq ekran */
-        display: block;
-    }
-
-    #active-chat-window {
-        width: 100% !important;
-        position: fixed; /* Chat oynasini Inbox'ning ustiga qo'yamiz */
-        top: 0;
-        left: 0;
-        height: 100%;
-        z-index: 1000;
-        display: none; /* Dastlab yashirin turadi */
-    }
-
-    /* Chat ochilganda ko'rsatish uchun klass */
-    #active-chat-window.mobile-active {
-        display: flex;
-    }
-
-    .back-btn {
-        display: block !important; /* Orqaga qaytish tugmasini faqat telefonda ko'rsatish */
-    }
-}
-
+/* Barcha mobil media so'rovlarini bitta blokda jamlaymiz */
 @media screen and (max-width: 768px) {
-    /* Asosiy konteyner */
+    
+    /* 1. Asosiy konteyner */
     .insta-chat-container {
         display: block !important;
         position: relative !important;
-        overflow: hidden !important;
-        width: 100% !important;
         height: 100vh !important;
+        overflow: hidden;
     }
 
-    /* Chat ro'yxati */
-    #chatSidebar {
+    /* 2. Inbox (Xabarlar ro'yxati) har doim to'liq ekran bo'ladi */
+    #chat-inbox-view {
         width: 100% !important;
-        float: none !important;
-        display: block !important;
-    }
-
-    /* Chat oynasi - hamma narsadan ustun qatlam */
-    #chatWindow {
-        position: fixed !important; /* Ekranga yopishib turadi */
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        z-index: 100000 !important; /* Juda yuqori qatlam */
-        background-color: #000000 !important; /* Sizning qora dizayningiz */
-        display: none !important; 
-    }
-
-    /* Chat faollashganda */
-    #chatWindow.active {
         display: flex !important;
-        flex-direction: column !important;
-    }
-}
-
-@media screen and (max-width: 768px) {
-    /* Konteynerni mobilga moslaymiz */
-    .insta-chat-container {
-        display: block !important; 
-        position: relative !important;
-        height: 100vh !important;
+        flex-direction: column;
     }
 
-    /* Ro'yxat (Inbox) qismi */
-    #chat-inbox-view {
-        width: 100% !important;
-        display: block !important;
-    }
-
-    /* Chat oynasi - Sidebar ustidan chiqishi uchun */
+    /* 3. CHAT OYNASI (MUHIM!) */
     #active-chat-window {
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
         width: 100% !important;
         height: 100% !important;
-        z-index: 9999 !important; /* Eng yuqori qatlam */
-        background-color: #000 !important;
-        display: none; /* Dastlab yashirin */
+        z-index: 10000 !important; /* Hamma narsadan ustun */
+        background-color: #000 !important; /* Sizning qora dizayningiz */
+        
+        /* BOSHIDA MUTLAQO YASHIRIN */
+        display: none !important; 
     }
 
-    /* Chat ochilganda ko'rinishi */
+    /* 4. FAQAT KONTAKT BOSILGANDA OCHILISHI UCHUN */
     #active-chat-window.active {
         display: flex !important;
         flex-direction: column !important;
     }
 
-    /* Orqaga qaytish tugmasini ko'rsatish */
-    .back-btn {
-        display: block !important;
-    }
-}
-
-@media screen and (max-width: 768px) {
-    /* Qaytish tugmasi stili */
+    /* 5. Orqaga qaytish tugmasi faqat mobil bo'lsa chiqadi */
     .back-btn {
         display: flex !important;
-        align-items: center;
-        justify-content: center;
-        background: none;
-        border: none;
-        color: rgb(53, 50, 50);
-        font-size: 1.2rem;
-        padding: 10px;
-        margin-right: 10px;
-        cursor: pointer;
-        outline: none;
-    }
-
-    /* Chat headerini to'g'irlash */
-    .active-chat-header {
-        display: flex;
-        align-items: center;
-        padding: 10px;
+        color: #fff !important;
     }
 }
 
-/* Kompyuterda qaytish tugmasini yashirib turamiz */
+/* Kompyuter ekrani uchun qo'shimcha himoya */
 @media screen and (min-width: 769px) {
+    #active-chat-window:not(.active) {
+        display: none !important;
+    }
     .back-btn {
         display: none !important;
     }
 }
 
+/* Qidiruv ro'yxati konteyneri */
+#contactsList {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Elementlar orasidagi masofa */
+}
+
+/* Har bir foydalanuvchi qatori (Contact Item) */
+.contact-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    background-color: #1a1a1a; /* Sal ochroq qora fon */
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+/* Sichqoncha ustiga kelganda (Hover) */
+.contact-item:hover {
+    background-color: #262626;
+    transform: translateY(-2px); /* Ozgina tepaga ko'tariladi */
+    border-color: #333;
+}
+
+/* Avatar qismi */
+.contact-item .avatar-wrapper {
+    width: 50px;
+    height: 50px;
+    margin-right: 15px;
+    position: relative;
+}
+
+.contact-item .avatar-wrapper img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%; /* Dumaloq rasm */
+    object-fit: cover;
+    border: 2px solid #333;
+}
+
+/* Ma'lumotlar qismi (Ism va Bio) */
+.contact-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.contact-info h4 {
+    margin: 0;
+    color: #f5f1f1;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.contact-info p {
+    margin: 4px 0 0;
+    color: #a0a0a0; /* Kulrang rangda bio */
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Uzun matn bo'lsa "..." qiladi */
+}
+
+
+
+#searchContact:focus {
+    border-color: #0095f6; /* Fokus bo'lganda ko'k rang */
+}
+
 /* Header asosiy konteyneri */
 .active-chat-header {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    align-items: center; /* Hammasini vertikal markazda tekislaydi */
     padding: 10px 15px;
-    background-color: #151515; /* Fon rangi */
-    border-bottom: 1px solid #333;
+    background-color: #151515;
+    border-bottom: 1px solid #222;
+    min-height: 60px; /* Header balandligini bir xil qiladi */
 }
 
-/* Chap tomondagi elementlar (tugma + profil) */
+/* Chap tomondagi elementlar guruhi */
 .header-left {
     display: flex;
     align-items: center;
-    gap: 12px; /* Elementlar orasidagi masofa */
+    gap: 12px; /* Orqaga tugmasi va profil orasidagi masofa */
 }
 
-/* Orqaga qaytish tugmasi */
-.back-btn {
-    background: none;
-    border: none;
-    color: #fff;
-    font-size: 20px;
-    cursor: pointer;
-    padding: 5px;
-}
-
-/* Profil va ism qismi */
+/* Foydalanuvchi ma'lumotlari (Rasm + Ism + Status) */
 .user-meta {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
+    align-items: center; /* Rasm va matnlarni bir chiziqqa qo'yadi */
+    gap: 10px; /* Rasm va matn orasidagi masofa */
 }
 
+/* Ism va Online yozuvi uchun konteyner */
+.text-info {
+    display: flex;
+    flex-direction: column; /* Ism tepada, status pastda */
+    justify-content: center;
+}
+
+/* Foydalanuvchi ismi */
+#main-chat-user-name {
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.2; /* Qatorlar orasini yaqinlashtiradi */
+}
+
+/* Online status matni */
+.status-text {
+    color: #4CAF50; /* Yashil rang */
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+/* Profil rasmi (Avatar) */
 .avatar-wrapper {
-    position: relative;
     width: 40px;
     height: 40px;
+    flex-shrink: 0; /* Rasm siqilib ketmasligi uchun */
 }
 
 #main-chat-user-img {
@@ -3929,101 +3922,49 @@ button {
     object-fit: cover;
 }
 
-/* Ism va Online yozuvi */
-.text-info {
-    display: flex;
-    flex-direction: column; /* Ism tepada, online pastda */
-}
-
-#main-chat-user-name {
+/* Orqaga qaytish tugmasi */
+.back-btn {
+    font-size: 20px;
     color: #fff;
-    font-weight: 600;
-    font-size: 15px;
-}
-
-.status-text {
-    color: #4CAF50; /* Yashil rang */
-    font-size: 12px;
-}
-
-.inbox-container {
-    padding: 10px;
-    overflow-y: auto;
-    height: calc(100vh - 150px);
-}
-
-.chat-item {
+    background: none;
+    border: none;
+    cursor: pointer;
     display: flex;
     align-items: center;
-    padding: 12px;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: 0.2s;
-    margin-bottom: 5px;
+    padding: 5px;
+ }
+
+ /* Yangi xabar belgisi (qizil doira) */
+.unread-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ff4d4d;
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 10px;
+    border: 2px solid #1a1a1a;
 }
 
-.chat-item:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+/* "New" yozuvi */
+.new-label {
+    background: #007bff;
+    color: white;
+    font-size: 10px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    margin-left: 5px;
 }
 
-.chat-item .avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    margin-right: 15px;
-    object-fit: cover;
-}
-
-.chat-info {
-    flex: 1;
-    border-bottom: 1px solid #222;
-    padding-bottom: 8px;
-}
-
-.chat-info h4 {
-    margin: 0;
-    color: #fff;
-    font-size: 16px;
-}
-
-.chat-info p {
-    margin: 5px 0 0;
-    color: #343131;
-    font-size: 14px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.inbox-list-wrapper {
-    overflow-y: auto;
-    height: calc(100vh - 160px); /* Ekran bo'yicha moslashish */
-}
-
-/* Boshida chat mutlaqo ko'rinmasligi kerak */
-.chat-window {
-    display: none !important;
-}
-
-/* Faqatgina active bo'lganda ko'rinadi */
-.chat-window.active {
-    display: flex !important;
-}
-
-/* 1. Boshida chat oynasi mutlaqo ko'rinmasligi shart */
-#active-chat-window {
-    display: none !important;
-}
-
-/* 2. Faqatgina .active klassi qo'shilganda flex bo'lib ochiladi */
-#active-chat-window.active {
-    display: flex !important;
-}
-
-/* 3. Inbox va Chat oynasi bir-biriga xalaqit bermasligi uchun */
-.insta-chat-container {
+.contact-header {
     display: flex;
-    position: relative;
-    overflow: hidden;
+    align-items: center;
+    justify-content: space-between;
 }
 
+.unread-chat {
+    background: rgba(0, 123, 255, 0.1); /* Yangi xabari bor chatni biroz ajratib ko'rsatadi */
+}
