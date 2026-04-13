@@ -3640,14 +3640,14 @@ button {
 /* Inbox (Chap tomondagi ro'yxat) */
 #chat-inbox-view {
     width: 350px; /* Statsionar kompyuterda kengligi */
-    border-right: 1px solid #dbdbdb;
+    border-right: 1px solid #0c0c0c;
     display: flex;
     flex-direction: column;
 }
 
 .chat-header-main {
     padding: 20px;
-    border-bottom: 1px solid #dbdbdb;
+    border-bottom: 1px solid #060606;
 }
 
 .search-bar-wrapper {
