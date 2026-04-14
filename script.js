@@ -1,17 +1,17 @@
 import { auth, db } from './firebase-config.js'; 
-// 1. Firebase Auth modullari (Sessiya va Login uchun)
+// 1. Firebase Auth modullari
 import { 
     signInWithPopup, 
     GoogleAuthProvider, 
+    OAuthProvider,            // APPLE UCHUN QO'SHILDI
     onAuthStateChanged,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
-    setPersistence,           // Sessiyani yoqish uchun
-    browserLocalPersistence   // Brauzerda saqlash uchun
+    setPersistence,           
+    browserLocalPersistence   
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// 2. Firebase Firestore modullari (Bazaga ma'lumot yozish uchun)
-// BU YERGA setDoc QO'SHILDI - endi "setDoc is not defined" xatosi chiqmaydi
+// 2. Firebase Firestore modullari
 import { 
     doc, 
     setDoc, 
@@ -19,46 +19,26 @@ import {
     serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Login funksiyangizni ichini quyidagicha o'zgartiring:
-async function loginUser(email, password) {
-    try {
-        // Avval sessiyani brauzerda saqlashni buyuramiz
-        await setPersistence(auth, browserLocalPersistence);
-        
-        // Keyin login qilamiz
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        
-        console.log("Muvaffaqiyatli kirdingiz:", user.uid);
-        window.location.href = 'main.html'; // Asosiy sahifaga o'tish
-    } catch (error) {
-        console.error("Login xatosi:", error.message);
-        alert("Email yoki parol xato!");
-    }
-}
-// --- 1. ELEMENTLARNI TANLAB OLISH ---
+// --- ELEMENTLARNI TANLAB OLISH ---
 const mainAuthBtn = document.getElementById('mainAuthBtn');
 const toggleAuth = document.getElementById('toggleAuth');
 const googleBtn = document.getElementById('googleBtn');
+const appleBtn = document.getElementById('appleBtn'); // APPLE TUGMASI
 const authName = document.getElementById('authName');
 const authEmail = document.getElementById('authEmail');
 const authPassword = document.getElementById('authPassword');
 const modalTitle = document.getElementById('modalTitle');
 const modalSub = document.getElementById('modalSub');
 const toggleText = document.getElementById('toggleText');
-
-// Navbatdagi login tugmasi (Header qismida bo'lsa)
 const navLoginBtn = document.querySelector('.btn-login') || document.querySelector('.logo'); 
 
 let isLoginMode = true;
 
-// --- 2. REJIMNI ALMASHTIRISH (LOGIN <-> SIGN UP) ---
+// --- REJIMNI ALMASHTIRISH (LOGIN <-> SIGN UP) ---
 if (toggleAuth) {
     toggleAuth.onclick = (e) => {
         e.preventDefault();
         isLoginMode = !isLoginMode;
-
-        // Instagram uslubidagi o'zgarishlar
         modalTitle.innerText = isLoginMode ? "Kirish" : "Ro'yxatdan o'tish";
         modalSub.innerText = isLoginMode ? "Davom etish uchun ma'lumotlarni kiriting." : "Do'stlaringiz bilan muloqot uchun ro'yxatdan o'ting.";
         authName.style.display = isLoginMode ? 'none' : 'block'; 
@@ -68,7 +48,7 @@ if (toggleAuth) {
     };
 }
 
-// --- 3. FIREBASE AUTH LOGIKASI ---
+// --- FIREBASE AUTH LOGIKASI ---
 
 // A. Google Login
 if (googleBtn) {
@@ -77,17 +57,7 @@ if (googleBtn) {
         try {
             googleBtn.innerText = "Ulanmoqda...";
             const result = await signInWithPopup(auth, provider);
-            const user = result.user;
-
-            // Foydalanuvchi ma'lumotlarini Firestore'da saqlash
-            await setDoc(doc(db, "users", user.uid), {
-                uid: user.uid,
-                displayName: user.displayName,
-                email: user.email,
-                photoURL: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'U')}`,
-                lastSeen: serverTimestamp()
-            }, { merge: true });
-
+            await saveUserToFirestore(result.user);
             window.location.href = 'main.html';
         } catch (error) {
             console.error("Google Error:", error);
@@ -96,7 +66,41 @@ if (googleBtn) {
     };
 }
 
-// B. Email va Parol orqali Auth
+// B. Apple Login (YANGI QO'SHILDI)
+if (appleBtn) {
+    appleBtn.onclick = async () => {
+        const provider = new OAuthProvider('apple.com');
+        provider.addScope('email');
+        provider.addScope('name');
+
+        try {
+            appleBtn.innerText = "Ulanmoqda...";
+            const result = await signInWithPopup(auth, provider);
+            await saveUserToFirestore(result.user);
+            window.location.href = 'main.html';
+        } catch (error) {
+            console.error("Apple Error:", error);
+            alert("Apple orqali kirish tez kunda qoshiladi, hozircha icloudingiz orqali kirishingiz mumkin!: ");
+            appleBtn.innerHTML = `
+                <svg viewBox="0 0 384 512" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
+                    <path fill="currentColor" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 21.8-88.5 21.8-11.4 0-51.1-20.8-83.6-20.1-42.9.6-82.7 24.5-104.6 62.7-45.3 79-11.6 190.3 33.4 254.4 21.3 30.7 48.2 65.2 81.3 64 31.3-1.1 43.1-20.5 81.8-20.5 38.2 0 49.3 20.5 82.3 19.9 33.6-.6 56.7-31.2 77.3-60.8 24.7-35.5 34.9-69.4 35.1-71.1-1-.2-67.2-25.3-67.4-101zM233 105c15.8-19.1 26.1-45.7 23.2-72.3-22.9 1.1-50.3 15.5-67 35.8-15.1 18-28.2 45.2-24.6 71.9 25.1 2.1 50.8-15 68.4-35.4z"/>
+                </svg> Apple orqali davom etish`;
+        }
+    };
+}
+
+// C. Firestore-ga saqlash funksiyasi (Kod takrorlanmasligi uchun)
+async function saveUserToFirestore(user) {
+    await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        displayName: user.displayName || "RIVION User",
+        email: user.email,
+        photoURL: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'U')}`,
+        lastSeen: serverTimestamp()
+    }, { merge: true });
+}
+
+// D. Email va Parol orqali Auth
 if (mainAuthBtn) {
     mainAuthBtn.onclick = async () => {
         const email = authEmail.value.trim();
@@ -107,17 +111,13 @@ if (mainAuthBtn) {
 
         try {
             if (isLoginMode) {
-                // Tizimga kirish
+                await setPersistence(auth, browserLocalPersistence);
                 await signInWithEmailAndPassword(auth, email, password);
                 window.location.href = 'main.html';
             } else {
-                // Ro'yxatdan o'tish
                 if (!name) return alert("Iltimos, ismingizni kiriting!");
-                
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
-
-                // Profil rasmi uchun default avatar (Undefined xatosini oldini oladi)
                 const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`;
 
                 await setDoc(doc(db, "users", user.uid), {
@@ -127,48 +127,34 @@ if (mainAuthBtn) {
                     photoURL: avatar,
                     createdAt: serverTimestamp()
                 });
-
-                alert("Muvaffaqiyatli ro'yxatdan o'tdingiz!");
                 window.location.href = 'main.html';
             }
         } catch (error) {
-            // Xatoliklarni chiroyli tushuntirish
-            if (error.code === 'auth/email-already-in-use') {
-                alert("Bu email band. Iltimos, Kirish bo'limidan foydalaning.");
-            } else if (error.code === 'auth/invalid-credential') {
-                alert("Email yoki parol noto'g'ri.");
-            } else {
-                alert("Xatolik: " + error.message);
-            }
+            handleAuthError(error);
         }
     };
 }
 
-// --- 4. FOYDALANUVCHI HOLATINI KUZATISH ---
+function handleAuthError(error) {
+    if (error.code === 'auth/email-already-in-use') alert("Bu email band.");
+    else if (error.code === 'auth/invalid-credential') alert("Email yoki parol noto'g'ri.");
+    else alert("Xatolik: " + error.message);
+}
+
+// --- FOYDALANUVCHI HOLATINI KUZATISH ---
 onAuthStateChanged(auth, (user) => {
-    if (user && navLoginBtn) {
-        // Foydalanuvchi rasmini tekshirish
+     if (user && navLoginBtn) {
         const photo = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'U')}`;
-        
-        // Navigatordagi tugmani profil ko'rinishiga o'tkazish
-        navLoginBtn.innerHTML = `
+         navLoginBtn.innerHTML = `
             <div style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                 <img src="${photo}" style="width: 30px; height: 30px; border-radius: 50%; border: 1px solid #333;">
                 <span style="font-size: 0.9rem; font-weight: 500;">${(user.displayName || 'User').split(' ')[0]}</span>
-            </div>
-  
-            `;
+            </div>`;
     }
 });
 
-// 1. Funksiyani oddiy e'lon qilish
-function closeModal() {
+// Global funksiyalar
+window.closeModal = () => {
     const modal = document.getElementById('connection-modal');
-    if (modal) {
-        modal.style.display = 'none';
-        console.log("Modal yopildi!");
-    }
-}
-
-// 2. UNI GLOBAL QILISH (Mana shu qator xatoni yo'qotadi)
-window.closeModal = closeModal;
+    if (modal) modal.style.display = 'none';
+};

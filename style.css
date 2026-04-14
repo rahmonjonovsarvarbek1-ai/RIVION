@@ -246,3 +246,46 @@ p { color: var(--text-dim); max-width: 500px; margin: 0 auto 40px; line-height: 
     }
 }
 
+.auth-providers {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 320px; /* Loyihangizga qarab moslang */
+}
+
+.provider-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    width: 100%;
+}
+
+/* Google stili (agar sizda hali yo'q bo'lsa) */
+.google {
+    background-color: #ffffff;
+    color: #3e3939;
+}
+
+/* Apple stili */
+.apple {
+    background-color: #000000; /* Apple qoidalari bo'yicha qora fon tavsiya etiladi */
+    color: #ffffff;
+    border: none;
+}
+
+.apple:hover {
+    background-color: #333333;
+}
+
+.provider-btn img, .provider-btn svg {
+    width: 20px;
+    height: 20px;
+}
