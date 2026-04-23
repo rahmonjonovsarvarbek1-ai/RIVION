@@ -3922,3 +3922,46 @@ function loadAllUsers() {
 
 // Sahifa yuklanganda ishga tushirish
 loadAllUsers();
+
+
+window.openInterests = function() {
+    const modal = document.getElementById('interests-modal');
+    if (modal) {
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden'; // Asosiy sahifa skroll bo'lmaydi
+    }
+};
+
+window.closeInterests = function() {
+    const modal = document.getElementById('interests-modal');
+    if (modal) {
+        // Chiqishda silliq yopilish animatsiyasi qo'shish mumkin
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+};
+
+// Modal tashqarisini bossa ham yopilsin
+window.onclick = function(event) {
+    const modal = document.getElementById('interests-modal');
+    if (event.target == modal) {
+        closeInterests();
+    }
+};
+
+
+window.openInfo = function() {
+    const modal = document.getElementById('info-modal');
+    if (modal) {
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+};
+
+window.closeInfo = function() {
+    const modal = document.getElementById('info-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+};

@@ -93,10 +93,12 @@
     <span>Sozlamalar</span>
 </div>
     
-    <div class="menu-item">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="menu-icon"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-        <span>Qiziqishlar</span>
+    <div class="menu-item" onclick="openInterests()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="menu-icon"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+    <span>Qiziqishlar</span>
     </div>
+
+
     <div class="menu-item" onclick="openReelsSection()">
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="menu-icon">
         <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
@@ -106,9 +108,11 @@
     </svg>
     <span>Reels</span>
     </div>
-    <div class="menu-item">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="menu-icon"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-        <span>Ma'lumot</span>
+
+
+    <div class="menu-item" onclick="openInfo()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="menu-icon"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+    <span>Ma'lumot</span>
     </div>
     
     <div class="menu-divider"></div>
@@ -637,6 +641,95 @@
         </div>
     </div>
 </div>
+
+
+<div id="interests-modal" class="custom-modal">
+    <div class="modal-content full-screen">
+        <div class="modal-header">
+            <div class="header-left">
+                <button class="back-icon-btn" onclick="closeInterests()">
+                    <i class="fas fa-arrow-left"></i> </button>
+                <h3>Qiziqishlar</h3>
+            </div>
+            <button class="save-btn" onclick="closeInterests()">Tayyor</button>
+        </div>
+        
+        <div class="modal-body">
+            <div class="interests-section">
+                <h4>Texnologiyalar</h4>
+                <div class="interests-grid">
+                    <span class="interest-tag active">Python</span>
+                    <span class="interest-tag active">JavaScript</span>
+                    <span class="interest-tag active">Frontend</span>
+                    <span class="interest-tag">AI Engineering</span>
+                </div>
+            </div>
+
+            <div class="interests-section">
+                <h4>Ijod va Musiqa</h4>
+                <div class="interests-grid">
+                    <span class="interest-tag active">Music Production</span>
+                    <span class="interest-tag active">FL Studio</span>
+                    <span class="interest-tag">UI/UX Design</span>
+                    <span class="interest-tag">Rap Music</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="info-modal" class="custom-modal">
+    <div class="modal-content full-screen">
+        <div class="modal-header">
+            <div class="header-left">
+                <button class="back-icon-btn" onclick="closeInfo()">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h3>Ma'lumot</h3>
+            </div>
+            <div style="width: 40px;"></div> </div>
+        
+        <div class="modal-body info-page">
+            <div class="app-logo-area">
+    <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' class="info-app-logo">
+        <defs>
+            <linearGradient id='xGrad' x1='0%' y1='0%' x2='100%' y2='100%'>
+                <stop offset='0%' style='stop-color:#ffffff;stop-opacity:1' />
+                <stop offset='100%' style='stop-color:#007bff;stop-opacity:1' />
+            </linearGradient>
+        </defs>
+        <rect width='100' height='100' rx='20' fill='#0f0f0f'/>
+        <path d='M25 20 H55 C72 20 80 30 80 42 C80 54 72 64 55 64 H40 L75 85 H58 L25 64 V20 Z M40 33 V51 H55 C63 51 66 47 66 42 C66 37 63 33 55 33 H40 Z' fill='url(#xGrad)'/>
+        <path d='M40 33 V51 H43 V33 H40 Z' fill='white' opacity='0.3'/>
+    </svg>
+    <h2>RIVION</h2>
+    <p class="version-text">Versiya 1.0.2 (Beta)</p>
+</div>
+
+            <div class="info-list">
+                <div class="info-item">
+                    <span class="label">Yaratuvchi</span>
+                    <span class="value">Sarvarbek Rahmonjonov</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Texnologiyalar</span>
+                    <span class="value">Firebase, JS, CSS</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Loyiha turi</span>
+                    <span class="value">Social Networking Platform</span>
+                </div>
+            </div>
+
+            <div class="info-description">
+                <p>RIVION — foydalanuvchilar o'zaro muloqot qilishi va qiziqishlarini baham ko'rishi uchun yaratilgan zamonaviy ekotizim.</p>
+            </div>
+
+            <p class="copyright-text">© 2026 RIVION Inc. Barcha huquqlar himoyalangan.</p>
+        </div>
+    </div>
+</div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
