@@ -3941,21 +3941,18 @@ window.closeInterests = function() {
     }
 };
 
-// Modal tashqarisini bossa ham yopilsin
-window.onclick = function(event) {
-    const modal = document.getElementById('interests-modal');
-    if (event.target == modal) {
-        closeInterests();
-    }
-};
-
-
 window.openInfo = function() {
     const modal = document.getElementById('info-modal');
-    if (modal) {
-        modal.style.display = 'block';
-        document.body.style.overflow = 'hidden';
-    }
+    modal.style.display = 'block';
+    // Asosiy sahifa skrollini o'chirish
+    document.body.style.overflow = 'hidden'; 
+};
+
+window.closeInfo = function() {
+    const modal = document.getElementById('info-modal');
+    modal.style.display = 'none';
+    // Asosiy sahifa skrollini qaytarish
+    document.body.style.overflow = 'auto'; 
 };
 
 window.closeInfo = function() {
