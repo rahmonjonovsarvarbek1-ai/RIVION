@@ -4327,3 +4327,57 @@ button {
 .btn-send:hover {
     background: #1a8cd8;
 }
+
+/* Asosiy sarlavha konteyneri */
+.active-chat-header {
+    display: flex;
+    justify-content: space-between; /* Elementlarni ikki chekkaga suradi */
+    align-items: center;
+    padding: 10px 15px;
+    background: #000;
+    border-bottom: 1px solid #2f3336;
+}
+
+/* Chap tomondagi qism (Rasm + Ism) */
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-details h3 {
+    margin: 0;
+    font-size: 16px;
+    color: white;
+}
+
+/* O'ng tomondagi qism (Info tugmasi) */
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
+/* Tugmani yanada chiroyli qilish */
+.header-icon-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    color: #71767b;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+}
+
+.header-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #1d9bf0; /* Twitter ko'k rangi */
+}
