@@ -4276,3 +4276,54 @@ button {
 
 .view-prof-btn { background: #222; color: #ccc; }
 .follow-btn-main { background: #007bff; color: #fff; }
+
+
+.post-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid #2f3336;
+}
+
+.left-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    color: #1d9bf0; /* Moviy professional rang */
+    font-size: 1.2rem;
+    padding: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-icon:hover {
+    background: rgba(29, 155, 240, 0.1);
+    transform: scale(1.1);
+}
+
+.btn-send {
+    background: #1d9bf0;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.3s;
+}
+
+.btn-send:hover {
+    background: #1a8cd8;
+}
