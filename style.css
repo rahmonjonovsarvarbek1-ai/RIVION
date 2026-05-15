@@ -1,0 +1,778 @@
+/* ═══════════════════════════════════════════════
+   RIVION — style.css
+   Mobile-first · Dark · Blue accent
+   Font: Syne (headings) + DM Sans (body)
+═══════════════════════════════════════════════ */
+
+/* ─── 1. CSS Variables ─────────────────────── */
+:root {
+    --bg:           #0a0a0f;
+    --bg-card:      #111118;
+    --bg-input:     #1a1a24;
+    --border:       #2a2a3a;
+    --border-focus: #4f8eff;
+
+    --text:         #f0f0f5;
+    --text-muted:   #7070a0;
+    --text-dim:     #404060;
+
+    --accent:       #4f8eff;
+    --accent-glow:  rgba(79,142,255,0.25);
+    --accent-hover: #3a75f0;
+
+    --success:      #22c55e;
+    --warning:      #f59e0b;
+    --error:        #ef4444;
+
+    --radius-sm:    8px;
+    --radius-md:    14px;
+    --radius-lg:    20px;
+    --radius-xl:    28px;
+
+    --shadow-card:  0 24px 60px rgba(0,0,0,0.5);
+    --transition:   0.2s ease;
+}
+
+/* ─── 2. Reset ─────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    /* iOS scroll bounce o'chirish */
+    -webkit-overflow-scrolling: touch;
+}
+
+body {
+    font-family: 'DM Sans', sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    min-height: 100dvh; /* dynamic viewport — iOS address bar muammosi */
+    overflow-x: hidden;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+button { cursor: pointer; font-family: inherit; border: none; background: none; }
+input  { font-family: inherit; }
+svg    { display: block; flex-shrink: 0; }
+
+/* Inputda iOS zoom o'chirish (16px dan kichik bo'lsa zoom qiladi) */
+input, select, textarea { font-size: 16px; }
+
+/* ─── 3. Background ────────────────────────── */
+.bg-scene {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.35;
+    animation: drift 12s ease-in-out infinite alternate;
+}
+.orb-1 { width: 500px; height: 500px; background: #1a3a8f; top: -150px; left: -100px; animation-duration: 14s; }
+.orb-2 { width: 400px; height: 400px; background: #0d2060; bottom: -100px; right: -80px; animation-duration: 10s; animation-delay: -4s; }
+.orb-3 { width: 300px; height: 300px; background: #0a1840; top: 40%; left: 40%; animation-duration: 18s; animation-delay: -8s; }
+
+@keyframes drift {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(30px, 20px) scale(1.08); }
+}
+
+/* Telefonda orb'larni kichraytirish (performance) */
+@media (max-width: 768px) {
+    .orb-1 { width: 280px; height: 280px; }
+    .orb-2 { width: 220px; height: 220px; }
+    .orb-3 { display: none; }
+}
+
+.grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(79,142,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,142,255,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+
+.noise-overlay {
+    position: absolute;
+    inset: 0;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 128px;
+}
+
+/* ─── 4. Layout ────────────────────────────── */
+
+/* MOBILE: bitta ustun, auth panel birinchi */
+.page-wrapper {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+}
+
+/* DESKTOP: ikki ustun, brand chap */
+@media (min-width: 1024px) {
+    .page-wrapper {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        flex-direction: unset;
+    }
+}
+
+/* ─── 5. Brand Panel ───────────────────────── */
+
+/* MOBILE: brand panel yashiriladi — faqat logo ko'rinadi */
+.brand-panel {
+    display: flex;
+    flex-direction: column;
+    padding: 20px 20px 0;
+    border-bottom: none;
+}
+
+/* TABLET: qisqa brand bandi */
+@media (min-width: 600px) and (max-width: 1023px) {
+    .brand-panel {
+        padding: 28px 32px 20px;
+        border-bottom: 1px solid var(--border);
+    }
+}
+
+/* DESKTOP: to'liq brand panel */
+@media (min-width: 1024px) {
+    .brand-panel {
+        padding: 48px 56px;
+        border-right: 1px solid var(--border);
+        border-bottom: none;
+    }
+}
+
+/* Logo — har doim ko'rinadi */
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.logo-text {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: 0.08em;
+    color: var(--text);
+}
+
+/* Brand content — mobileda yashiriladi */
+.brand-content {
+    display: none;
+}
+
+@media (min-width: 600px) {
+    .brand-content {
+        display: block;
+        margin-top: 24px;
+        padding: 0;
+    }
+}
+
+@media (min-width: 1024px) {
+    .brand-content {
+        margin-top: auto;
+        margin-bottom: auto;
+        padding: 40px 0;
+    }
+}
+
+.brand-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(79,142,255,0.1);
+    border: 1px solid rgba(79,142,255,0.2);
+    padding: 5px 12px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+}
+
+.brand-headline {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.brand-headline .accent { color: var(--accent); }
+
+@media (min-width: 1024px) {
+    .brand-headline { font-size: clamp(36px, 3.5vw, 52px); margin-bottom: 20px; }
+}
+
+.brand-desc {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-muted);
+    max-width: 380px;
+    margin-bottom: 28px;
+}
+
+@media (min-width: 1024px) {
+    .brand-desc { font-size: 15px; margin-bottom: 36px; }
+}
+
+/* Stats */
+.stats-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+}
+.stat-label {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+.stat-divider {
+    width: 1px;
+    height: 28px;
+    background: var(--border);
+}
+
+/* Avatar stack — mobileda yashiriladi */
+.brand-avatars {
+    display: none;
+}
+
+@media (min-width: 1024px) {
+    .brand-avatars {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-top: auto;
+    }
+}
+
+.avatar-stack { display: flex; }
+.av {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(0,0,0,0.7);
+    margin-left: calc(var(--i) * -10px);
+    position: relative;
+    z-index: calc(4 - var(--i));
+}
+.avatar-caption {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+/* ─── 6. Auth Panel ────────────────────────── */
+.auth-panel {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 20px 16px 32px;
+    position: relative;
+    flex: 1;
+}
+
+@media (min-width: 600px) {
+    .auth-panel {
+        padding: 32px 24px 48px;
+        align-items: center;
+    }
+}
+
+@media (min-width: 1024px) {
+    .auth-panel {
+        padding: 48px 40px;
+        align-items: center;
+    }
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 480px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px 20px;
+    box-shadow: var(--shadow-card);
+}
+
+@media (min-width: 480px) {
+    .auth-card {
+        padding: 32px 28px;
+        border-radius: var(--radius-xl);
+    }
+}
+
+@media (min-width: 1024px) {
+    .auth-card {
+        padding: 36px;
+    }
+}
+
+/* ─── 7. Tabs ──────────────────────────────── */
+.auth-tabs {
+    display: flex;
+    position: relative;
+    background: var(--bg-input);
+    border-radius: var(--radius-md);
+    padding: 4px;
+    margin-bottom: 24px;
+}
+
+.tab {
+    flex: 1;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-muted);
+    border-radius: var(--radius-sm);
+    position: relative;
+    z-index: 1;
+    transition: color var(--transition);
+    /* Mobil tap area */
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.tab.active           { color: var(--text); }
+.tab:hover:not(.active) { color: var(--text); }
+
+.tab-indicator {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    height: calc(100% - 8px);
+    width: calc(50% - 4px);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+    z-index: 0;
+}
+.tab-indicator.right { transform: translateX(calc(100% + 4px)); }
+
+/* ─── 8. Form Sections ─────────────────────── */
+.auth-form {
+    display: none;
+    flex-direction: column;
+    gap: 0;
+    animation: fadeUp 0.3s ease;
+}
+.auth-form.active { display: flex; }
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.form-header {
+    margin-bottom: 20px;
+}
+.form-header h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+@media (min-width: 480px) {
+    .form-header h2 { font-size: 22px; }
+}
+
+.form-header p {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+/* ─── 9. Social Buttons ────────────────────── */
+.social-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+/* Kichik telefonlarda to'liq kenglikda */
+@media (max-width: 380px) {
+    .social-btns { grid-template-columns: 1fr; }
+}
+
+.social-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: var(--bg-input);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    min-height: 48px; /* mobil tap area */
+    transition: border-color var(--transition), background var(--transition);
+    /* iOS aktiv holati */
+    -webkit-tap-highlight-color: transparent;
+}
+.social-btn:active {
+    background: rgba(79,142,255,0.08);
+}
+@media (hover: hover) {
+    .social-btn:hover {
+        border-color: var(--accent);
+        background: rgba(79,142,255,0.06);
+    }
+}
+
+/* ─── 10. Divider ──────────────────────────── */
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+    color: var(--text-dim);
+    font-size: 13px;
+}
+.divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+/* ─── 11. Fields ───────────────────────────── */
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+/* Ism / Familiya: mobileda bitta ustun, kattada ikki */
+.field-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+}
+
+@media (min-width: 480px) {
+    .field-row { grid-template-columns: 1fr 1fr; gap: 12px; }
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.forgot-link {
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 400;
+    /* Tap area kattaroq */
+    padding: 4px 0;
+}
+
+/* Input wrapper */
+.input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 13px;
+    width: 16px;
+    height: 16px;
+    color: var(--text-dim);
+    pointer-events: none;
+}
+
+.auth-input {
+    width: 100%;
+    padding: 13px 14px 13px 40px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 16px; /* iOS zoom muammosini oldini oladi */
+    outline: none;
+    /* Mobilda appearance */
+    -webkit-appearance: none;
+    appearance: none;
+    transition: border-color var(--transition), box-shadow var(--transition);
+    min-height: 48px; /* barmoq bilan bosish uchun */
+}
+.auth-input::placeholder { color: var(--text-dim); }
+.auth-input:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.auth-input.error { border-color: var(--error); }
+.auth-input.valid { border-color: var(--success); }
+
+/* Toggle password */
+.toggle-pass {
+    position: absolute;
+    right: 4px;
+    color: var(--text-dim);
+    padding: 12px;           /* katta tap area */
+    transition: color var(--transition);
+    -webkit-tap-highlight-color: transparent;
+}
+.toggle-pass:active { color: var(--text); }
+@media (hover: hover) {
+    .toggle-pass:hover { color: var(--text); }
+}
+
+/* @ prefix */
+.prefix-wrap { position: relative; }
+.input-prefix {
+    position: absolute;
+    left: 14px;
+    font-size: 16px;
+    color: var(--text-muted);
+    pointer-events: none;
+    z-index: 1;
+}
+.auth-input.has-prefix { padding-left: 28px; }
+
+/* Username check */
+.username-check {
+    position: absolute;
+    right: 14px;
+    font-size: 14px;
+}
+
+/* ─── 12. Password Strength ────────────────── */
+.password-strength {
+    height: 4px;
+    background: var(--bg-input);
+    border-radius: 100px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+.strength-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 100px;
+    transition: width 0.3s ease, background 0.3s ease;
+}
+.strength-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    display: block;
+}
+
+/* ─── 13. Checkbox ─────────────────────────── */
+.checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    /* Tap area */
+    padding: 4px 0;
+    -webkit-tap-highlight-color: transparent;
+}
+.checkbox-label input { display: none; }
+.checkbox-custom {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    border: 1.5px solid var(--border);
+    border-radius: 5px;
+    background: var(--bg-input);
+    margin-top: 1px;
+    transition: all var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.checkbox-label input:checked ~ .checkbox-custom {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+.checkbox-label input:checked ~ .checkbox-custom::after {
+    content: '';
+    display: block;
+    width: 5px;
+    height: 9px;
+    border: 2px solid #fff;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg) translate(-1px, -1px);
+}
+.terms-link { color: var(--accent); }
+
+/* ─── 14. Primary Button ───────────────────── */
+.btn-primary {
+    width: 100%;
+    padding: 14px 20px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 52px; /* katta tap area */
+    transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 14px;
+    -webkit-tap-highlight-color: transparent;
+}
+.btn-primary:active {
+    transform: scale(0.98);
+    background: var(--accent-hover);
+}
+@media (hover: hover) {
+    .btn-primary:hover {
+        background: var(--accent-hover);
+        box-shadow: 0 8px 24px var(--accent-glow);
+        transform: translateY(-1px);
+    }
+}
+
+.btn-loader {
+    display: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+.btn-primary.loading .btn-text   { opacity: 0.6; }
+.btn-primary.loading .btn-loader { display: block; }
+.btn-primary.loading .btn-arrow  { display: none; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.btn-arrow { transition: transform var(--transition); }
+@media (hover: hover) {
+    .btn-primary:hover .btn-arrow { transform: translateX(3px); }
+}
+
+/* ─── 15. Switch link ──────────────────────── */
+.form-switch-text {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+.switch-tab {
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 500;
+    margin-left: 4px;
+    padding: 4px 0; /* tap area */
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* ─── 16. Toast ────────────────────────────── */
+.toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(12px);
+    background: #1e1e2e;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 14px;
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    /* Mobilda kenglikni cheklash */
+    max-width: calc(100vw - 32px);
+    white-space: normal;
+    text-align: center;
+    z-index: 999;
+}
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+.toast.success { border-color: var(--success); color: var(--success); }
+.toast.error   { border-color: var(--error);   color: var(--error);   }
+
+/* Safe area — iPhone X va yuqori uchun (home indicator) */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .toast {
+        bottom: calc(24px + env(safe-area-inset-bottom));
+    }
+    body {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+
+/* ─── 17. Klaviatura ochilganda (viewport o'zgarganda) ─── */
+/* Auth card scroll qilish imkoniyati */
+@media (max-height: 600px) {
+    .auth-panel {
+        align-items: flex-start;
+        padding-top: 12px;
+    }
+    .auth-card {
+        margin-bottom: 20px;
+    }
+}
