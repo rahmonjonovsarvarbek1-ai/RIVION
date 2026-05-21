@@ -3,6 +3,7 @@
 // Muallif: Sarvarbek Rahmonjonov
 // ============================================================
 
+// 1. Supabase modulini import qilish (Siz yozgan usul)
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { auth, db, onAuthStateChanged } from './firebase-config.js';
 import {
@@ -13,6 +14,22 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { updateProfile, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+// NAMOUNA (Bunday holatda qolib ketgan bo'lsa xato beradi):
+// const supabaseUrl = 'https://your-project-id.supabase.co';
+
+// TO'G'RI VARIANT (Sizning Supabase loyihangiz ma'lumotlari bo'lishi shart):
+const supabaseUrl = 'https://bcgwrbfsfrcxiyhpajve.supabase.co'; 
+const supabaseKey = 'sb_publishable_yu9Pqq7bNOJhWt7nV8ITfQ_uqNK1n-a'; // API Keys bo'limidagi default anon keyingiz
+
+// Supabase mijozini yaratish va global qilish
+const supabase = createClient(supabaseUrl, supabaseKey);
+// Global obyektlar
+window.db = db;
+window.supabase = supabase;
+window.auth = auth;
+window.openComments = function() { /* kodlar */ };
+window.shareReelBtn = function() { /* kodlar */ };
+window.deleteReel = function(docId) { /* kodlar */ };
 // ============================================================
 // 🔧 FIX #1 — GLOBAL IMAGE ERROR (Cheksiz loop oldini olish)
 // Muammo: onerror handler o'zi ham error bersa loop yuzaga keladi
@@ -612,69 +629,64 @@ function createPostCard(data, postId) {
     const authorPhoto   = data.authorPhoto || getFallbackAvatar(authorName);
 
     const card = document.createElement('div');
-    card.className = 'post-card glass-card';
+    card.className = 'post-card';
     card.dataset.postId = postId;
 
     card.innerHTML = `
         <div class="post-header">
-            <div style="display:flex;align-items:center;gap:10px;">
-                <img src="${authorPhoto}"
-                     data-name="${authorName}"
-                     style="width:40px;height:40px;border-radius:50%;object-fit:cover;cursor:pointer;flex-shrink:0;"
-                     onclick="viewUserProfile('${authorId}')">
-                <div>
-                    <span style="font-weight:600;cursor:pointer;font-size:0.9rem;"
-                          onclick="viewUserProfile('${authorId}')">${authorName}</span>
-                    <span style="display:block;font-size:0.75rem;color:var(--text-muted);">${time}</span>
+            <div class="post-author-info">
+                <img src="${authorPhoto}" data-name="${authorName}" class="post-avatar" onclick="viewUserProfile('${authorId}')" alt="Avatar">
+                <div class="post-meta">
+                    <span class="post-author-name" onclick="viewUserProfile('${authorId}')">${authorName}</span>
+                    <span class="post-time">${time}</span>
                 </div>
             </div>
-            <div style="display:flex;align-items:center;gap:8px;">
-                ${!isMyPost ? `<button onclick="followUser('${authorId}')"
-                    style="background:var(--accent-dim);border:1px solid rgba(79,143,255,0.3);color:var(--accent);
-                    padding:5px 12px;border-radius:20px;font-size:0.78rem;cursor:pointer;">Obuna</button>` : ''}
-                ${isMyPost  ? `<button onclick="deletePost('${postId}')"
-                    style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:6px;">
-                    <i class="fas fa-trash-alt"></i></button>` : ''}
+            
+            <div class="post-header-actions">
+                ${!isMyPost ? `<button class="btn-follow" onclick="followUser('${authorId}')">Obuna</button>` : ''}
+                ${isMyPost  ? `
+                <button class="btn-icon-only text-muted" onclick="deletePost('${postId}')" title="O'chirish">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-icon"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>` : ''}
             </div>
         </div>
 
-        <div style="padding:10px 0;">
-            <p style="margin:0;line-height:1.6;font-size:0.93rem;">${escapeHTML(data.content || '')}</p>
-            ${data.mediaURL ? `<img src="${data.mediaURL}" data-name="Post"
-                style="width:100%;border-radius:12px;margin-top:10px;max-height:400px;object-fit:cover;cursor:pointer;"
-                onclick="openImageLightbox(this.src)">` : ''}
+        <div class="post-body">
+            <p class="post-text">${escapeHTML(data.content || '')}</p>
+            ${data.mediaURL ? `<img src="${data.mediaURL}" data-name="Post" class="post-media" onclick="openImageLightbox(this.src)" alt="Post media">` : ''}
         </div>
 
-        <div style="display:flex;gap:4px;padding-top:10px;border-top:1px solid var(--border);">
-            <button onclick="toggleLike('${postId}',${isLiked},'${authorId}')"
-                style="display:flex;align-items:center;gap:6px;background:none;border:none;
-                cursor:pointer;color:${isLiked ? 'var(--danger)' : 'var(--text-muted)'};font-size:0.88rem;padding:6px 10px;border-radius:8px;"
-                id="like-btn-${postId}">
-                <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i>
+        <div class="post-actions">
+            <button class="btn-action ${isLiked ? 'liked' : ''}" onclick="toggleLike('${postId}',${isLiked},'${authorId}')" id="like-btn-${postId}">
+                <svg viewBox="0 0 24 24" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-icon">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
                 <span id="likes-count-${postId}">${likesCount}</span>
             </button>
-            <button onclick="toggleCommentBox('${postId}')"
-                style="display:flex;align-items:center;gap:6px;background:none;border:none;
-                cursor:pointer;color:var(--text-muted);font-size:0.88rem;padding:6px 10px;border-radius:8px;">
-                <i class="far fa-comment"></i>
+            
+            <button class="btn-action" onclick="toggleCommentBox('${postId}')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-icon">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                </svg>
                 <span id="comments-count-${postId}">${commentsCount}</span>
             </button>
-            <button onclick="bookmarkPost('${postId}')"
-                style="display:flex;align-items:center;gap:6px;background:none;border:none;
-                cursor:pointer;color:var(--text-muted);font-size:0.88rem;padding:6px 10px;border-radius:8px;margin-left:auto;"
-                id="bookmark-btn-${postId}">
-                <i class="far fa-bookmark"></i>
+            
+            <button class="btn-action btn-bookmark" onclick="bookmarkPost('${postId}')" id="bookmark-btn-${postId}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-icon">
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                </svg>
             </button>
         </div>
 
-        <div id="comment-box-${postId}" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
-            <div id="comments-display-${postId}" style="max-height:200px;overflow-y:auto;margin-bottom:10px;"></div>
-            <div style="display:flex;gap:8px;background:var(--bg-input);padding:6px 12px;border-radius:20px;border:1px solid var(--border);">
-                <input type="text" id="comment-input-${postId}" placeholder="Fikr yozing..."
-                    style="flex:1;background:none;border:none;color:inherit;outline:none;font-size:0.87rem;">
-                <button onclick="sendComment('${postId}','${authorId}')"
-                    style="background:none;border:none;cursor:pointer;color:var(--accent);">
-                    <i class="fas fa-paper-plane"></i>
+        <div id="comment-box-${postId}" class="post-comment-section" style="display:none;">
+            <div id="comments-display-${postId}" class="comments-list"></div>
+            <div class="comment-input-wrapper">
+                <input type="text" id="comment-input-${postId}" class="comment-input" placeholder="Fikr yozing...">
+                <button class="btn-send-comment" onclick="sendComment('${postId}','${authorId}')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="action-icon">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
                 </button>
             </div>
         </div>`;
@@ -1644,37 +1656,55 @@ window.openAnalytics = () => showToast('Tahlil bo\'limi tez kunda! 📊', 'info'
 // ============================================================
 // REELS
 // ============================================================
-async function loadReels() {
+
+
+// Global kesh (barcha yuklangan videolarni xotirada saqlash uchun)
+window.allReelsCache = [];
+
+// ==========================================
+// 1. REELS GRIDNI BAZADAN YUKLASH
+// ==========================================
+window.loadReels = async function() {
     const grid = document.getElementById('reels-grid');
     if (!grid) return;
+    
     grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:32px;"><div class="loading-spinner" style="margin:auto;"></div></div>`;
 
     try {
-        const snap = await getDocs(query(collection(db, 'reels'), orderBy('createdAt', 'desc'), limit(20)));
+        // Firebase Firestore'dan ma'lumot olish
+        const q = query(collection(db, 'reels'), orderBy('createdAt', 'desc'), limit(20));
+        const snap = await getDocs(q);
         grid.innerHTML = '';
 
         if (snap.empty) {
-            grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon"><i class="fas fa-film"></i></div><p>Hali Reels yo'q</p></div>`;
+            grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><p>Hali Reels yo'q</p></div>`;
             return;
         }
+
+        window.allReelsCache = []; // Keshni tozalaymiz
 
         snap.forEach(docSnap => {
             const data = docSnap.data();
             if (!data.videoURL) return;
-            const timeAgo = data.createdAt ? formatTimeAgo(data.createdAt.toDate()) : 'Hozir';
 
+            // ID ni ob'ekt ichiga majburiy joylaymiz
+            const reelData = { id: docSnap.id, ...data };
+            window.allReelsCache.push(reelData);
+
+            // Grid elementini yaratish
             const el = document.createElement('div');
             el.className = 'reel-thumb';
             el.innerHTML = `
-                <video src="${data.videoURL}" muted loop playsinline
-                    style="width:100%;height:100%;object-fit:cover;"></video>
+                <video src="${data.videoURL}" muted loop playsinline style="width:100%;height:100%;object-fit:cover;"></video>
                 <div class="reel-overlay">
                     <span><i class="fas fa-heart"></i> ${data.likes?.length || 0}</span>
                 </div>`;
-            el.onclick = () => viewFullReel(data, docSnap.id, timeAgo);
+            
+            // Grid element bosilganda to'g'ridan-to'g'ri keshlangan ob'ekt va ID ketadi
+            el.onclick = () => window.viewFullReel(reelData, reelData.id);
 
+            // Kichik videolarni avtomatik ijro etish (Grid ichida)
             const video = el.querySelector('video');
-            // IntersectionObserver — scroll-based autoplay
             const observer = new IntersectionObserver(entries => {
                 if (entries[0].isIntersecting) {
                     video.play().catch(() => {});
@@ -1688,13 +1718,285 @@ async function loadReels() {
         });
     } catch (err) {
         console.error('Reels yuklanmadi:', err);
-        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon"><i class="fas fa-exclamation-circle"></i></div><p>Yuklab bo'lmadi</p></div>`;
+        grid.innerHTML = `<p style="color:red;text-align:center;grid-column:1/-1;">Yuklab bo'lmadi</p>`;
     }
-}
+};
 
-window.loadReels = loadReels;
+// ==========================================
+// 2. MODAL ICHIGA BARCHA VIDEOLARNI CHIZISH
+// ==========================================
+window.openReelsFeed = (allReelsData, startDocId = null) => {
+    const container = document.getElementById('reels-snap-container');
+    if (!container) return;
 
-window.openAddReelModal  = () => { const m = document.getElementById('add-reel-modal'); if (m) m.style.display = 'flex'; };
+    container.innerHTML = ''; // Konteynerni tozalash
+
+    if (!allReelsData || allReelsData.length === 0) {
+        container.innerHTML = `<p style="color:white;text-align:center;padding:20px;">Videolar topilmadi.</p>`;
+        return;
+    }
+
+    // Tizimga kirgan foydalanuvchini aniqlaymiz
+    const currentUser = auth.currentUser;
+    const currentUserId = currentUser ? currentUser.uid : null;
+
+    // 1. Videolarni DOM ga chizamiz
+    allReelsData.forEach((data) => {
+        const docId = data.id;
+        if (!docId) return; // ID bo'lmasa o'tkazib yuboriladi
+
+        // --- LIKE HOLATINI TEKSHIRISH ---
+        const hasLiked = currentUserId && data.likes && data.likes.includes(currentUserId);
+        const heartClass = hasLiked ? 'fas fa-heart' : 'far fa-heart';
+        const heartColor = hasLiked ? '#ff4d4d' : 'white';
+
+        // --- XAVFSIZLIK: Faqat video egasiga o'chirish tugmasini ko'rsatish ---
+        const isOwner = currentUserId && data.userId === currentUserId;
+        const deleteButtonHtml = isOwner ? `
+            <button class="action-btn delete-btn" onclick="deleteReel('${docId}')">
+                <i class="fas fa-trash"></i>
+            </button>
+        ` : '';
+
+        const reelItem = document.createElement('div');
+        reelItem.className = 'snap-reel-item';
+        reelItem.setAttribute('id', `reel-item-${docId}`);
+        
+        reelItem.innerHTML = `
+            <video src="${data.videoURL}" loop playsinline disablepictureinpicture class="reel-video-element" style="width:100%;height:100%;object-fit:cover;"></video>
+            
+            <div class="insta-sidebar">
+                <button class="action-btn" onclick="likeReel('${docId}', '${data.userId || ''}')">
+                    <i class="${heartClass}" id="like-heart-${docId}" style="color: ${heartColor};"></i>
+                    <span>${data.likes?.length || 0}</span>
+                </button>
+                <button class="action-btn" onclick="openComments('${docId}')">
+                    <i class="fas fa-comment"></i>
+                </button>
+                <button class="action-btn" onclick="shareReelBtn('${docId}')">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+                <button class="action-btn"><i class="fas fa-ellipsis-h"></i></button>
+                
+                ${deleteButtonHtml}
+            </div>
+
+            <div class="insta-bottom-info">
+                <div class="reel-user-info">
+                    <img src="${data.userAvatar || 'profil-rasm.jpg'}" class="reel-avatar" alt="User">
+                    <span class="reel-username">@${data.userName || 'foydalanuvchi'}</span>
+                    <button class="reel-follow-btn">Follow</button>
+                </div>
+                <div class="reel-caption">
+                    ${data.caption || 'Tavsif mavjud emas.'}
+                </div>
+            </div>
+        `;
+        container.appendChild(reelItem);
+    });
+
+    // ========================================================
+    // 2. AVTOMATIK PLAY/PAUSE MEXANIZMI
+    // ========================================================
+    const allVideos = container.querySelectorAll('.reel-video-element');
+    
+    const reelObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            const video = entry.target;
+            
+            if (entry.isIntersecting || entry.intersectionRatio > 0.5) {
+                allVideos.forEach(v => {
+                    if (v !== video) {
+                        v.pause();
+                        v.currentTime = 0; 
+                    }
+                });
+                video.play().catch(err => console.log("Avto-pley bloklandi:", err));
+            } else {
+                video.pause();
+            }
+        });
+    }, {
+        threshold: [0.2, 0.5, 0.8]
+    });
+
+    allVideos.forEach(v => reelObserver.observe(v));
+};
+
+
+window.likeReel = async function(docId) {
+    try {
+        // 1. Tizimga kirgan foydalanuvchini tekshiramiz
+        const user = auth.currentUser; 
+        if (!user) {
+            alert("Like bosish uchun avval tizimga kiring!");
+            return;
+        }
+
+        const userId = user.uid; // Foydalanuvchi ID-si
+        const reelRef = doc(db, 'reels', docId); // Firestore-dagi hujjat manzili
+
+        // 2. DOM elementlarini topamiz (yurakcha va soni turgan joy)
+        const heartIcon = document.getElementById(`like-heart-${docId}`);
+        const countSpan = heartIcon?.nextElementSibling; // <i id="like-heart..."></i> dan keyingi <span>
+
+        if (!heartIcon) return;
+
+        // 3. UI-ni darhol o'zgartiramiz (Foydalanuvchiga qotishlarsiz tez ishlagandek ko'rinishi uchun)
+        let currentLikesCount = parseInt(countSpan.innerText) || 0;
+        
+        // Agar foydalanuvchi allaqachon like bosgan bo'lsa (yurakcha qizil bo'lsa)
+        if (heartIcon.classList.contains('fas') && heartIcon.style.color === 'rgb(255, 77, 77)') {
+            // Likenining qizilligini olib tashlaymiz
+            heartIcon.className = 'far fa-heart'; // Ichini bo'sh qilamiz
+            heartIcon.style.color = 'white';
+            if (currentLikesCount > 0) countSpan.innerText = currentLikesCount - 1;
+
+            // Firebase-dan foydalanuvchi ID-sini o'chiramiz
+            await updateDoc(reelRef, {
+                likes: arrayRemove(userId)
+            });
+            console.log("Like olib tashlandi!");
+
+        } else {
+            // Agar birinchi marta bosayotgan bo'lsa (yurakchani qizil qilamiz)
+            heartIcon.className = 'fas fa-heart'; // Ichini to'ldiramiz
+            heartIcon.style.color = '#ff4d4d'; // Qizil rang
+            countSpan.innerText = currentLikesCount + 1;
+
+            // Firebase-ga foydalanuvchi ID-sini qo'shamiz
+            await updateDoc(reelRef, {
+                likes: arrayUnion(userId)
+            });
+            console.log("Like muvaffaqiyatli qo'shildi!");
+        }
+
+    } catch (error) {
+        console.error("Like bosishda xatolik yuz berdi:", error);
+        alert("Like amali bajarilmadi, internetni tekshiring!");
+    }
+};
+
+
+window.deleteReel = async function(docId) {
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            alert("Videoni o'chirish uchun tizimga kiring!");
+            return;
+        }
+
+        // 1. Foydalanuvchidan o'chirishni tasdiqlashini so'raymiz (Adashib bosib yuborgan bo'lsa)
+        const confirmDelete = confirm("Haqiqatan ham ushbu videoni butunlay o'chirib tashlamoqchimisiz?");
+        if (!confirmDelete) return;
+
+        // 2. Firestore-dan videoning ma'lumotlarini tekshirish uchun olamiz
+        const reelRef = doc(db, 'reels', docId);
+        const reelSnap = await getDoc(reelRef);
+
+        if (!reelSnap.exists()) {
+            alert("Video topilmadi yoki allaqachon o'chirilgan.");
+            return;
+        }
+
+        const reelData = reelSnap.data();
+
+        // 3. Xavfsizlik tekshiruvi: Haqiqatan ham joriy foydalanuvchi video egasimi?
+        if (reelData.userId !== user.uid) {
+            alert("Siz faqat o'zingiz yuklagan videolarni o'chira olasiz!");
+            return;
+        }
+
+        // 4. Firestore (baza)dan hujjatni butunlay o'chiramiz
+        await deleteDoc(reelRef);
+        console.log("Firestore-dan video o'chirildi.");
+
+        // 5. UI-ni yangilash: O'chirilgan videoni ekrandan silliq yo'qotamiz
+        const reelDOMElement = document.getElementById(`reel-item-${docId}`);
+        if (reelDOMElement) {
+            // Animatsiya bilan yo'qolishi uchun chiroyli effekt beramiz
+            reelDOMElement.style.transition = "all 0.4s ease";
+            reelDOMElement.style.opacity = "0";
+            reelDOMElement.style.transform = "scale(0.9)";
+            
+            setTimeout(() => {
+                reelDOMElement.remove(); // DOM'dan (ekrandan) butunlay o'chirish
+                
+                // Agar o'chirilgan video oxirgisi bo'lsa va konteyner bo'shab qolsa
+                const container = document.getElementById('reels-snap-container');
+                if (container && container.children.length === 0) {
+                    container.innerHTML = `<p style="color:white;text-align:center;padding:20px;">Videolar topilmadi.</p>`;
+                }
+            }, 400);
+        }
+
+        alert("Video muvaffaqiyatli o'chirildi!");
+
+    } catch (error) {
+        console.error("Videoni o'chirishda xatolik:", error);
+        alert("O'chirish imkoni bo'lmadi. Internetni tekshirib qayta urinib ko'ring.");
+    }
+};
+
+
+
+// ==========================================
+// 3. REELNI TO‘LIQ EKRANDA OCHISH VA SCROLL QILISH
+// ==========================================
+window.viewFullReel = function(data, docId) {
+    const viewer = document.getElementById('video-viewer-modal');
+    if (!viewer) return;
+
+    // 1. Modalni ochamiz
+    viewer.style.display = 'flex';
+
+    // 2. Videolarni modal konteyneriga chizib olamiz
+    window.openReelsFeed(window.allReelsCache, docId);
+
+    // 3. ID bo'yicha elementni topish va scroll qilish (Kutish funksiyasi bilan)
+    const targetId = `reel-item-${docId}`;
+    
+    let attempts = 0;
+    const scrollInterval = setInterval(() => {
+        const targetReel = document.getElementById(targetId);
+        attempts++;
+
+        if (targetReel) {
+            clearInterval(scrollInterval);
+            // Element topildi, scroll qilamiz
+            targetReel.scrollIntoView({ behavior: 'instant', block: 'start' });
+            
+            // Scroll qilingan videoni darhol ijro etish
+            const video = targetReel.querySelector('.reel-video-element');
+            if (video) video.play().catch(e => console.log("Avtoreplay taqiqlandi:", e));
+            
+        } else if (attempts >= 10) {
+            clearInterval(scrollInterval);
+            console.error("Xatolik: HTML elementi baribir topilmadi ->", targetId);
+        }
+    }, 50); // Har 50ms da tekshiradi (Jami 0.5 soniya imkoniyat)
+};
+
+// ==========================================
+// 4. MODALNI YOPISH
+// ==========================================
+window.closeVideoViewer = function() {
+     const viewer = document.getElementById('video-viewer-modal');
+    if (viewer) viewer.style.display = 'none';
+
+    // Modal ichidagi barcha videolarni to'xtatish
+    const playingVideos = document.querySelectorAll('.reel-video-element');
+    playingVideos.forEach(v => v.pause());
+};
+
+// ==========================================
+// 5. YANGI REEL MODAL NAZORATI
+// ==========================================
+window.openAddReelModal  = () => { 
+    const m = document.getElementById('add-reel-modal'); 
+    if (m) m.style.display = 'flex'; 
+};
+
 window.closeAddReelModal = () => {
     const m = document.getElementById('add-reel-modal');
     if (!m) return;
@@ -1706,156 +2008,7 @@ window.closeAddReelModal = () => {
     if (cont) cont.style.display = 'none';
     if (ph)   ph.style.display   = 'flex';
 };
-
-window.handleReelFile = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-    const prev = document.getElementById('reel-preview');
-    const cont = document.getElementById('video-preview-container');
-    const ph   = document.getElementById('upload-placeholder');
-    if (prev) prev.src = URL.createObjectURL(file);
-    if (ph)   ph.style.display   = 'none';
-    if (cont) cont.style.display = 'block';
-    prev?.play().catch(() => {});
-};
-
-document.getElementById('reel-caption')?.addEventListener('input', function() {
-    const c = document.getElementById('reelCaptionCount');
-    if (c) c.textContent = this.value.length;
-});
-
-let isUploadingReel = false;
-
-window.shareReel = async () => {
-    if (isUploadingReel) return;
-    const fileInput = document.getElementById('reel-file-input');
-    const file = fileInput?.files[0];
-    if (!file) return showToast('Video tanlang!', 'error');
-    if (!currentUser) return showToast('Avval tizimga kiring!', 'error');
-
-    isUploadingReel = true;
-    const shareBtn = document.getElementById('share-btn');
-    const progCont = document.getElementById('upload-progress-container');
-    const progFill = document.getElementById('upload-progress-fill');
-    const progText = document.getElementById('progress-text');
-
-    if (shareBtn) shareBtn.disabled = true;
-    if (progCont) progCont.style.display = 'block';
-    if (progText) progText.textContent = 'Video yuklanmoqda...';
-    if (progFill) progFill.style.width = '10%';
-
-    try {
-        const fileName = `reels/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-
-        // Supabase yo'q bo'lsa skip
-        if (typeof supabase === 'undefined') throw new Error('Supabase ulanmagan');
-
-        const { data, error: upErr } = await supabase.storage.from('videos').upload(fileName, file, { cacheControl: '3600', upsert: false });
-        if (upErr) throw upErr;
-
-        if (progFill) progFill.style.width = '70%';
-
-        const { data: urlData } = supabase.storage.from('videos').getPublicUrl(fileName);
-        if (progFill) progFill.style.width = '85%';
-
-        const finalName  = currentUser.displayName || 'Foydalanuvchi';
-        const finalPhoto = currentUser.photoURL    || getFallbackAvatar(finalName);
-        const caption    = document.getElementById('reel-caption')?.value || '';
-
-        await addDoc(collection(db, 'reels'), {
-            videoURL:  urlData.publicUrl,
-            caption,
-            createdAt: serverTimestamp(),
-            userId:    currentUser.uid,
-            userName:  finalName,
-            userPhoto: finalPhoto,
-            likes:     []
-        });
-
-        if (progFill) progFill.style.width = '100%';
-        if (progText) progText.textContent = 'Tayyor!';
-
-        setTimeout(() => {
-            window.closeAddReelModal();
-            loadReels();
-            showToast('Reel muvaffaqiyatli ulashildi! 🎬', 'success');
-        }, 500);
-
-    } catch (err) {
-        console.error('Reel yuklashda xato:', err);
-        showToast('Xato: ' + err.message, 'error');
-        if (progCont) progCont.style.display = 'none';
-    } finally {
-        isUploadingReel = false;
-        if (shareBtn) shareBtn.disabled = false;
-    }
-};
-
-function viewFullReel(data, docId, timeAgo) {
-    const viewer  = document.getElementById('video-viewer-modal');
-    const video   = document.getElementById('full-screen-video');
-    const sidebar = document.getElementById('viewer-sidebar-actions');
-    const info    = document.getElementById('viewer-bottom-info');
-    if (!viewer || !video) return;
-
-    video.src = data.videoURL;
-    viewer.style.display = 'flex';
-    video.play().catch(() => {});
-
-    if (info) {
-        info.innerHTML = `
-            <div style="color:#fff;">
-                <strong style="display:block;">${escapeHTML(data.userName || 'Foydalanuvchi')}</strong>
-                <span style="font-size:0.78rem;opacity:0.7;">${timeAgo}</span>
-                ${data.caption ? `<p style="margin:4px 0 0;font-size:0.85rem;">${escapeHTML(data.caption)}</p>` : ''}
-            </div>`;
-    }
-    if (sidebar) {
-        sidebar.innerHTML = `
-            <div class="insta-sidebar-btn" onclick="likeReel('${docId}')">
-                <i class="fas fa-heart" id="like-heart-${docId}"></i>
-                <span>${data.likes?.length || 0}</span>
-            </div>
-            <div class="insta-sidebar-btn" onclick="togglePlayPause()">
-                <i class="fas fa-pause" id="reelPlayIcon"></i>
-            </div>`;
-    }
-}
-
-window.togglePlayPause = () => {
-    const video = document.getElementById('full-screen-video');
-    const icon  = document.getElementById('reelPlayIcon');
-    if (!video) return;
-    if (video.paused) {
-        video.play();
-        if (icon) icon.className = 'fas fa-pause';
-    } else {
-        video.pause();
-        if (icon) icon.className = 'fas fa-play';
-    }
-};
-
-window.closeVideoViewer = () => {
-    const viewer = document.getElementById('video-viewer-modal');
-    const video  = document.getElementById('full-screen-video');
-    if (viewer) viewer.style.display = 'none';
-    if (video) { video.pause(); video.src = ''; video.load(); }
-};
-
-window.likeReel = async (docId) => {
-    if (!currentUser) return showToast('Avval tizimga kiring!', 'error');
-    try {
-        await updateDoc(doc(db, 'reels', docId), { likes: arrayUnion(currentUser.uid) });
-        const h = document.getElementById(`like-heart-${docId}`);
-        if (h) h.style.color = 'var(--danger)';
-    } catch (e) { console.error(e); }
-};
-
-document.getElementById('full-screen-video')?.addEventListener('timeupdate', function() {
-    const fill = document.getElementById('videoProgressFill');
-    if (fill && this.duration) fill.style.width = `${(this.currentTime / this.duration) * 100}%`;
-});
-
+ 
 // ============================================================
 // STORIES
 // ============================================================
@@ -2001,8 +2154,20 @@ let isUploadingDiscovery = false;
 
 window.uploadDiscoveryPost = async () => {
     if (isUploadingDiscovery) return;
-    const bio = document.getElementById('discoveryBio')?.value.trim();
-    if (!currentUser || !bio) return showToast('Tavsif yozing!', 'error');
+
+    // 1. Yangi inputlardan qiymatlarni olamiz va bo'sh joylarni qirqamiz (trim)
+    const name         = document.getElementById('disc-name')?.value.trim();
+    const nickname     = document.getElementById('disc-nickname')?.value.trim();
+    const age          = document.getElementById('disc-age')?.value.trim();
+    const relationship = document.getElementById('disc-relationship')?.value;
+    const location     = document.getElementById('disc-location')?.value.trim();
+    const bio          = document.getElementById('discoveryBio')?.value.trim();
+
+    // 2. Majburiy maydonlarni tekshiramiz (Ism, Nikname va Tavsif bo'sh bo'lmasligi kerak)
+    if (!currentUser) return showToast('Tizimga kirishingiz kerak!', 'error');
+    if (!name || !nickname || !bio) {
+        return showToast('Iltimos, ism, nikname va tavsifni to\'ldiring!', 'error');
+    }
 
     isUploadingDiscovery = true;
     const publishBtn = document.getElementById('publishBtn');
@@ -2013,6 +2178,7 @@ window.uploadDiscoveryPost = async () => {
         const selectedTag = document.querySelector('.disc-tag.active')?.getAttribute('data-tag') || 'other';
         let postImage = null;
 
+        // Rasm yuklangan bo'lsa uni o'qiymiz
         if (fileInput?.files[0]) {
             postImage = await new Promise((res, rej) => {
                 const r = new FileReader();
@@ -2022,14 +2188,35 @@ window.uploadDiscoveryPost = async () => {
             });
         }
 
+        // 3. Firebase Firestore'ga barcha yangi ma'lumotlarni yuboramiz
         await addDoc(collection(db, 'discovery'), {
-            uid:       currentUser.uid,
-            userName:  currentUser.displayName || 'Foydalanuvchi',
-            userPhoto: currentUser.photoURL    || '',
-            bio, postImage,
-            category:  selectedTag,
-            createdAt: serverTimestamp()
+            uid:          currentUser.uid,
+            userPhoto:    currentUser.photoURL || '',
+            
+            // Foydalanuvchi o'zi kiritgan yangi maxsus ma'lumotlar
+            name,
+            nickname,
+            age:          age ? parseInt(age) : 19, // Yoshi kiritilmagan bo'lsa default 19
+            relationship: relationship || "Yolg'iz",
+            location:     location || "Andijon",
+            bio, 
+            postImage,
+            category:     selectedTag,
+            createdAt:    serverTimestamp()
         });
+
+        // Formani tozalash (Keyingi safar ochilganda bo'sh bo'lishi uchun)
+        if(document.getElementById('disc-name')) document.getElementById('disc-name').value = '';
+        if(document.getElementById('disc-nickname')) document.getElementById('disc-nickname').value = '';
+        if(document.getElementById('disc-age')) document.getElementById('disc-age').value = '';
+        if(document.getElementById('disc-location')) document.getElementById('disc-location').value = '';
+        if(document.getElementById('discoveryBio')) document.getElementById('discoveryBio').value = '';
+        if(document.getElementById('discoveryFile')) document.getElementById('discoveryFile').value = '';
+        
+        const preview = document.getElementById('discoveryPreview');
+        if (preview) { preview.src = ''; preview.style.display = 'none'; }
+        const placeholder = document.getElementById('uploadPlaceholder');
+        if (placeholder) placeholder.style.display = 'block';
 
         window.closeDiscoveryModal();
         showToast("E'lon joylashtirildi! 🚀", 'success');
@@ -2043,7 +2230,7 @@ window.uploadDiscoveryPost = async () => {
 };
 
 // ============================================================
-// 🔧 FIX #9 — loadDiscoveryFeed (Listener stack)
+// 🔧 TO'LIQ TUZATILISH — loadDiscoveryFeed + O'CHIRISH TUGMASI
 // ============================================================
 function loadDiscoveryFeed() {
     const feed = document.getElementById('discovery-feed');
@@ -2056,33 +2243,104 @@ function loadDiscoveryFeed() {
         snap.forEach(docSnap => {
             const data = docSnap.data();
             const isMe  = currentUser?.uid === data.uid;
-            const photo = data.userPhoto || getFallbackAvatar(data.userName);
+
+            // 1. Ism va Nickname moslashuvchanligi (Eski va yangi ma'lumotlar uchun)
+            const displayName = data.name || data.userName || 'Foydalanuvchi';
+            const nickname    = data.nickname || 'user';
+            const age         = data.age || 19;
+            const relationship= data.relationship || "Yolg'iz";
+            const location    = data.location || "Andijon";
+            
+            // 2. Avatar fallback tizimi (Ism o'zgarganiga qarab avtomatik generatsiya bo'ladi)
+            const photo = data.userPhoto || getFallbackAvatar(displayName);
 
             const div = document.createElement('div');
-            div.className = 'discovery-card glass-card';
-            div.style.cssText = 'padding:16px;margin-bottom:12px;';
+            div.className = 'discovery-card'; 
+
             div.innerHTML = `
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                    <img src="${photo}" data-name="${data.userName}"
-                         style="width:40px;height:40px;border-radius:50%;object-fit:cover;">
-                    <div>
-                        <strong>${escapeHTML(data.userName || 'User')}</strong>
-                        ${data.category ? `<span style="font-size:0.75rem;background:var(--accent-dim);color:var(--accent);padding:2px 8px;border-radius:10px;margin-left:6px;">${data.category}</span>` : ''}
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border-strong);">
+                    <img src="${photo}" alt="${escapeHTML(displayName)}"
+                         style="width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent);">
+                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                        <strong style="font-size: 0.95rem; color: var(--text-primary); font-weight: 600;">
+                            ${escapeHTML(displayName)}
+                        </strong>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">
+                            @${escapeHTML(nickname)} • E'lon joyladi
+                        </span>
                     </div>
                 </div>
-                ${data.postImage ? `<img src="${data.postImage}" data-name="Post" style="width:100%;border-radius:12px;margin-bottom:10px;max-height:300px;object-fit:cover;">` : ''}
-                <p style="margin:0 0 12px;font-size:0.9rem;">${escapeHTML(data.bio || '')}</p>
-                <div style="display:flex;gap:8px;">
-                    ${!isMe ? `<button onclick="sendInterest('${data.uid}','${escapeHTML(data.userName)}')"
-                        style="flex:1;background:var(--accent);border:none;color:#fff;padding:9px;border-radius:10px;cursor:pointer;font-size:0.85rem;">
-                        Qiziqish bildirish</button>` : `<span style="font-size:0.78rem;color:var(--text-muted);">Sizning e'loningiz</span>`}
-                    ${!isMe ? `<button onclick="followUser('${data.uid}')"
-                        style="background:var(--bg-hover);border:1px solid var(--border);color:inherit;padding:9px 14px;border-radius:10px;cursor:pointer;font-size:0.85rem;">
-                        Obuna</button>` : ''}
-                </div>`;
+
+                ${data.postImage ? `<img src="${data.postImage}" class="disc-card-image" alt="Post Image">` : ''}
+                
+                <div class="disc-info-badge-grid">
+                    <div class="disc-badge">
+                        <i class="fas fa-user"></i> 
+                        <strong>${escapeHTML(displayName)}</strong>
+                    </div>
+                    <div class="disc-badge">
+                        <i class="fas fa-at"></i> 
+                        <span>@${escapeHTML(nickname)}</span>
+                    </div>
+                    <div class="disc-badge">
+                        <i class="fas fa-birthday-cake"></i> 
+                        <span>${age} yosh</span>
+                    </div>
+                    <div class="disc-badge">
+                        <i class="fas fa-heart"></i> 
+                        <span>${escapeHTML(relationship)}</span>
+                    </div>
+                    <div class="disc-badge" style="grid-column: span 2;">
+                        <i class="fas fa-map-marker-alt"></i> 
+                        <span>${escapeHTML(location)}</span>
+                    </div>
+                </div>
+                
+                <p class="disc-bio-text" style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.4; margin: 12px 0;">
+                    ${escapeHTML(data.bio || '')}
+                </p>
+
+                <div style="margin-bottom: 12px;">
+                    ${data.category ? `<span style="font-size:0.72rem; background:var(--bg-input); border:1px solid var(--border); color:var(--text-secondary); padding:4px 10px; border-radius:20px;">✨ ${escapeHTML(data.category)}</span>` : ''}
+                </div>
+
+                <div class="disc-card-actions">
+                    ${!isMe ? `
+                        <button onclick="sendInterest('${data.uid}','${escapeHTML(displayName)}')" class="btn-interest">
+                            <i class="fas fa-fire"></i> Qiziqish bildirish
+                        </button>
+                        <button onclick="followUser('${data.uid}')" class="btn-secondary" style="padding: 10px 14px; border-radius: var(--radius);">
+                            Obuna
+                        </button>
+                    ` : `
+                        <div style="display: flex; width: 100%; gap: 10px; align-items: center;">
+                            <div style="flex: 1; text-align:center; padding: 10px; background:var(--bg-input); border-radius:var(--radius); font-size:0.78rem; color:var(--text-muted); font-weight:500;">
+                                ✨ Sizning e'loningiz
+                            </div>
+                            <button onclick="deleteDiscoveryPost('${docSnap.id}')" class="btn-delete-discovery" title="E'lonni o'chirish">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    `}
+                </div>
+            `;
             feed.appendChild(div);
         });
     }));
+}
+
+// Funksiyani window.deleteDiscoveryPost qilib biriktiramiz:
+window.deleteDiscoveryPost = async function(postId) {
+    const confirmDelete = confirm("Haqiqatan ham ushbu e'lonni o'chirib tashlamoqchimisiz?");
+    if (!confirmDelete) return;
+
+    try {
+        await deleteDoc(doc(db, 'discovery', postId));
+        alert("E'lon muvaffaqiyatli o'chirildi!");
+    } catch (error) {
+        console.error("O'chirishda xatolik:", error);
+        alert("Xatolik yuz berdi. Qaytadan urinib ko'ring.");
+    }
 }
 
 document.querySelectorAll('.feed-tab[data-comm]').forEach(tab => {
@@ -2109,61 +2367,117 @@ window.sendInterest = async (targetUid, targetName) => {
 };
 
 // ============================================================
-// MY POSTS (Profile grid)
+// MY POSTS (Profile Tabs Connected)
 // ============================================================
-function loadMyPosts(uid) {
+function loadMyPosts(uid, activeTab = 'thoughts') {
     const grid = document.getElementById('my-posts-list');
     if (!grid || !uid) return;
 
+    // Har safar tab almashganda grid tozalanishi va klasslar moslashishi uchun
+    grid.innerHTML = '';
+    
+    // Agar "media" yoki "reels" tab bo'lsa grid uslubini qo'shish, aks holda olib tashlash (SMS uchun)
+    if (activeTab === 'media' || activeTab === 'reels') {
+        grid.classList.add('media-grid');
+    } else {
+        grid.classList.remove('media-grid');
+    }
+
     const q = query(collection(db, 'posts'), where('uid', '==', uid), orderBy('createdAt', 'desc'), limit(30));
 
-    listeners.set('myPosts', onSnapshot(q, snap => {
+    // snapshotni o'rnatish — sizning obyekt ichidagi .set() metodidan foydalanamiz
+    // Bu metod o'zi avtomatik ravishda eski 'myPosts' bo'lsa o'chirib yuboradi!
+    const unsubscribe = onSnapshot(q, snap => {
         grid.innerHTML = '';
-        if (snap.empty) {
-            grid.innerHTML = `<div class="empty-state"><div class="empty-icon"><i class="fas fa-camera-retro"></i></div><p>Hali post joylangmagan</p><button class="btn-primary small" onclick="showSection('home')"><i class="fas fa-plus"></i> Birinchi postni joylashtiring</button></div>`;
+        
+        const filteredDocs = snap.docs.filter(docSnap => {
+    const data = docSnap.data();
+    const hasImg = !!data.mediaURL; // Rasm bor-yo'qligi
+    
+    // Video yoki Reels ekanligini aniqlash (agar bazada videoURL bo'lsa yoki mediaURL ichida mp4 bo'lsa)
+    const hasVideo = !!data.videoURL || (data.mediaURL && data.mediaURL.includes('.mp4')); 
+
+    if (activeTab === 'media') {
+        // Faqat rasmlar (videolarsiz)
+        return hasImg && !hasVideo; 
+    } 
+    else if (activeTab === 'thoughts') {
+        // Faqat matnli fikrlar (na rasm, na video bor)
+        return !hasImg && !hasVideo; 
+    } 
+    else if (activeTab === 'reels') {
+        // Faqat video kontentlar
+        return hasVideo; 
+    } 
+    else if (activeTab === 'tagged') {
+        // Belgilanganlar (boshqa foydalanuvchilar sizni tag qilgan postlar)
+        // Agar bazada 'taggedUsers' massivi bo'lsa, o'sha orqali tekshiriladi
+        return data.taggedUsers && data.taggedUsers.includes(uid);
+    }
+    
+    return false; // Agar hech biriga tushmasa, adashib sharhlar chiqib ketmaydi
+});
+
+        // Agar tanlangan tabda ma'lumot yo'q bo'lsa
+        if (filteredDocs.length === 0) {
+            grid.innerHTML = `
+                <div class="empty-state-minimal">
+                    <i class="${activeTab === 'media' ? 'fas fa-camera-retro' : 'fas fa-pen-nib'}"></i>
+                    <p>${activeTab === 'media' ? 'Hali rasmlar joylanmagan' : 'Hali fikrlar yozilmagan'}</p>
+                </div>`;
             return;
         }
-        snap.forEach(docSnap => {
+
+        // Elementlarni ekranga chiqarish
+        filteredDocs.forEach(docSnap => {
             const data = docSnap.data();
             const el = document.createElement('div');
-            el.className = 'post-thumb';
-            el.style.cssText = 'aspect-ratio:1;background:var(--bg-hover);border-radius:8px;overflow:hidden;cursor:pointer;position:relative;';
-            el.innerHTML = data.mediaURL
-                ? `<img src="${data.mediaURL}" data-name="Post" style="width:100%;height:100%;object-fit:cover;">`
-                : `<div style="display:flex;align-items:center;justify-content:center;height:100%;padding:8px;font-size:0.78rem;color:var(--text-secondary);text-align:center;line-height:1.4;">${escapeHTML(data.content?.substring(0, 80) || '')}</div>`;
+
+            if (activeTab === 'media') {
+                // Media (Kvadrat rasm)
+                el.className = 'media-post-item';
+                el.innerHTML = `<img src="${data.mediaURL}" alt="Rivion Media" onclick="openPostModal('${docSnap.id}')">`;
+            } else {
+                // Fikrlar (SMS bubble)
+                el.className = 'thought-bubble';
+                el.innerHTML = escapeHTML(data.content || '');
+                el.onclick = () => typeof openPostModal === 'function' && openPostModal(docSnap.id);
+            }
+
             grid.appendChild(el);
         });
-    }));
+    });
+
+    // Loyihangizdagi tayyor set() metodini chaqiramiz
+    listeners.set('myPosts', unsubscribe);
 }
 
-document.querySelectorAll('.profile-tab').forEach(tab => {
+document.querySelectorAll('.rivion-tabs button').forEach(tab => {
     tab.addEventListener('click', () => {
         // 1. Aktiv klassni almashtirish
-        document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.rivion-tabs button').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
 
-        // 2. Filtrlash mantiqi
-        const type = tab.getAttribute('data-ptab');
-        const thumbs = document.querySelectorAll('.post-thumb');
+        // 2. Qaysi tab bosilganini aniqlash (thoughts, media, reels, tagged)
+        const currentTab = tab.getAttribute('data-ptab');
+        const grid = document.getElementById('my-posts-list');
+        
+        if (!grid) return;
 
-        thumbs.forEach(thumb => {
-            const hasImg = thumb.querySelector('img') !== null;
-            const hasVideo = thumb.querySelector('video') !== null;
+        // 3. Grid klasslarini boshqarish (Dizayn o'zgarishi uchun)
+        if (currentTab === 'media' || currentTab === 'reels') {
+            grid.classList.add('media-grid');
+        } else {
+            grid.classList.remove('media-grid');
+        }
 
-            switch(type) {
-                case 'media':
-                    thumb.style.display = (hasImg || hasVideo) ? 'block' : 'none';
-                    break;
-                case 'thoughts':
-                    thumb.style.display = (!hasImg && !hasVideo) ? 'block' : 'none';
-                    break;
-                case 'reels':
-                    thumb.style.display = hasVideo ? 'block' : 'none';
-                    break;
-                default:
-                    thumb.style.display = 'block';
-            }
-        });
+        // 4. Firestore'dan ma'lumotlarni qayta filtrlash uchun loadMyPosts funksiyasini chaqiramiz
+        // (Agarda joriy foydalanuvchi IDsi aniq bo'lsa)
+        if (typeof currentProfileUid !== 'undefined' && currentProfileUid) {
+            loadMyPosts(currentProfileUid, currentTab);
+        } else if (auth.currentUser) {
+            loadMyPosts(auth.currentUser.uid, currentTab);
+        }
     });
 });
 
@@ -2180,17 +2494,35 @@ document.querySelectorAll('.interest-tag').forEach(tag => {
 window.openInfo  = () => { const m = document.getElementById('info-modal'); if (m) { m.style.display = 'flex'; document.body.style.overflow = 'hidden'; } };
 window.closeInfo = () => { const m = document.getElementById('info-modal'); if (m) { m.style.display = 'none'; document.body.style.overflow = ''; } };
 
-window.openQuickCreate  = () => {
-    const s = document.getElementById('quick-create-sheet');
-    const o = document.getElementById('bottomSheetOverlay');
-    if (s) s.style.display = 'flex';
-    if (o) { o.style.display = 'block'; o.classList.add('visible'); }
+// Global oynada ochish funksiyasi
+window.openQuickCreate = function() {
+    const sheet = document.getElementById('quick-create-sheet');
+    if (!sheet) return;
+    
+    sheet.style.display = 'flex';
+    setTimeout(() => {
+        sheet.classList.add('active');
+    }, 10);
 };
-window.closeQuickCreate = () => {
-    const s = document.getElementById('quick-create-sheet');
-    const o = document.getElementById('bottomSheetOverlay');
-    if (s) s.style.display = 'none';
-    if (o) { o.style.display = 'none'; o.classList.remove('visible'); }
+
+// Global oynada yopish funksiyasi (X bosilganda)
+window.closeQuickCreate = function() {
+    const sheet = document.getElementById('quick-create-sheet');
+    if (!sheet) return;
+    
+    sheet.classList.remove('active');
+    setTimeout(() => {
+        sheet.style.display = 'none';
+    }, 350); // CSS transition vaqtiga mos
+};
+
+// E'lonlar modalini ochish funksiyasi xavfsiz holatda
+window.openDiscoveryModal = function() {
+    const modal = document.getElementById('discoveryModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.add('active');
+    }
 };
 
 window.addHighlight = () => showToast('Highlight qo\'shish tez kunda! ✨', 'info');
@@ -2247,6 +2579,547 @@ document.addEventListener('DOMContentLoaded', () => {
     loadPosts('forYou');
     loadTrending();
     loadStories();
+    initCommunityTabs(); // 🔥 [QO'SHILDI] Tablarni ishga tushirish
     window.showSection('home');
 });
 
+
+
+
+let currentOpenPostId = null; // Hozir ochilgan post ID-sini saqlash uchun
+
+// 1. MODALNI OCHISH VA MA'LUMOTLARNI YUKLASH
+async function openPostModal(postId) {
+    currentOpenPostId = postId;
+    const modal = document.getElementById('post-detail-modal');
+    if (!modal) return;
+
+    modal.style.display = 'flex';
+
+    // Elementlarni tozalab turish (Yuklanayotgan paytda eski post ko'rinmasligi uchun)
+    document.getElementById('modal-post-media-container').innerHTML = 'Yuklanmoqda...';
+    document.getElementById('modal-post-comments-container').innerHTML = '';
+    document.getElementById('modal-likes-count').innerText = '0 like';
+
+    try {
+        // Firestore'dan joriy postni bir marta o'qish
+        const postDoc = await getDoc(doc(db, 'posts', postId));
+        if (!postDoc.exists()) return;
+        const postData = postDoc.data();
+
+        // Rasm yoki matnni modal oynaning chap/tepa tomoniga joylash
+        if (postData.mediaURL) {
+            document.getElementById('modal-post-media-container').innerHTML = `
+                <img src="${postData.mediaURL}" alt="Post media">`;
+        } else {
+            document.getElementById('modal-post-media-container').innerHTML = `
+                <div style="padding:24px; font-size:16px; text-align:center;">${escapeHTML(postData.content || '')}</div>`;
+        }
+
+        // Muallif ma'lumotlari (Ism)
+        document.getElementById('modal-post-author-info').innerHTML = `
+            <strong>${escapeHTML(postData.displayName || 'Foydalanuvchi')}</strong>`;
+
+        // Likelar sonini ko'rsatish va yurakchani tekshirish
+        const likes = postData.likes || [];
+        document.getElementById('modal-likes-count').innerText = `${likes.length} like`;
+        
+        const heartBtn = document.getElementById('modal-like-button');
+        if (auth.currentUser && likes.includes(auth.currentUser.uid)) {
+            heartBtn.innerHTML = '<i class="fas fa-heart"></i>'; // Qizil yurak
+        } else {
+            heartBtn.innerHTML = '<i class="far fa-heart"></i>'; // Bo'sh yurak
+        }
+
+        // POST SHARHLARINI REAL-VAQTLI YUKLASH (Subcollection or Array)
+        // Agar sizda sharhlar post hujjatining ichida 'comments' array bo'lsa:
+        loadModalComments(postData.comments || []);
+
+    } catch (error) {
+        console.error("Modal yuklashda xato:", error);
+    }
+}
+
+
+// Funksiyani global qilib ochish, shunda HTML onclick uni topa oladi
+window.openPostModal = openPostModal;
+window.closePostModal = closePostModal;
+window.toggleLikePost = toggleLikePost;
+window.submitModalComment = submitModalComment;
+
+
+// 2. SHARHLARNI EKRANGA CHIQARISH
+function loadModalComments(commentsArray) {
+    const container = document.getElementById('modal-post-comments-container');
+    container.innerHTML = '';
+
+    if (commentsArray.length === 0) {
+        container.innerHTML = '<p style="color:gray; font-size:13px;">Hali sharhlar yo\'q...</p>';
+        return;
+    }
+
+    commentsArray.forEach(comment => {
+        const item = document.createElement('div');
+        item.className = 'modal-comment-item';
+        item.innerHTML = `<strong>${escapeHTML(comment.authorName || 'Anonim')}:</strong> <span>${escapeHTML(comment.text)}</span>`;
+        container.appendChild(item);
+    });
+}
+
+// 3. LIKE BOSISH MANTIQLARI
+async function toggleLikePost() {
+    if (!auth.currentUser || !currentOpenPostId) return;
+    const uid = auth.currentUser.uid;
+    const postRef = doc(db, 'posts', currentOpenPostId);
+
+    try {
+        const postDoc = await getDoc(postRef);
+        let likes = postDoc.data().likes || [];
+
+        if (likes.includes(uid)) {
+            // Likeni qaytarib olish
+            likes = likes.filter(id => id !== uid);
+        } else {
+            // Like qo'shish
+            likes.push(uid);
+        }
+
+        await updateDoc(postRef, { likes: likes });
+        
+        // Modalni qayta yangilab qo'yish
+        document.getElementById('modal-likes-count').innerText = `${likes.length} like`;
+        document.getElementById('modal-like-button').innerHTML = likes.includes(uid) 
+            ? '<i class="fas fa-heart"></i>' 
+            : '<i class="far fa-heart"></i>';
+
+    } catch (e) {
+        console.error("Like bosishda xato:", e);
+    }
+}
+
+// 4. YANGI SHARH YOZIB QOLDIRISH
+async function submitModalComment() {
+    const input = document.getElementById('modal-comment-input');
+    if (!input || !input.value.trim() || !currentOpenPostId || !auth.currentUser) return;
+
+    const postRef = doc(db, 'posts', currentOpenPostId);
+    const newComment = {
+        uid: auth.currentUser.uid,
+        authorName: auth.currentUser.displayName || 'Foydalanuvchi',
+        text: input.value.trim(),
+        createdAt: new Date().toISOString()
+    };
+
+    try {
+        // Firestore-da arrayUnion orqali sharhlar ro'yxatiga yangisini qo'shish
+        await updateDoc(postRef, {
+            comments: arrayUnion(newComment)
+        });
+
+        input.value = ''; // Inputni tozalash
+        
+        // Yangi qo'shilgan sharhni ko'rish uchun postni qayta o'qiymiz
+        const updatedDoc = await getDoc(postRef);
+        loadModalComments(updatedDoc.data().comments || []);
+
+    } catch (e) {
+        console.error("Sharh yuborishda xato:", e);
+    }
+}
+
+// 5. MODALNI YOPISH
+function closePostModal() {
+    const modal = document.getElementById('post-detail-modal');
+    if (modal) modal.style.display = 'none';
+    currentOpenPostId = null;
+}
+
+
+// ============================================================
+// 🎛️ HAMJAMIYAT (COMMUNITY) TABS CONTROLLER
+// ============================================================
+function initCommunityTabs() {
+    document.querySelectorAll('.feed-tabs .feed-tab').forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            // 1. Aktiv klassni yangilash
+            document.querySelectorAll('.feed-tabs .feed-tab').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+
+            // 2. Qaysi tab bosilganini aniqlash
+            const targetTab = e.target.getAttribute('data-comm');
+            switchTabContent(targetTab);
+        });
+    });
+}
+
+// ============================================================
+// 🎛️ TO'G'RILANGAN SWITCH TAB CONTENT (XATOSIZ VARIANT)
+// ============================================================
+function switchTabContent(tabName) {
+    const feed = document.getElementById('discovery-feed');
+    if (!feed) return;
+
+    // 🔥 Xavfsiz tekshiruv: listeners qanday turda bo'lishidan qat'iy nazar xato bermaydi
+    if (typeof listeners !== 'undefined') {
+        if (typeof listeners.has === 'function' && listeners.has('discovery')) {
+            listeners.get('discovery')();
+            listeners.delete('discovery');
+        } else if (listeners['discovery'] && typeof listeners['discovery'] === 'function') {
+            // Agar listeners oddiy obyekt bo'lsa:
+            listeners['discovery']();
+            delete listeners['discovery'];
+        }
+    }
+
+    // Ekran tozalanadi
+    feed.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Yuklanmoqda...</div>';
+
+    // Tanlangan bo'limga qarab tegishli funksiyani ishga tushiramiz
+    if (tabName === 'discovery') {
+        loadDiscoveryFeed(); 
+    } else if (tabName === 'groups') {
+        loadGroupsFeed();
+    } else if (tabName === 'events') {
+        loadEventsFeed();
+    }
+}
+
+// ============================================================
+// 👥 GURUHLAR BO'LIMI (YANGI O'ZGACHA DIZAYN)
+// ============================================================
+function loadGroupsFeed() {
+    const feed = document.getElementById('discovery-feed');
+    if (!feed) return;
+
+    const q = query(collection(db, 'groups'), orderBy('createdAt', 'desc'), limit(20));
+
+    const unsubscribe = onSnapshot(q, snap => {
+        feed.innerHTML = '';
+        
+        if (snap.empty) {
+            feed.innerHTML = `
+                <div style="text-align:center; padding:50px 20px; color:var(--text-muted);">
+                    <i class="fas fa-users" style="font-size:3rem; margin-bottom:12px; color: var(--border-strong);"></i>
+                    <p style="font-size: 0.95rem;">Hozircha guruhlar yo'q.<br>Birinchilardan bo'lib o'z guruhingizni yarating!</p>
+                </div>`;
+            return;
+        }
+
+        snap.forEach(docSnap => {
+            const data = docSnap.data();
+            const isOwner = currentUser?.uid === data.creatorId; // Guruh egasini tekshirish
+            const membersCount = data.membersCount || 1;
+
+            // Tasodifiy gradient fonlar (agar maxsus rasm bo'lmasa ishlatish uchun)
+            const bannerStyle = data.bannerImage 
+                ? `background: url('${data.bannerImage}') center/cover;` 
+                : `background: linear-gradient(135deg, var(--accent) 0%, #4f46e5 100%);`;
+
+            const div = document.createElement('div');
+            div.className = 'group-card'; 
+
+            div.innerHTML = `
+                <div class="group-banner" style="${bannerStyle}"></div>
+
+                <div class="group-content">
+                    <div class="group-avatar">
+                        ${data.groupLogo ? `<img src="${data.groupLogo}" style="width:100%; height:100%; object-fit:cover; border-radius:9px;">` : `👥`}
+                    </div>
+
+                    <div class="group-title-row">
+                        <h3 class="group-name">${escapeHTML(data.groupName || 'Nomisiz guruh')}</h3>
+                        <span class="group-badge">${escapeHTML(data.category || 'Umumiy')}</span>
+                    </div>
+
+                    <div class="group-meta">
+                        <span><i class="fas fa-users"></i> ${membersCount} ta a'zo</span>
+                        <span><i class="fas fa-globe"></i> ${data.type === 'private' ? 'Yopiq guruh' : 'Ochiq guruh'}</span>
+                    </div>
+                    
+                    <p class="group-desc">
+                        ${escapeHTML(data.description || 'Guruh qoidalari va maqsadi haqida ma\'lumot berilmagan.')}
+                    </p>
+
+                    <div class="group-members-preview">
+                        <div class="member-mini-avatar" style="background: #ef4444;"></div>
+                        <div class="member-mini-avatar" style="background: #10b981;"></div>
+                        <div class="member-mini-avatar" style="background: #3b82f6;"></div>
+                        <span style="font-size: 0.75rem; color: var(--text-muted); margin-left: 6px;">+ qo'shilishdi</span>
+                    </div>
+
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        ${!isOwner ? `
+                            <button onclick="joinGroup('${docSnap.id}')" class="btn-interest" style="width: 100%; margin: 0; justify-content: center;">
+                                <i class="fas fa-user-plus"></i> Guruhga a'zo bo'lish
+                            </button>
+                        ` : `
+                            <div style="flex: 1; text-align:center; padding: 10px; background: var(--bg-input); border-radius: var(--radius); font-size: 0.78rem; color: var(--text-muted); font-weight: 500;">
+                                👑 Siz asoschisiz
+                            </div>
+                            <button onclick="deleteGroup('${docSnap.id}')" class="btn-delete-discovery" style="padding: 10px 14px;" title="Guruhni o'chirish">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        `}
+                    </div>
+                </div>
+            `;
+            feed.appendChild(div);
+        });
+    }, error => {
+        console.error("Guruhlarni yuklashda xatolik:", error);
+    });
+
+    if (typeof listeners !== 'undefined') {
+        if (typeof listeners.set === 'function') listeners.set('discovery', unsubscribe);
+        else listeners['discovery'] = unsubscribe;
+    }
+}
+
+// 🗑️ Guruhni o'chirish funksiyasi
+window.deleteGroup = async function(groupId) {
+    if (!confirm("Haqiqatan ham ushbu guruhni butunlay o'chirib tashlamoqchimisiz?")) return;
+    try {
+        await deleteDoc(doc(db, 'groups', groupId));
+        alert("Guruh muvaffaqiyatli o'chirildi!");
+    } catch (error) {
+        console.error(error);
+        alert("Xatolik yuz berdi.");
+    }
+};
+
+
+// ============================================================
+// 📅 TADBIRLAR BO'LIMI (LOAD EVENTS)
+// ============================================================
+function loadEventsFeed() {
+    const feed = document.getElementById('discovery-feed');
+    if (!feed) return;
+
+    const q = query(collection(db, 'events'), orderBy('createdAt', 'desc'), limit(20));
+
+    listeners.set('discovery', onSnapshot(q, snap => {
+        feed.innerHTML = '';
+
+        if (snap.empty) {
+            feed.innerHTML = `
+                <div style="text-align:center; padding:40px 20px; color:var(--text-muted);">
+                    <i class="fas fa-calendar-alt" style="font-size:2.5rem; margin-bottom:10px;"></i>
+                    <p>Yaqin orada hech qanday tadbir rejalashtirilmagan.</p>
+                </div>`;
+            return;
+        }
+
+        snap.forEach(docSnap => {
+            const data = docSnap.data();
+            const div = document.createElement('div');
+            div.className = 'discovery-card';
+
+            div.innerHTML = `
+                <div style="margin-bottom: 10px;">
+                    <span style="font-size: 0.7rem; background: #f59e0b; color: white; padding: 3px 8px; border-radius: 4px; font-weight: bold; text-transform: uppercase;">
+                        📅 TADBIY / UCHRASHUV
+                    </span>
+                    <h3 style="font-size: 1.1rem; color: var(--text-primary); margin: 6px 0 4px 0;">${escapeHTML(data.title || 'Mavzusiz tadbir')}</h3>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap: 6px; background: var(--bg-input); padding: 10px; border-radius: var(--radius); margin: 10px 0; font-size: 0.82rem; color: var(--text-secondary);">
+                    <div><i class="fas fa-clock" style="color:var(--accent); width:20px;"></i> <b>Vaqti:</b> ${escapeHTML(data.date || 'Belgilanmagan')}</div>
+                    <div><i class="fas fa-map-marker-alt" style="color:#ef4444; width:20px;"></i> <b>Joylashuv:</b> ${escapeHTML(data.location || 'Onlayn')}</div>
+                </div>
+
+                <p style="font-size: 0.88rem; color: var(--text-secondary); margin: 10px 0;">
+                    ${escapeHTML(data.description || 'Tadbir tafsilotlari mavjud emas.')}
+                </p>
+
+                <div class="disc-card-actions" style="margin-top:15px;">
+                    <button onclick="acceptEvent('${docSnap.id}')" class="btn-interest" style="width:100%; background: #10b981;">
+                        <i class="fas fa-check"></i> Boraman / Qatnashaman
+                    </button>
+                </div>
+            `;
+            feed.appendChild(div);
+        });
+    }, error => {
+        console.error("Tadbirlarni yuklashda xatolik:", error);
+    }));
+}
+
+// Global namunaviy funksiyalar (Window obyektiga)
+window.joinGroup = function(groupId) {
+    alert("Siz guruhga muvaffaqiyatli a'zo bo'ldingiz!");
+};
+
+window.acceptEvent = function(eventId) {
+    alert("Tadbir ro'yxatiga qo'shildingiz!");
+};
+
+const textarea = document.getElementById('postText');
+const postButton = document.getElementById('postBtn');
+
+if (textarea) {
+    textarea.addEventListener('input', function() {
+        // Balandlikni matnga moslab o'stiramiz
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+        
+        // Bo'sh bo'lsa tugmani o'chirish, matn bo'lsa yoqish
+        if (this.value.trim().length > 0) {
+            postButton.removeAttribute('disabled');
+        } else {
+            postButton.setAttribute('disabled', 'true');
+        }
+    });
+}
+
+function openCommunityModal() {
+    // Modal oynani ochish kodi (masalan, uni blokini ko'rsatish)
+    document.getElementById('communityModal').style.display = 'block'; 
+}
+
+// Tanlangan video faylini saqlash uchun global o'zgaruvchi
+let selectedReelFile = null;
+
+// ========================================================
+// 1. FAYL TANLANGANDA PREVIEW KO'RSATISH VA FAYLNI SAQLASH
+// ========================================================
+window.handleReelFile = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Maksimal o'lcham 100MB (HTML dagi shartga ko'ra)
+    if (file.size > 100 * 1024 * 1024) {
+        alert("Video o'lchami 100MB dan oshmasligi kerak!");
+        return;
+    }
+
+    selectedReelFile = file;
+
+    // HTML elementlarni topamiz
+    const placeholder = document.getElementById('upload-placeholder');
+    const previewContainer = document.getElementById('video-preview-container');
+    const videoPreview = document.getElementById('reel-preview');
+
+    // Tanlangan videoni ekranda ko'rsatish (Preview)
+    if (placeholder && previewContainer && videoPreview) {
+        const fileURL = URL.createObjectURL(file);
+        videoPreview.src = fileURL;
+        
+        placeholder.style.display = 'none';       // Yuklash so'rovini yashirish
+        previewContainer.style.display = 'block'; // Videoni o'zini ko'rsatish
+        videoPreview.play().catch(e => console.log("Preview pley bo'lmadi:", e));
+    }
+
+    console.log("Video muvaffaqiyatli tanlandi:", file.name);
+};
+
+// ========================================================
+// 2. VIDEONI PROGRESS BAR BILAN FIREBASE-GA YUKLASH
+// ========================================================
+window.shareReel = async function() {
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            alert("Video yuklash uchun tizimga kiring!");
+            return;
+        }
+
+        if (!selectedReelFile) {
+            alert("Iltimos, avval video fayl tanlang!");
+            return;
+        }
+
+        const progressContainer = document.getElementById('upload-progress-container');
+        const progressFill = document.getElementById('upload-progress-fill');
+        const progressText = document.getElementById('progress-text');
+
+        if (progressContainer) progressContainer.style.display = 'block';
+
+        // 1-QADAM: FIREBASE STORAGE MODULLARINI XAVFSIZ YUKLASH
+        let storage, refFunc, uploadFunc, getUrlFunc;
+        try {
+            const storageMod = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js");
+            
+            // TO'G'RILANDI: ReferenceError oldini olish uchun storageMod ichidan chaqiramiz
+            if (window.storage) {
+                storage = window.storage;
+            } else {
+                storage = storageMod.getStorage(); 
+            }
+            
+            refFunc = storageMod.ref;
+            uploadFunc = storageMod.uploadBytesResumable;
+            getUrlFunc = storageMod.getDownloadURL;
+        } catch (e) {
+            console.error("Storage modullarini yuklashda muammo:", e);
+            alert("Firebase Storage modullari topilmadi!");
+            return;
+        }
+
+        // 2-QADAM: YUKLASH MANZILINI BELGILASH
+        const fileRef = refFunc(storage, `reels/${Date.now()}_${selectedReelFile.name}`);
+        
+        // 3-QADAM: YUKLASHNI BOSHLASH
+        const uploadTask = uploadFunc(fileRef, selectedReelFile);
+
+        uploadTask.on('state_changed', 
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                if (progressFill) progressFill.style.width = `${progress}%`;
+                if (progressText) progressText.innerText = `${Math.round(progress)}% yuklandi...`;
+            }, 
+            (error) => {
+                console.error("Yuklashda xatolik:", error);
+                alert("Videoni yuklashda xato bo'ldi: " + error.message);
+                if (progressContainer) progressContainer.style.display = 'none';
+            }, 
+            async () => {
+                // 4-QADAM: LINKNI OLISH
+                const videoURL = await getUrlFunc(uploadTask.ref);
+
+                const captionInput = document.getElementById('reel-caption');
+                const captionText = captionInput ? captionInput.value : "";
+
+                // Firestore-ga yozish
+                await addDoc(collection(db, "reels"), {
+                    userId: user.uid,
+                    userName: user.displayName || "Foydalanuvchi",
+                    userAvatar: user.photoURL || "profil-rasm.jpg",
+                    videoURL: videoURL,
+                    caption: captionText,
+                    likes: [],
+                    createdAt: serverTimestamp()
+                });
+
+                console.log("Video muvaffaqiyatli Firestore-ga yozildi!");
+                alert("Video muvaffaqiyatli yuklandi va ulashildi!");
+
+                selectedReelFile = null;
+                if (captionInput) captionInput.value = '';
+                
+                if (progressContainer) progressContainer.style.display = 'none';
+                if (progressFill) progressFill.style.width = '0%';
+                
+                if (typeof closeAddReelModal === 'function') {
+                    closeAddReelModal();
+                } else {
+                    location.reload();
+                }
+            }
+        );
+
+    } catch (error) {
+        console.error("shareReel ichida xatolik:", error);
+        alert("Kutilmagan xatolik yuz berdi. Konsolni tekshiring.");
+    }
+};
+
+// --- Karakter sanagich (HTML dagi textarea uchun qo'shimcha qulaylik) ---
+document.addEventListener('DOMContentLoaded', () => {
+    const captionArea = document.getElementById('reel-caption');
+    const charCount = document.getElementById('reelCaptionCount');
+    if (captionArea && charCount) {
+        captionArea.addEventListener('input', (e) => {
+            charCount.innerText = e.target.value.length;
+        });
+    }
+});

@@ -2,102 +2,102 @@
    RIVION — main.css
    Professional Social Network Styles
    Author: Sarvarbek Rahmonjonov
-   Version: 1.1.0
+   Version: 1.2.0 (Minimalist & Sleek Refined)
    ================================================================ */
 
 /* ================================================================
    1. CSS VARIABLES & DESIGN TOKENS
    ================================================================ */
 :root {
-  /* Core Colors — Dark Theme */
-  --bg-base:         #080810;
-  --bg-elevated:     #0d0d1a;
-  --bg-card:         #11111f;
-  --bg-input:        #181828;
-  --bg-hover:        #1c1c30;
-  --bg-active:       #1e1e35;
+  /* Core Colors — Ultra-Clean Dark Theme */
+  --bg-base:          #0a0a0c;  /* To'q ko'k o'rniga chuqur mat quyuq rang */
+  --bg-elevated:      #121215;  /* Bir oz yuqoriroq qatlam */
+  --bg-card:          #16161a;  /* Bloklar va kartochkalar uchun toza fon */
+  --bg-input:         #1d1d22;  /* Kiritish maydonlari foni */
+  --bg-hover:         #181819;  /* Element ustiga kelgandagi yumshoq tus */
+  --bg-active:        #292930;  /* Aktiv holat */
 
-  /* Glass */
-  --glass-bg:        rgba(255,255,255,0.04);
-  --glass-border:    rgba(255,255,255,0.07);
-  --glass-shadow:    0 8px 32px rgba(0,0,0,0.4);
-  --glass-blur:      backdrop-filter: blur(20px) saturate(1.4);
+  /* Glass — Minimalist Blur */
+  --glass-bg:         rgba(18, 18, 21, 0.65);
+  --glass-border:     rgba(255, 255, 255, 0.05);
+  --glass-shadow:     0 4px 24px rgba(0, 0, 0, 0.5);
+  --glass-blur:       backdrop-filter: blur(12px) saturate(1.2);
 
-  /* Brand */
-  --accent:          #4f8fff;
-  --accent-light:    #6fa3ff;
-  --accent-dim:      rgba(79,143,255,0.15);
-  --accent-glow:     0 0 24px rgba(79,143,255,0.35);
+  /* Brand — Sophisticated Accent */
+  --accent:           #3b82f6;  /* Toza, ko'zni charchatmaydigan minimalist ko'k */
+  --accent-light:     #60a5fa;
+  --accent-dim:       rgba(59, 130, 246, 0.08);
+  --accent-glow:      0 0 16px rgba(14, 15, 16, 0.15); /* Neon nurlanish kamaytirildi */
 
-  /* Status */
-  --success:         #22d07a;
-  --warning:         #f5a623;
-  --danger:          #ff4d6a;
-  --premium:         #ffd166;
-  --verified:        #4f8fff;
-  --online:          #22d07a;
+  /* Status — Desaturated & Elegant */
+  --success:          #10b981;
+  --warning:          #f59e0b;
+  --danger:           #ef4444;
+  --premium:          #f59e0b;  /* Minimalist oltin */
+  --verified:         #3b82f6;
+  --online:           #10b981;
 
-  /* Text */
-  --text-primary:    #f0f0fa;
-  --text-secondary:  #8888aa;
-  --text-muted:      #55556a;
-  --text-link:       #6fa3ff;
+  /* Text — Balanced Contrast */
+  --text-primary:     #f4f4f6;  /* Ko'zni qamashtirmaydigan oppoq */
+  --text-secondary:   #9ca3af;  /* Toza kulrang text */
+  --text-muted:       #4b5563;  /* O'ta xira matnlar */
+  --text-link:        #60a5fa;
 
-  /* Borders */
-  --border:          rgba(255,255,255,0.07);
-  --border-strong:   rgba(255,255,255,0.12);
+  /* Borders — Razor Thin & Subtle */
+  --border:           rgba(255, 255, 255, 0.05);
+  --border-strong:    rgba(255, 255, 255, 0.1);
 
-  /* Spacing */
-  --nav-h:           60px;
-  --sidebar-w:       240px;
-  --sidebar-w-sm:    68px;
-  --right-w:         280px;
-  --feed-max:        620px;
-  --radius-sm:       8px;
-  --radius:          14px;
-  --radius-lg:       20px;
-  --radius-xl:       28px;
-  --radius-full:     999px;
+  /* Spacing & Radii — Tight and Structured */
+  --nav-h:            56px;     /* Bir oz ixchamlashtirildi */
+  --sidebar-w:        220px;
+  --sidebar-w-sm:     64px;
+  --right-w:          260px;
+  --feed-max:         600px;
+  --radius-sm:        6px;
+  --radius:           10px;     /* Burchaklar o'ta dumaloqlikdan professional viudalga keltirildi */
+  --radius-lg:        16px;
+  --radius-xl:        22px;
+  --radius-full:      999px;
 
-  /* Shadows */
-  --shadow-sm:       0 2px 8px rgba(0,0,0,0.3);
-  --shadow:          0 4px 20px rgba(0,0,0,0.4);
-  --shadow-lg:       0 12px 48px rgba(0,0,0,0.5);
+  /* Shadows — Flattened & Modern */
+  --shadow-sm:        0 1px 3px rgba(0,0,0,0.2);
+  --shadow:           0 4px 12px rgba(0,0,0,0.3);
+  --shadow-lg:        0 8px 32px rgba(0,0,0,0.4);
 
-  /* Transitions */
-  --ease:            cubic-bezier(0.4,0,0.2,1);
-  --ease-spring:     cubic-bezier(0.34,1.56,0.64,1);
-  --t-fast:          150ms;
-  --t-base:          250ms;
-  --t-slow:          400ms;
+  /* Transitions — Fast and Snappy */
+  --ease:             cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring:      cubic-bezier(0.175, 0.885, 0.32, 1.1);
+  --t-fast:           100ms;
+  --t-base:           200ms;
+  --t-slow:           300ms;
 
-  /* Fonts */
-  --font-display:    'Syne', sans-serif;
-  --font-body:       'DM Sans', sans-serif;
+  /* Fonts — Modern Typography */
+  --font-display:     'Inter', 'SF Pro Display', sans-serif; /* Minimalistik klassik shriftlar */
+  --font-body:        'Inter', 'SF Pro Text', sans-serif;
 
-  /* Gradient */
-  --grad-accent:     linear-gradient(135deg, #4f8fff 0%, #7b5cff 100%);
-  --grad-premium:    linear-gradient(135deg, #ffd166 0%, #ff9f43 100%);
-  --grad-danger:     linear-gradient(135deg, #ff4d6a 0%, #ff6b35 100%);
-  --grad-success:    linear-gradient(135deg, #22d07a 0%, #00c2cb 100%);
+  /* Gradients — Monochromatic & Fine */
+  --grad-accent:      linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  --grad-premium:     linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  --grad-danger:      linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  --grad-success:     linear-gradient(135deg, #10b981 0%, #047857 100%);
 }
 
-/* Light Theme Override */
+/* Light Theme Override — Nordic Minimalist */
 [data-theme="light"] {
-  --bg-base:        #f0f0f7;
-  --bg-elevated:    #f8f8ff;
-  --bg-card:        #ffffff;
-  --bg-input:       #f0f0f8;
-  --bg-hover:       #e8e8f5;
-  --bg-active:      #e0e0ef;
-  --glass-bg:       rgba(255,255,255,0.7);
-  --glass-border:   rgba(0,0,0,0.08);
-  --glass-shadow:   0 8px 32px rgba(0,0,0,0.12);
-  --text-primary:   #0f0f20;
-  --text-secondary: #5a5a7a;
-  --text-muted:     #9090aa;
-  --border:         rgba(0,0,0,0.08);
-  --border-strong:  rgba(0,0,0,0.14);
+  --bg-base:          #f8f9fa;  /* Toza studiyaviy fon */
+  --bg-elevated:      #ffffff;
+  --bg-card:          #ffffff;
+  --bg-input:         #f1f3f5;
+  --bg-hover:         #e9ecef;
+  --bg-active:        #dee2e6;
+  --glass-bg:         rgba(255, 255, 255, 0.8);
+  --glass-border:     rgba(0, 0, 0, 0.04);
+  --glass-shadow:     0 4px 16px rgba(0, 0, 0, 0.04);
+  --text-primary:     #202022;
+  --text-secondary:   #6b7280;
+  --text-muted:       #9ca3af;
+  --border:           rgba(0, 0, 0, 0.04);
+  --border-strong:    rgba(0, 0, 0, 0.08);
 }
 
 /* ================================================================
@@ -241,113 +241,131 @@ small { font-size: 0.8rem; color: var(--text-muted); }
 }
 
 /* ================================================================
-   5. BUTTONS SYSTEM
+   5. BUTTONS SYSTEM (Minimalist & Sleek Refined)
    ================================================================ */
 .btn-primary {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  background: var(--grad-accent);
+  gap: 8px;
+  background: var(--accent); /* Yorqin gradiyent o'rniga toza mat rang */
   color: #fff;
-  font-weight: 600;
-  font-family: var(--font-display);
-  font-size: 0.88rem;
-  padding: 10px 20px;
-  border-radius: var(--radius-full);
-  box-shadow: 0 4px 16px rgba(79,143,255,0.3);
-  transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+  font-weight: 500; /* Juda qalin shrift o'rniga o'rtacha nafis og'irlik */
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  padding: 9px 18px;
+  border-radius: var(--radius); /* To'liq dumaloq (capsule) o'rniga ixcham 10px burchak */
+  border: 1px solid transparent;
+  box-shadow: none; /* Og'ir ko'k soya olib tashlandi */
+  transition: background var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
   white-space: nowrap;
 }
 .btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 24px rgba(79,143,255,0.45);
+  background: var(--accent-light); /* Ustiga kelganda rang biroz yumshaydi */
+  transform: none; /* Sakrash effekti olib tashlandi */
 }
-.btn-primary:active { transform: scale(0.97); }
-.btn-primary.small { padding: 7px 14px; font-size: 0.8rem; }
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary.small { padding: 6px 12px; font-size: 0.78rem; }
 
 .btn-secondary {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  background: var(--bg-hover);
+  gap: 8px;
+  background: var(--bg-card); /* Kontent bilan bir xil, lekin chegaralangan */
   color: var(--text-primary);
   font-weight: 500;
-  font-size: 0.88rem;
-  padding: 10px 20px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--border);
-  transition: background var(--t-fast), border-color var(--t-fast);
+  font-size: 0.85rem;
+  padding: 9px 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-strong); /* Bir oz aniqroq, lekin ingichka chiziq */
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
 }
-.btn-secondary:hover { background: var(--bg-active); border-color: var(--border-strong); }
+.btn-secondary:hover { 
+  background: var(--bg-hover); 
+  border-color: var(--text-muted); 
+}
 
 .btn-send {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--grad-accent);
+  background: var(--accent);
   color: #fff;
-  font-weight: 600;
-  font-family: var(--font-display);
-  font-size: 0.87rem;
-  padding: 10px 22px;
-  border-radius: var(--radius-full);
-  box-shadow: 0 4px 14px rgba(79,143,255,0.3);
+  font-weight: 500;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  padding: 9px 20px;
+  border-radius: var(--radius);
   transition: all var(--t-fast) var(--ease);
 }
-.btn-send:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--accent-glow); }
-.btn-send:disabled { opacity: 0.4; }
+.btn-send:hover:not(:disabled) { 
+  background: var(--accent-light); 
+}
+.btn-send:disabled { 
+  opacity: 0.3; 
+  background: var(--bg-input); 
+  color: var(--text-muted); 
+}
 
 .btn-premium {
-  background: var(--grad-premium);
-  color: #0a0a0f;
-  font-weight: 700;
-  font-family: var(--font-display);
+  background: var(--bg-input); /* O'ta yaltiroq sariq o'rniga qora matli zamonaviy premiumlik */
+  color: var(--premium); /* Matn yoki ikonkaning o'zi tillarangda tovlanadi */
+  border: 1px solid rgba(245, 158, 11, 0.3); /* Nozik oltin chetli chiziq */
+  font-weight: 600;
+  font-family: var(--font-body);
   font-size: 0.8rem;
-  padding: 8px 18px;
-  border-radius: var(--radius-full);
+  padding: 7px 16px;
+  border-radius: var(--radius);
   white-space: nowrap;
-  box-shadow: 0 4px 14px rgba(255,209,102,0.25);
   transition: all var(--t-fast) var(--ease);
 }
-.btn-premium:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,209,102,0.4); }
+.btn-premium:hover { 
+  background: rgba(245, 158, 11, 0.08); 
+  border-color: var(--premium);
+}
 
 .icon-btn {
-  width: 36px;
-  height: 36px;
+  width: 34px; /* Bir oz ixchamlashtirildi */
+  height: 34px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-sm); /* 6px nozik burchak */
   color: var(--text-secondary);
-  font-size: 0.95rem;
-  transition: background var(--t-fast), color var(--t-fast);
+  font-size: 0.9rem;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
   flex-shrink: 0;
 }
-.icon-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+.icon-btn:hover { 
+  background: var(--bg-input); 
+  color: var(--text-primary); 
+}
 
 .text-btn {
   background: none;
   color: var(--accent);
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-size: 0.8rem;
+  font-weight: 500;
   padding: 4px 8px;
   border-radius: var(--radius-sm);
-  transition: background var(--t-fast);
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
 }
-.text-btn:hover { background: var(--accent-dim); }
+.text-btn:hover { 
+  background: var(--accent-dim); 
+  color: var(--accent-light);
+}
 
 /* ================================================================
-   6. TOP NAVIGATION
+   6. TOP NAVIGATION (Minimalist & Sleek Refined)
    ================================================================ */
 .top-nav {
   position: fixed;
   top: 0;
-  left: 0;
-  right: 0;
+  width: 100%;
   height: var(--nav-h);
-  background: rgba(8,8,16,0.85);
-  backdrop-filter: blur(20px) saturate(1.6);
-  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  /* O'zgaruvchidan foydalanamiz, bu light/dark rejimda avtomatik almashadi */
+  background: var(--glass-bg); 
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
   z-index: 900;
 }
@@ -373,53 +391,53 @@ small { font-size: 0.8rem; color: var(--text-muted); }
 .logo {
   display: flex;
   align-items: center;
-  gap: 9px;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 1.2rem;
+  gap: 8px;
+  font-family: var(--font-body); /* Toza tipografiya uchun */
+  font-weight: 700;
+  font-size: 1.15rem;
   color: var(--text-primary);
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   text-decoration: none;
   white-space: nowrap;
 }
 .logo-icon {
-  filter: drop-shadow(0 0 8px rgba(79,143,255,0.4));
+  filter: none; /* Neon drop-shadow olib tashlandi, endi u mat va nafis */
 }
 .logo span { display: none; }
 @media (min-width: 480px) {
   .logo span { display: inline; }
 }
 
-/* Burger */
+/* Burger Menu Icon */
 .burger-icon {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 4px;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: background var(--t-fast);
+  transition: background var(--t-fast) var(--ease);
 }
-.burger-icon:hover { background: var(--bg-hover); }
+.burger-icon:hover { background: var(--bg-input); }
 .burger-icon span {
   display: block;
-  width: 20px;
-  height: 2px;
+  width: 18px;
+  height: 1.5px; /* Chiziqlar noziklashtirildi */
   background: var(--text-secondary);
-  border-radius: 2px;
+  border-radius: var(--radius-full);
   transition: all var(--t-base) var(--ease);
 }
-.burger-icon.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.burger-icon.active span:nth-child(1) { transform: translateY(5.5px) rotate(45deg); }
 .burger-icon.active span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-.burger-icon.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+.burger-icon.active span:nth-child(3) { transform: translateY(-5.5px) rotate(-45deg); }
 
 /* Desktop nav center search */
 .nav-center {
   flex: 1;
-  max-width: 380px;
+  max-width: 340px; /* Bir oz ixchamroq qilindi */
   margin: 0 auto;
   display: none;
 }
@@ -432,32 +450,34 @@ small { font-size: 0.8rem; color: var(--text-muted); }
 }
 .nav-search-icon {
   position: absolute;
-  left: 13px;
+  left: 12px;
   color: var(--text-muted);
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   pointer-events: none;
 }
 .nav-search-input {
+  width: 100%;
   background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-full);
-  padding: 9px 38px 9px 36px;
-  font-size: 0.88rem;
+  border: 1px solid transparent; /* Oddiy holatda qalin chiziq ko'rinmaydi */
+  border-radius: var(--radius); /* Kapsula o'rniga 10px professional burchak */
+  padding: 8px 36px 8px 34px;
+  font-size: 0.85rem;
+  font-family: var(--font-body);
   transition: all var(--t-fast) var(--ease);
   color: var(--text-primary);
 }
 .nav-search-input:focus {
   background: var(--bg-card);
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-dim);
+  border-color: var(--border-strong);
+  box-shadow: none; /* Ko'zni oladigan tashqi ko'k olov (glow) olib tashlandi */
 }
 .search-kbd {
   position: absolute;
   right: 12px;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: var(--text-muted);
-  background: var(--bg-hover);
-  padding: 2px 6px;
+  background: var(--bg-card);
+  padding: 2px 5px;
   border-radius: 4px;
   pointer-events: none;
   border: 1px solid var(--border);
@@ -467,58 +487,61 @@ small { font-size: 0.8rem; color: var(--text-muted); }
 .nav-right {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   margin-left: auto;
 }
 
 .nav-icon-btn {
   position: relative;
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
   color: var(--text-secondary);
-  font-size: 1rem;
-  transition: background var(--t-fast), color var(--t-fast);
+  font-size: 0.95rem;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
 }
-.nav-icon-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+.nav-icon-btn:hover { background: var(--bg-input); color: var(--text-primary); }
+
 .notif-dot, .msg-dot {
   position: absolute;
-  top: 7px;
-  right: 7px;
-  width: 8px;
-  height: 8px;
+  top: 6px;
+  right: 6px;
+  width: 6px; /* Nuqtalar bir oz maydalashtirildi */
+  height: 6px;
   background: var(--danger);
-  border-radius: 50%;
-  border: 2px solid var(--bg-base);
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--bg-elevated);
 }
 
 .nav-user {
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 5px 10px 5px 5px;
-  border-radius: var(--radius-full);
+  gap: 8px;
+  padding: 4px 8px 4px 4px;
+  border-radius: var(--radius); /* To'liq dumaloqlik olib tashlandi */
   cursor: pointer;
-  transition: background var(--t-fast);
+  transition: background var(--t-fast) var(--ease);
   border: 1px solid transparent;
 }
-.nav-user:hover { background: var(--bg-hover); border-color: var(--border); }
+.nav-user:hover { 
+  background: var(--bg-input); 
+}
 .top-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  width: 28px; /* Bir oz ixcham va chiroyli profil rasm */
+  height: 28px;
+  border-radius: var(--radius-full);
   object-fit: cover;
-  border: 2px solid var(--border-strong);
+  border: 1px solid var(--border-strong);
   flex-shrink: 0;
 }
 .u-name {
-  font-size: 0.87rem;
-  font-weight: 600;
+  font-size: 0.82rem;
+  font-weight: 500;
   color: var(--text-primary);
-  max-width: 100px;
+  max-width: 90px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1302,70 +1325,95 @@ small { font-size: 0.8rem; color: var(--text-muted); }
 .see-all-btn:hover { opacity: 0.75; }
 
 /* ================================================================
-   16. EXPLORE
+   16. EXPLORE (Minimalist & Sleek Refined)
    ================================================================ */
 .explore-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 20px; /* Nafas olishi uchun biroz joy qo'shildi */
   flex-wrap: wrap;
 }
-.explore-header h2 { flex: 1; }
+.explore-header h2 { 
+  flex: 1; 
+  font-weight: 600; 
+  font-family: var(--font-body); /* Toza tipografiya */
+}
 .explore-search-wrap {
   position: relative;
   flex: 1;
   min-width: 200px;
-  max-width: 340px;
+  max-width: 320px;
 }
 .explore-search-wrap i {
   position: absolute;
-  left: 13px;
+  left: 12px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-muted);
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   pointer-events: none;
 }
 .explore-search-input {
-  padding: 9px 14px 9px 34px;
-  border-radius: var(--radius-full);
+  width: 100%;
+  padding: 8px 14px 8px 34px;
+  border-radius: var(--radius); /* Kapsula o'rniga professional burchak */
+  background: var(--bg-input);
+  border: 1px solid transparent;
+  color: var(--text-primary);
+  transition: all var(--t-fast) var(--ease);
+}
+.explore-search-input:focus {
+  background: var(--bg-card);
+  border-color: var(--border-strong);
 }
 
 .filter-chips {
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   padding-bottom: 4px;
   scrollbar-width: none;
 }
 .filter-chips::-webkit-scrollbar { display: none; }
 
 .chip {
-  padding: 7px 16px;
-  border-radius: var(--radius-full);
-  font-size: 0.83rem;
-  font-weight: 600;
+  padding: 6px 16px;
+  border-radius: var(--radius-full); /* Chiplar dori (pill) shaklida qolgani ma'qul */
+  font-size: 0.82rem;
+  font-weight: 500; /* Qalinlik yumshatildi */
   color: var(--text-secondary);
   background: var(--bg-card);
   border: 1px solid var(--border);
   white-space: nowrap;
-  transition: all var(--t-fast);
+  transition: all var(--t-fast) var(--ease);
   cursor: pointer;
 }
-.chip:hover { border-color: var(--accent); color: var(--accent); }
+.chip:hover { 
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-strong); 
+}
 .chip.active {
-  background: var(--accent-dim);
-  color: var(--accent);
-  border-color: rgba(79,143,255,0.3);
+  background: var(--text-primary); /* Yuqori kontrast (Qora rejimda oppoq, oq rejimda qop-qora) */
+  color: var(--bg-base);
+  border-color: transparent;
+  font-weight: 600;
 }
 
 .trending-topics {
+  background: var(--bg-card); /* Shaffoflik o'rniga aniq kontent bloki */
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
-.trending-list { display: flex; flex-direction: column; gap: 4px; }
+.trending-list { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 2px; 
+}
 .trending-item {
   display: flex;
   align-items: center;
@@ -1373,42 +1421,52 @@ small { font-size: 0.8rem; color: var(--text-muted); }
   padding: 10px 12px;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: background var(--t-fast);
+  transition: background var(--t-fast) var(--ease);
 }
-.trending-item:hover { background: var(--bg-hover); }
+.trending-item:hover { 
+  background: var(--bg-hover); 
+}
 
 /* Users grid */
 .users-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Biroz ixchamlashtirildi */
+  gap: 16px; /* Kartalar orasidagi masofa ochildi */
 }
 .user-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 16px;
+  border-radius: var(--radius); /* Standard 10px ga tushirildi */
+  padding: 20px 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   text-align: center;
-  transition: border-color var(--t-fast), transform var(--t-fast);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
   cursor: pointer;
 }
 .user-card:hover {
+  background: var(--bg-hover);
   border-color: var(--border-strong);
-  transform: translateY(-2px);
+  transform: none; /* Sakrash (jump) effekti olib tashlandi */
 }
 .user-card-avatar {
-  width: 56px;
-  height: 56px;
+  width: 64px; /* Rasm sal kattalashdi */
+  height: 64px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid var(--border);
+  border: 1px solid var(--border-strong); /* Juda qalin chiziq noziklashtirildi */
 }
-.user-card-name { font-size: 0.87rem; font-weight: 600; }
-.user-card-handle { font-size: 0.75rem; color: var(--text-muted); }
+.user-card-name { 
+  font-size: 0.88rem; 
+  font-weight: 600; 
+  color: var(--text-primary);
+}
+.user-card-handle { 
+  font-size: 0.78rem; 
+  color: var(--text-muted); 
+}
 
 /* ================================================================
    17. REELS
@@ -2025,84 +2083,7 @@ small { font-size: 0.8rem; color: var(--text-muted); }
 }
 .send-icon-btn:hover { transform: scale(1.08); box-shadow: var(--accent-glow); }
 
-/* ================================================================
-   20. COMMUNITY / MEETINGS
-   ================================================================ */
-.community-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-.create-post-btn {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 9px 18px;
-  background: var(--grad-accent);
-  color: #fff;
-  font-weight: 600;
-  font-size: 0.85rem;
-  border-radius: var(--radius-full);
-  box-shadow: 0 4px 14px rgba(79,143,255,0.25);
-  transition: all var(--t-fast);
-}
-.create-post-btn:hover { transform: translateY(-1px); box-shadow: var(--accent-glow); }
 
-.discovery-list { display: flex; flex-direction: column; gap: 14px; margin-top: 16px; }
-
-.discovery-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  transition: border-color var(--t-fast), transform var(--t-fast);
-}
-.discovery-card:hover { border-color: var(--border-strong); transform: translateY(-1px); }
-.discovery-card img {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-}
-.discovery-card-body { padding: 14px 16px; }
-
-.image-drop-zone-premium {
-  border: 2px dashed var(--border-strong);
-  border-radius: var(--radius);
-  padding: 28px 20px;
-  text-align: center;
-  cursor: pointer;
-  margin-bottom: 14px;
-  transition: border-color var(--t-fast), background var(--t-fast);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  color: var(--text-muted);
-  font-size: 0.87rem;
-}
-.image-drop-zone-premium:hover { border-color: var(--accent); background: var(--accent-dim); }
-.image-drop-zone-premium i { font-size: 1.8rem; color: var(--text-muted); }
-.image-drop-zone-premium p span { color: var(--text-muted); font-size: 0.78rem; }
-
-.discovery-tags { margin-top: 12px; }
-.tag-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; }
-.tag-group { display: flex; gap: 8px; flex-wrap: wrap; }
-.disc-tag {
-  padding: 7px 14px;
-  border-radius: var(--radius-full);
-  font-size: 0.82rem;
-  background: var(--bg-hover);
-  border: 1px solid var(--border);
-  cursor: pointer;
-  transition: all var(--t-fast);
-  color: var(--text-secondary);
-}
-.disc-tag:hover, .disc-tag.active {
-  background: var(--accent-dim);
-  color: var(--accent);
-  border-color: rgba(79,143,255,0.3);
-}
 
 /* ================================================================
    21. NOTIFICATIONS
@@ -2732,7 +2713,7 @@ small { font-size: 0.8rem; color: var(--text-muted); }
   left: 0;
   right: 0;
   height: 62px;
-  background: rgba(8,8,16,0.92);
+  background: rgba(24, 24, 26, 0.92);
   backdrop-filter: blur(20px) saturate(1.6);
   border-top: 1px solid var(--border);
   z-index: 800;
@@ -2769,7 +2750,7 @@ small { font-size: 0.8rem; color: var(--text-muted); }
   justify-content: center;
   color: #fff;
   font-size: 1rem;
-  box-shadow: 0 4px 14px rgba(79,143,255,0.4);
+  box-shadow: 0 4px 14px rgba(8, 8, 8, 0.214);
   transition: transform var(--t-fast), box-shadow var(--t-fast);
 }
 .m-nav-item:active .create-circle { transform: scale(0.92); }
@@ -2800,7 +2781,7 @@ small { font-size: 0.8rem; color: var(--text-muted); }
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.75);
+  background: rgba(7, 7, 7, 0.75);
   backdrop-filter: blur(8px);
   z-index: 1200;
   display: flex;
@@ -2926,7 +2907,7 @@ small { font-size: 0.8rem; color: var(--text-muted); }
 }
 .up-cover {
   height: 120px;
-  background: linear-gradient(135deg, #0d0d2a, #1a1a40, #0a1628);
+  background: linear-gradient(135deg, #151515, #151515, #151515);
 }
 .up-body { padding: 0 20px 20px; margin-top: -40px; }
 .up-avatar {
@@ -3526,11 +3507,11 @@ small { font-size: 0.8rem; color: var(--text-muted); }
 :root {
     --nav-bg: #ffffff;
     --nav-text: #666666;
-    --nav-active: #121954bb; /* Aktiv bo'lgandagi rang */
+    --nav-active: #1d1d1d; /* Aktiv bo'lgandagi rang */
 }
 
 body.dark-mode {
-    --nav-bg: #0c0c1fc9;
+    --nav-bg: #080808;
     --nav-text: #888888;
     --nav-active: #ffffff;
 }
@@ -3554,8 +3535,8 @@ body.dark-mode {
 
 /* Plus tugmasi doim rangli qolishi uchun */
 .create-circle {
-    background: linear-gradient(135deg, #6e8efb, #a777e3);
-    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    background: linear-gradient(135deg, #44444444, #48484844);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.081);
 }
 
 
@@ -3567,18 +3548,18 @@ body.dark-mode {
     --top-nav-text: #1a1a1a;
     --search-bg: #f3f4f6;
     --search-placeholder: #9ca3af;
-    --nav-icon-color: #4b5563;
+    --nav-icon-color: #424344;
     --logo-text: #1a1a1a;
     --kbd-bg: #e5e7eb;
 }
 
 /* Dark Mode (Qora rejim) */
 body.dark-mode {
-    --top-nav-bg: rgba(14, 14, 30, 0.95);
+    --top-nav-bg: rgba(12, 12, 12, 0.95);
     --top-nav-border: #2d2d2d;
     --top-nav-text: #f3f4f6;
     --search-bg: #2a2a2a;
-    --search-placeholder: #6b7280;
+    --search-placeholder: #4e4e4f;
     --nav-icon-color: #9ca3af;
     --logo-text: #ffffff;
     --kbd-bg: #3f3f46;
@@ -3893,3 +3874,2409 @@ body.dark-mode {
     background: rgba(29, 155, 240, 0.05);
 }
 
+/* RIVION Minimal Profile Container */
+.rivion-profile-wrapper {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 24px 16px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #f3f5f7; /* Asosiy matn rangi */
+    background: transparent;
+}
+
+/* 1. Header */
+.rivion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.header-info .name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+#user-profile-name {
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+.header-info .handle-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.handle-text {
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.brand-badge {
+    font-size: 11px;
+    color: #888;
+    background: #1e1e1e;
+    padding: 4px 8px;
+    border-radius: 20px;
+}
+
+.header-avatar {
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+
+.header-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #333;
+}
+
+.avatar-upload-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: #fff;
+    color: #000;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* 2. Bio va Detallar */
+.rivion-bio {
+    margin-bottom: 16px;
+}
+
+#user-profile-bio {
+    font-size: 15px;
+    line-height: 1.5;
+    margin: 0 0 12px 0;
+    white-space: pre-wrap;
+}
+
+.rivion-details-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 13px;
+    color: #888;
+}
+
+.rivion-details-inline span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.rivion-details-inline i {
+    font-size: 12px;
+}
+
+/* 3. Statistika */
+.rivion-stats {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #888;
+    font-size: 15px;
+    margin-bottom: 24px;
+}
+
+.rivion-stats .clickable {
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.rivion-stats .clickable:hover {
+    color: #fff;
+}
+
+.rivion-stats .dot {
+    font-size: 10px;
+    color: #444;
+}
+
+/* 4. Tugmalar */
+.rivion-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.rivion-actions button {
+    flex: 1;
+    background: transparent;
+    color: #fff;
+    border: 1px solid #333;
+    padding: 8px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.rivion-actions button:hover {
+    background: #1e1e1e;
+}
+
+/* 5. Highlights */
+.rivion-highlights {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 24px;
+    scrollbar-width: none; /* Firefox */
+}
+
+.rivion-highlights::-webkit-scrollbar {
+    display: none; /* Chrome */
+}
+
+.highlight-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.highlight-item .circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 1px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #888;
+}
+
+.highlight-item span {
+    font-size: 12px;
+    color: #888;
+}
+
+/* 6. Tabs (Threads uslubidagi pastki chiziqli tablar) */
+.rivion-tabs {
+    display: flex;
+    border-bottom: 1px solid #222;
+    margin-bottom: 16px;
+}
+
+.rivion-tabs button {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #666;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 12px 0;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+}
+
+.rivion-tabs button.active {
+    color: #fff;
+}
+
+.rivion-tabs button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: #fff;
+}
+
+/* 7. Bo'sh holat (Empty state) */
+.empty-state-minimal {
+    text-align: center;
+    padding: 40px 0;
+    color: #666;
+}
+
+.empty-state-minimal i {
+    font-size: 32px;
+    margin-bottom: 12px;
+}
+
+.empty-state-minimal p {
+    font-size: 15px;
+    margin-bottom: 16px;
+}
+
+.create-post-btn {
+    background: #fff;
+    color: #000;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* =========================================
+   MOBIL QURILMALAR UCHUN MOSLASHUV (RESPONSIVE)
+   ========================================= */
+@media screen and (max-width: 768px) {
+    /* Asosiy chetki masofalarni (padding) qisqartirish */
+    .rivion-profile-wrapper {
+        padding: 16px 12px;
+    }
+
+    /* Ism va belgilar qatorini moslashtirish */
+    #user-profile-name {
+        font-size: 22px; /* Ism telefonda biroz kichikroq bo'ladi */
+    }
+
+    .header-info .name-row {
+        flex-wrap: wrap; /* Ikonkalar (Tasdiqlangan, Premium) sig'masa chiroyli pastga tushadi */
+        gap: 6px;
+    }
+
+    /* Profil rasmini telefonga moslab kichraytirish */
+    .header-avatar {
+        width: 65px;
+        height: 65px;
+    }
+
+    .avatar-upload-btn {
+        width: 22px;
+        height: 22px;
+        font-size: 10px;
+    }
+
+    /* Handle va Bio qismini ixchamlashtirish */
+    .handle-text {
+        font-size: 14px;
+    }
+
+    #user-profile-bio {
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+
+    /* Qiziqishlar va shaxsiy ma'lumotlar ro'yxati */
+    .rivion-details-inline {
+        font-size: 12px;
+        gap: 8px;
+    }
+
+    /* Statistika (Obunachi, Like) */
+    .rivion-stats {
+        font-size: 13px;
+        gap: 6px;
+        margin-bottom: 16px;
+    }
+
+    /* Tugmalar (Tahrirlash, Ulashish) */
+    .rivion-actions {
+        margin-bottom: 16px;
+    }
+
+    .rivion-actions button {
+        font-size: 14px;
+        padding: 7px;
+    }
+
+    /* Highlights (Yangi qo'shish aylanasi) */
+    .highlight-item .circle {
+        width: 55px;
+        height: 55px;
+        font-size: 18px;
+    }
+
+    /* Post tablari (Fikrlar, Media, Reels...) telefonga sig'ishi uchun */
+    .rivion-tabs button {
+        font-size: 13px;
+        padding: 10px 0;
+    }
+}
+
+/* Yana ham kichik ekranli telefonlar uchun maxsus (masalan iPhone SE) */
+@media screen and (max-width: 380px) {
+    #user-profile-name {
+        font-size: 20px;
+    }
+
+    .header-avatar {
+        width: 55px;
+        height: 55px;
+    }
+
+    .rivion-tabs button {
+        font-size: 11px; 
+    }
+}
+
+/* =========================================
+   RIVION OQ REJIM (LIGHT MODE) MOSLASHUVLARI
+   ========================================= */
+
+/* 1. Umumiy profil foni va asosiy matn qora rangga o'tadi */
+.light-mode .rivion-profile-wrapper {
+    color: #000000;
+}
+
+/* @username yonidagi badge */
+.light-mode .brand-badge {
+    background: #f0f2f5;
+    color: #65676b;
+}
+
+/* 2. Bio ostidagi ma'lumotlar va statistika matnlari */
+.light-mode .rivion-details-inline,
+.light-mode .rivion-stats {
+    color: #555555;
+}
+
+.light-mode .rivion-stats .clickable:hover {
+    color: #000000;
+}
+
+.light-mode .rivion-stats .dot {
+    color: #cccccc;
+}
+
+/* 3. Tugmalar (Tahrirlash va Ulashish) */
+.light-mode .rivion-actions button {
+    color: #000000;
+    border: 1px solid #dbdbdb;
+    background: transparent;
+}
+
+.light-mode .rivion-actions button:hover {
+    background: #f5f5f5;
+}
+
+/* 4. Highlights (Yangi qo'shish aylanasi) */
+.light-mode .highlight-item .circle {
+    border: 1px solid #dbdbdb;
+    color: #555555;
+}
+
+.light-mode .highlight-item span {
+    color: #555555;
+}
+
+/* Profil rasmidagi "+" tugmasi oq rejimda teskari (qora) bo'ladi */
+.light-mode .avatar-upload-btn {
+    background: #000000;
+    color: #ffffff;
+}
+
+/* 5. Tablar (Fikrlar, Media, Reels...) */
+.light-mode .rivion-tabs {
+    border-bottom: 1px solid #e4e6eb;
+}
+
+/* Aktiv bo'lmagan tab matnlari */
+.light-mode .rivion-tabs button {
+    color: #8a8d91;
+}
+
+/* Aktiv turgan tab va uning pastidagi chiziq */
+.light-mode .rivion-tabs button.active {
+    color: #000000;
+}
+
+.light-mode .rivion-tabs button.active::after {
+    background: #000000;
+}
+
+/* 6. Bo'sh holat (Empty state) */
+.light-mode .empty-state-minimal {
+    color: #8a8d91;
+}
+
+.light-mode .create-post-btn {
+    background: #000000;
+    color: #ffffff;
+}
+
+/* =========================================
+   POSTLAR VA FIKRLAR (SMS BUBBLE) STILI
+   ========================================= */
+
+/* Fikrlar (Thoughts) bo'limi uchun SMS shaklidagi xabarlar */
+.rivion-posts-area {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-top: 8px;
+}
+
+/* SMS ko'rinishidagi fikr paketi */
+.thought-bubble {
+    background: #121212; /* To'q rejim uchun fon */
+    color: #f3f5f7;
+    padding: 14px 18px;
+    border-radius: 20px 20px 20px 4px; /* SMS uslubidagi burchaklar */
+    max-width: 85%;
+    align-self: flex-start; /* Chap tomonga tekislash */
+    font-size: 15px;
+    line-height: 1.4;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    position: relative;
+    word-break: break-word;
+}
+
+/* Oq rejim (Light mode) uchun SMS stili */
+.light-mode .thought-bubble {
+    background: #f0f2f5; /* Telegram/iMessage och kulrang foni */
+    color: #000000;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* -----------------------------------------
+   MEDIA BO'LIMI (RASMLAR TARMOQLI RO'YXATI)
+   ----------------------------------------- */
+/* Agar tab "Media" bo'lsa, JS orqali .rivion-posts-area'ga .media-grid klassi qo'shiladi */
+.rivion-posts-area.media-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 qatorli Instagram uslubidagi rasm listi */
+    gap: 4px;
+    padding-top: 8px;
+}
+
+/* Media ichidagi rasmlar container'i */
+.media-post-item {
+    aspect-ratio: 1 / 1; /* Rasmlarni kvadrat shaklda ushlash */
+    overflow: hidden;
+    position: relative;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.media-post-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.2s;
+}
+
+.media-post-item img:hover {
+    transform: scale(1.03);
+}
+
+/* Agar media telefonda ko'rilsa ham 3 tadan chiroyli turaveradi */
+@media screen and (max-width: 768px) {
+    .thought-bubble {
+        font-size: 14px;
+        padding: 12px 16px;
+        max-width: 90%;
+    }
+}
+
+
+/* =========================================
+   POST DETAIL MODAL STYLES
+   ========================================= */
+.post-modal {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 2000;
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px;
+}
+.post-modal-content {
+    background: #1e1e1e; color: #fff;
+    width: 100%; max-width: 850px; height: 80vh;
+    border-radius: 12px; position: relative; overflow: hidden;
+}
+.light-mode .post-modal-content {
+    background: #ffffff; color: #000;
+}
+.close-modal-btn {
+    position: absolute; top: 12px; right: 16px;
+    font-size: 28px; cursor: pointer; z-index: 10; color: #aaa;
+}
+.post-modal-body {
+    display: flex; height: 100%;
+}
+.post-modal-media-side {
+    flex: 1.2; background: #000;
+    display: flex; align-items: center; justify-content: center;
+}
+.post-modal-media-side img {
+    width: 100%; height: 100%; object-fit: contain;
+}
+.post-modal-info-side {
+    flex: 1; display: flex; flex-direction: column; padding: 16px;
+}
+.modal-comments-list {
+    flex: 1; overflow-y: auto; margin: 12px 0; padding-right: 4px;
+}
+.modal-comment-item {
+    font-size: 14px; margin-bottom: 10px; line-height: 1.4;
+}
+.modal-comment-item strong { margin-right: 6px; }
+.modal-actions-area { display: flex; flex-direction: column; gap: 10px; }
+.modal-like-row { display: flex; align-items: center; gap: 8px; font-size: 16px; }
+.modal-like-row button { background: none; border: none; color: inherit; cursor: pointer; font-size: 20px; }
+.modal-like-row button .fas.fa-heart { color: #ff3040; }
+.modal-comment-input-row { display: flex; gap: 8px; }
+.modal-comment-input-row input {
+    flex: 1; padding: 8px 12px; border-radius: 20px;
+    border: 1px solid #444; background: #2a2a2a; color: #fff;
+}
+.light-mode .modal-comment-input-row input {
+    background: #f0f2f5; color: #000; border: 1px solid #dbdbdb;
+}
+.modal-comment-input-row button {
+    background: none; border: none; color: #0095f6; font-weight: bold; cursor: pointer;
+}
+.modal-divider { border: 0; border-top: 1px solid #333; margin: 8px 0; }
+.light-mode .modal-divider { border-top: 1px solid #efefef; }
+
+/* Mobil moslashuv */
+@media screen and (max-width: 768px) {
+    .post-modal-body { flex-direction: column; overflow-y: auto; }
+    .post-modal-content { height: 90vh; }
+    .post-modal-media-side { height: 300px; flex: none; }
+}
+
+
+/* ================================================================
+   8. HAMJAMIYAT & DISCOVERY MODAL STYLES
+   ================================================================ */
+
+   /* ================================================================
+   HEADER: Hamjamiyat / Friends Yuqori Qismi Dizayni
+   ================================================================ */
+.community-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Sarlavha matni (Friends) */
+.community-header h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+/* + Post qo'yish tugmasi */
+.community-header .create-post-btn {
+  background: var(--grad-accent); /* Sizning asosiy gradientingiz */
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 20px; /* Yumaloq premium shakl */
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px var(--accent-dim);
+  transition: transform var(--t-fast) var(--ease), opacity var(--t-fast) var(--ease);
+}
+
+/* Tugma effektlari */
+.community-header .create-post-btn:hover {
+  transform: translateY(-1px);
+  opacity: 0.95;
+}
+
+.community-header .create-post-btn:active {
+  transform: translateY(1px);
+}
+
+.community-header .create-post-btn i {
+  font-size: 0.8rem;
+}
+
+/* 📱 Mobil telefonlar uchun moslashuvchanlik */
+@media (max-width: 480px) {
+  .community-header {
+    padding: 12px 14px;
+    margin-bottom: 16px;
+  }
+  
+  .community-header h2 {
+    font-size: 1.15rem; /* Telefonda sarlavha biroz kichrayadi */
+  }
+  
+  .community-header .create-post-btn {
+    padding: 8px 14px; /* Telefonda tugma ixchamroq bo'ladi */
+    font-size: 0.8rem;
+  }
+}
+
+/* To'rtburchak Rasm Ramkasi (1:1 Aspect Ratio) */
+.image-drop-zone-square {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: var(--bg-input);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+  transition: all var(--t-fast) var(--ease);
+}
+.image-drop-zone-square:hover {
+  border-color: var(--accent);
+  background: var(--bg-hover);
+}
+.image-drop-zone-square img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+#uploadPlaceholder {
+  text-align: center;
+  color: var(--text-secondary);
+}
+#uploadPlaceholder i {
+  font-size: 2rem;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+/* Form elementlari grid holatida */
+.discovery-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+.form-group-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.form-group-sub.full-width {
+  grid-column: span 2;
+}
+.form-group-sub label, .textarea-wrap label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.form-group-sub input, .form-group-sub select, .textarea-wrap textarea {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  transition: all var(--t-fast) var(--ease);
+}
+.form-group-sub input:focus, .form-group-sub select:focus, .textarea-wrap textarea:focus {
+  border-color: var(--accent);
+  background: var(--bg-card);
+  outline: none;
+}
+.textarea-wrap {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* PUBLISHED CARD: Tanishuv E'lonlari Kartochkasi */
+.discovery-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+.disc-card-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius);
+  object-fit: cover;
+  margin-bottom: 14px;
+}
+
+/* Ma'lumotlar nishoni (Badges) */
+.disc-info-badge-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.disc-badge {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.disc-badge i {
+  color: var(--accent);
+  width: 16px;
+  text-align: center;
+}
+
+/* Tugmalar bo'limi */
+.disc-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.btn-interest {
+  flex: 1;
+  background: var(--grad-accent);
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: opacity var(--t-fast) var(--ease);
+}
+.btn-interest:hover {
+  opacity: 0.9;
+}
+
+
+#discoveryModal textarea#discoveryBio {
+    width: 100%;
+    min-height: 100px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    resize: vertical;
+    transition: border-color var(--t-fast);
+}
+
+#discoveryModal textarea#discoveryBio:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+
+
+/* ============================================================
+   📱 MINIMALIST DISCOVERY MODAL STYLE (YAKUNIY VARIANT)
+   ============================================================ */
+
+/* 1. Modal foni (Ekranni to'liq qoplovchi qism) */
+.modal-overlay {
+    display: none; /* JS orqali .active klassi qo'shilganda ochiladi */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4); /* Yumshoq qoraytirilgan fon */
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Modal ochiq turgandagi holat */
+.modal-overlay.active {
+    display: flex;
+}
+
+/* 2. Modal kartochkasi */
+.reel-modal-card.glass-card {
+    background: #ffffff;
+    width: 92%;
+    max-width: 460px;
+    max-height: 85vh; /* Ekranning 85% qismidan oshib ketmaydi */
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* 3. Modal tepasi (Header) */
+.modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    color: #111111;
+    font-weight: 600;
+}
+
+/* Yopish (X) tugmasi */
+.close-dot {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    color: #888888;
+    cursor: pointer;
+    padding: 4px;
+    transition: color 0.2s;
+}
+
+.close-dot:hover {
+    color: #333333;
+}
+
+/* 4. Ichki kontent (Scroll bo'ladigan qism) */
+.modal-body {
+    padding: 20px;
+    overflow-y: auto; /* Kontent ko'payib ketsa, faqat ichkari qism scroll bo'ladi */
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 5. Rasm yuklash zonasi (MUSTAHKAM KVADRAT FORMAT) */
+.image-drop-zone-square {
+    width: 130px !important;      /* Ideal kvadrat eni */
+    height: 130px !important;     /* Ideal kvadrat bo'yi */
+    min-width: 130px !important;  /* Brauzer siqib qo'ymasligi uchun majburiy chegara */
+    min-height: 130px !important; /* Brauzer siqib qo'ymasligi uchun majburiy chegara */
+    border: 2px dashed #dddddd;
+    border-radius: 12px;
+    display: flex !important;
+    flex-direction: column !important; /* Ikona va yozuv ustma-ust tushishi uchun */
+    align-items: center !important;
+    justify-content: center !important;
+    align-self: center !important;    /* O'rtaga tekislash */
+    cursor: pointer;
+    background: #fbfbfb;
+    text-align: center;
+    padding: 10px !important;
+    box-sizing: border-box !important;
+    transition: all 0.2s ease;
+    flex-shrink: 0 !important;        /* Flex elementlar ichida kichrayib ketishni taqiqlash */
+}
+
+.image-drop-zone-square:hover {
+    border-color: #0066cc;
+    background: #f4f9ff;
+}
+
+/* Rasm yuklanmagan paytdagi ichki elementlar */
+#uploadPlaceholder {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100%;
+    height: 100%;
+    gap: 4px;
+}
+
+#uploadPlaceholder i {
+    font-size: 1.5rem !important;
+    color: #888888;
+}
+
+#uploadPlaceholder p {
+    margin: 0 !important;
+    padding: 0 4px;
+    font-size: 0.7rem !important;
+    color: #666666;
+    line-height: 1.3;
+}
+
+#uploadPlaceholder p span {
+    display: block !important;
+    font-size: 0.6rem !important;
+    color: #999999;
+    margin-top: 2px;
+}
+
+/* Yuklangan rasm ramkasi */
+#discoveryPreview {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important; /* Rasmni buzmasdan kvadrat shaklga moslaydi */
+    border-radius: 10px;
+}
+
+/* 6. Anketaning forma qismi */
+.discovery-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Ikki ustunli chiroyli tartib */
+    gap: 12px;
+}
+
+/* Manzil qatori to'liq eniga chiqishi uchun */
+.full-width {
+    grid-column: span 2;
+}
+
+.form-group-sub {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group-sub label {
+    font-size: 0.8rem;
+    color: #555555;
+    font-weight: 500;
+}
+
+.form-group-sub input,
+.form-group-sub select,
+.textarea-wrap textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #333333;
+    background: #f8fafc;
+    outline: none;
+    box-sizing: border-box;
+    transition: all 0.2s;
+}
+
+/* Inputlar bosilgandagi holati */
+.form-group-sub input:focus,
+.form-group-sub select:focus,
+.textarea-wrap textarea:focus {
+    border-color: #0066cc;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+/* Qatnashchi matn maydoni (Bio) */
+.textarea-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.textarea-wrap label {
+    font-size: 0.8rem;
+    color: #555555;
+    font-weight: 500;
+}
+
+.textarea-wrap textarea {
+    resize: none;
+}
+
+/* 7. Kategoriyalar (Teglar) */
+.discovery-tags {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.tag-label {
+    font-size: 0.8rem;
+    color: #555555;
+    font-weight: 500;
+}
+
+.tag-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.disc-tag {
+    padding: 6px 12px;
+    background: #f1f5f9;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: #475569;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s;
+}
+
+.disc-tag:hover {
+    background: #e2e8f0;
+}
+
+/* Teg tanlangan paytdagi ko'rinishi */
+.disc-tag.selected {
+    background: #0066cc;
+    color: #ffffff;
+}
+
+/* 8. Modal pastki qismi (Footer) */
+.modal-footer {
+    padding: 14px 20px;
+    border-top: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* Tugmalar */
+.btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+    border: none;
+    padding: 9px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.btn-secondary:hover {
+    background: #e2e8f0;
+}
+
+.btn-primary {
+    background: #0066cc;
+    color: #ffffff;
+    border: none;
+    padding: 9px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background: #0052a3;
+}
+
+/* ============================================================
+   📱 MOBILE FULL-SCREEN BOTTOM SHEET STYLE
+   ============================================================ */
+
+/* Asosiy fon qatlami */
+.bottom-sheet {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #ffffff; /* Orqa fon to'liq oq bo'ladi */
+    z-index: 10000;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+/* Oq ichki panel - Butun ekranni egallaydi */
+.bottom-sheet-inner {
+    background: #ffffff;
+    width: 100%;
+    height: 100vh; /* Ekranning 100% balandligi */
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    box-sizing: border-box;
+    
+    /* Pastdan tepaga silliq ko'tarilish animatsiyasi */
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.1, 0.76, 0.55, 0.94);
+}
+
+/* Aktiv bo'lganda ekranga to'liq chiqadi */
+.bottom-sheet.active .bottom-sheet-inner {
+    transform: translateY(0);
+}
+
+/* Sheet Header qismi */
+.sheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f3f4f6;
+    margin-bottom: 24px;
+}
+
+.sheet-header h4 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #111111;
+}
+
+/* Yopish (X) tugmasi */
+.sheet-close-btn {
+    background: #f3f4f6;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #4b5563;
+    font-size: 1rem;
+    transition: background 0.2s;
+}
+
+.sheet-close-btn:hover {
+    background: #e5e7eb;
+}
+
+/* Ro'yxat tartibi (Vertikal, qulay to'liq ekran uchun) */
+.create-options-grid {
+    display: flex;
+    flex-direction: column; /* Tugmalarni ustma-ust chiroyli joylaydi */
+    gap: 16px;
+}
+
+/* Har bir qator (Tugma) */
+.create-option {
+    background: #f8fafc; /* Har bir element uchun yumshoq fon */
+    border: 1px solid #f1f5f9;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: row; /* Ikonka va matn yonma-yon turadi */
+    align-items: center;
+    gap: 16px;
+    padding: 14px 20px;
+    cursor: pointer;
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Bosilgandagi effekt */
+.create-option:active {
+    background: #f1f5f9;
+    transform: scale(0.98);
+}
+
+/* Dumaloq ikonka foni */
+.co-icon {
+    width: 44px;
+    height: 44px;
+    background: #ffffff;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.co-icon i {
+    font-size: 1.2rem;
+    color: #0066cc; /* Brendingiz rangiga mos ko'k */
+}
+
+/* Tugma matni */
+.create-option span {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #334155;
+}
+
+
+/* ============================================================
+   📱💻 THREADS STYLISTIC RESPONSIVE DESIGN (FOR RIVION)
+   🌓 INTEGRATED WITH LIGHT & DARK MODE DESIGN TOKENS
+   ============================================================ */
+
+/* Butun lentaning ota-ona konteyneri (Desktopda markazlashuv siri) */
+.threads-feed-layout {
+    width: 100%;
+    max-width: 620px; /* Threads va Twitter veb standart o'lchami */
+    margin: 0 auto;   /* Kompyuterda o'rtaga tekislaydi */
+    padding: 0;
+    box-sizing: border-box;
+    background: var(--bg-main);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* 1. Stories - Threads uslubida juda yupqa va toza */
+.stories-container {
+    padding: 12px 4px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+.stories-scroll {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.stories-scroll::-webkit-scrollbar { display: none; }
+
+.story-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    min-width: 56px;
+}
+.story-avatar-wrap {
+    position: relative;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-color);
+    padding: 2px;
+}
+.story-avatar-wrap img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.story-add-btn {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    background: var(--btn-send-bg); /* Rejimga qarab oq yoki qora bo'ladi */
+    color: var(--btn-send-text);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    border: 2px solid var(--bg-card); /* Kontur fonga moslashadi */
+}
+.story-item span {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+/* 2. Threads Composer Box */
+.threads-composer {
+    background: var(--bg-card);
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+.post-input-wrapper {
+    display: flex;
+    gap: 12px;
+}
+
+/* Chap ustun (Avatar va pastga ketuvchi Threads chizig'i) */
+.avatar-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 44px;
+}
+.mini-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--bg-input);
+}
+.threads-line-connector {
+    width: 2px;
+    flex-grow: 1;
+    background: var(--border-color);
+    margin-top: 8px;
+    border-radius: 1px;
+    min-height: 30px;
+}
+
+/* O'ng ustun (Matn maydoni va instrumentlar) */
+.textarea-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+.threads-composer textarea {
+    width: 100%;
+    border: none;
+    background: transparent !important;
+    font-size: 0.95rem;
+    color: var(--text-input);
+    outline: none;
+    resize: none;
+    padding: 4px 0;
+    line-height: 1.5;
+}
+.threads-composer textarea::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+
+/* Pastki tugmalar qatori */
+.post-actions-threads {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+}
+.left-actions {
+    display: flex;
+    gap: 12px;
+}
+.left-actions .action-pill {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary); /* Och kulrang ikonka */
+    font-size: 1.05rem;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s;
+}
+.left-actions .action-pill:hover {
+    color: var(--text-primary); /* Rejimga qarab qorayadi yoki oqaradi */
+}
+
+.post-right-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.privacy-select {
+    border: none;
+    background: var(--bg-input);
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 12px;
+    color: var(--text-secondary);
+    outline: none;
+    cursor: pointer;
+    border: 1px solid var(--border-color);
+}
+
+/* Threads uslubidagi Ulashish tugmasi */
+.threads-btn-send {
+    background: var(--btn-send-bg); /* Qorada oq, oqda qora */
+    color: var(--btn-send-text);
+    border: none;
+    padding: 6px 16px;
+    border-radius: 18px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.threads-btn-send:disabled {
+    background: var(--bg-input);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+.threads-btn-send:not(:disabled):hover {
+    opacity: 0.85;
+}
+
+/* 3. Feed Tabs (Siz uchun, Obunalar - Mutlaqo minimalist chiziqli) */
+.threads-tabs-container {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-card);
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+.threads-tabs-container .feed-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 14px 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    text-align: center;
+    position: relative;
+    transition: color 0.2s;
+}
+.threads-tabs-container .feed-tab:hover {
+    color: var(--text-primary);
+}
+.threads-tabs-container .feed-tab.active {
+    color: var(--text-primary); 
+    font-weight: 700;
+}
+.threads-tabs-container .feed-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--text-primary); /* Chiziq matn rangiga moslashadi */
+}
+
+/* Media rasm preview oynasi (Ekranga moslashuvchan) */
+.media-preview-area {
+    position: relative;
+    margin: 10px 0;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    max-height: 350px;
+    width: 100%;
+}
+.media-preview-area img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.remove-media-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: rgba(0, 0, 0, 0.75);
+    color: #ffffff;
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.75rem;
+}
+
+/* Poll Yaratuvchi interfeys */
+.poll-creator {
+    background: var(--bg-input);
+    padding: 12px;
+    border-radius: 12px;
+    margin-top: 10px;
+    border: 1px solid var(--border-color);
+}
+.poll-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+.poll-option-input {
+    width: 100%;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    box-sizing: border-box;
+    outline: none;
+}
+.poll-option-input::placeholder {
+    color: var(--text-secondary);
+}
+.poll-duration-select {
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    outline: none;
+}
+
+/* ============================================================
+   🖥️ DESKTOP SCREEN ADJUSTMENT (KOMPYUTERDA CHANCE BERISH)
+   ============================================================ */
+@media (min-width: 768px) {
+    .threads-feed-layout {
+        border-left: 1px solid var(--border-color);
+        border-right: 1px solid var(--border-color);
+    }
+}
+
+/* ============================================================
+   📱 THREADS PURE MINIMALISM — BOTTOM NAVIGATION (SOLID)
+   ============================================================ */
+
+/* 1. Asosiy Navigatsiya Paneli (Shaffoflik butunlay yo'q qilingan) */
+.mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    
+    /* Fonni 100% yopiq (solid) qilish qismi */
+    background-color: var(--bg-main, #ffffff) !important; 
+    background-image: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    
+    border-top: 1px solid var(--border-color, #f0f0f0) !important;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 9999; /* Barcha elementlardan ustun turishi uchun */
+    padding-bottom: env(safe-area-inset-bottom); /* iPhone'lar uchun pastki chiziqdan qochish */
+    box-shadow: none !important;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+/* 2. Har bir tugma hududi */
+.m-nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    height: 100%;
+    cursor: pointer;
+    transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+    -webkit-tap-highlight-color: transparent; /* Mobil brauzerda bosganda chiqadigan ko'k fonni o'chiradi */
+}
+
+/* Tugma bosilgandagi yengil effekt */
+.m-nav-item:active {
+    transform: scale(0.92);
+}
+
+/* 3. SVG Ikonkalar (Nofaol holat) */
+.threads-icon {
+    width: 26px;
+    height: 26px;
+    color: var(--text-secondary, #999999);
+    opacity: 0.5; /* Threads uslubida xiraroq turadi */
+    stroke-width: 2.2;
+    transition: color 0.2s ease, opacity 0.2s ease, stroke-width 0.2s ease;
+}
+
+/* 4. Faol (Active) bo'lim effekti */
+.m-nav-item.active .threads-icon {
+    color: var(--text-primary, #000000) !important;
+    opacity: 1 !important;
+    stroke-width: 2.6; /* Faol bo'lganda chiziq qalinlashadi */
+}
+
+/* ============================================================
+   ➕ O'RTADAGI "PLUS" (CREATE) TUGMASI
+   ============================================================ */
+.threads-plus-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background-color: var(--bg-input, #f5f5f5);
+    border-radius: 10px; /* Burchaklari yengil silliqlangan */
+    color: var(--text-secondary, #666666);
+    transition: background-color 0.2s, color 0.2s, transform 0.2s;
+}
+
+.threads-plus-box svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2.5;
+}
+
+/* Plus tugmasi bosilganda invert bo'lishi (Qorada oq, oqda qora) */
+.create-btn-mob:hover .threads-plus-box,
+.create-btn-mob:active .threads-plus-box {
+    background-color: var(--text-primary, #000000);
+    color: var(--bg-main, #ffffff);
+}
+
+/* ============================================================
+   👤 PROFIL AVATARI (MINIMAL)
+   ============================================================ */
+.avatar-container-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1.8px solid transparent;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.mob-nav-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+/* Profil sahifasi faol bo'lganda */
+.m-nav-item.active .avatar-container-nav {
+    border-color: var(--text-primary, #000000); /* Atrofida chiziq paydo bo'ladi */
+}
+
+.m-nav-item.active .mob-nav-avatar {
+    opacity: 1;
+}
+
+/* ============================================================
+   🖥️ EKRAN KATTALASHGANDA (DESKTOP) YASHIRISH
+   ============================================================ */
+@media (min-width: 768px) {
+    .mobile-bottom-nav {
+        display: none !important;
+    }
+}
+
+/* ☀️ LIGHT MODE (Standart holat) */
+:root {
+    --bg-main: #ffffff;           /* Asosiy fon */
+    --border-color: #ededed;      /* Yupqa chiziqlar */
+    --text-primary: #000000;      /* Faol ikonkalar va matn */
+    --text-secondary: #999999;    /* Nofaol, xira ikonkalar */
+    --bg-input: #f5f5f5;          /* Plus tugmasining standart foni */
+}
+
+/* 🌙 DARK MODE (Agar body'ga .dark yoki .dark-mode klassi qo'shilsa) */
+body.dark-mode {
+    --bg-main: #0a0a0a;           /* Threads uslubidagi chuqur to'q fon */
+    --border-color: #222222;      /* To'q rejim uchun yupqa chiziq */
+    --text-primary: #ffffff;      /* Faol ikonkalar oq rangda */
+    --text-secondary: #555555;    /* Nofaol ikonkalar yanada xiraroq */
+    --bg-input: #1a1a1a;          /* Plus tugmasining to'q foni */
+}
+
+/* ============================================================
+   📱 ADAPTIVE BOTTOM SHEET (THREADS MINIMALISM)
+   ============================================================ */
+
+/* Asosiy konteyner */
+.bottom-sheet {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end; /* Oynani pastdan chiqarish */
+    z-index: 10000;
+}
+
+/* Orqa fonni xiralashtirish va qoraytirish (Overlay) */
+.bottom-sheet-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4); /* Har doim yengil qora silliq fon */
+    animation: fadeInSheet 0.25s ease-out;
+}
+
+/* Oynaning ichki oq/to'q qora paneli */
+.bottom-sheet-inner {
+    position: relative;
+    width: 100%;
+    background-color: var(--bg-main); /* Light'da oq, Dark'da to'q qora */
+    border-radius: 24px 24px 0 0; /* Tepasi yumshatilgan burchaklar */
+    padding: 16px 20px 32px 20px;
+    box-sizing: border-box;
+    z-index: 2;
+    transform: translateY(0);
+    animation: slideUpSheet 0.3s cubic-bezier(0.1, 0.8, 0.3, 1);
+    border-top: 1px solid var(--border-color);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Tepasidagi kichik tortish chiziqchasi (Drag handle) */
+.sheet-drag-handle {
+    width: 40px;
+    height: 4px;
+    background-color: var(--border-color);
+    border-radius: 2px;
+    margin: 0 auto 16px auto;
+    cursor: pointer;
+}
+
+/* Sarlavha qismi */
+.sheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.sheet-header h4 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
+}
+
+/* Yopish tugmasi */
+.sheet-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+.sheet-close-btn svg {
+    width: 20px;
+    height: 20px;
+}
+.sheet-close-btn:hover {
+    color: var(--text-primary);
+}
+
+/* ============================================================
+   🎛️ CREATE OPTIONS GRID (TUGMALAR)
+   ============================================================ */
+.create-options-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 ta tugmani tekis taqsimlash */
+    gap: 12px;
+}
+
+.create-option {
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 8px 0;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.1s ease;
+}
+
+/* Tugma bosilgandagi yengil siqilish */
+.create-option:active {
+    transform: scale(0.9);
+}
+
+/* Dumaloq Ikonka foni */
+.co-icon {
+    width: 54px;
+    height: 54px;
+    background-color: var(--bg-input); /* Light'da och kulrang, Dark'da to'q kulrang */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s;
+}
+
+/* Dumaloq tugma ustiga kelganda biroz yorishishi yoki qorayishi */
+.create-option:hover .co-icon {
+    transform: translateY(-2px);
+    background-color: var(--border-color);
+}
+
+.co-icon svg {
+    width: 22px;
+    height: 22px;
+}
+
+/* Ikonka ostidagi yozuvlar */
+.create-option span {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
+}
+
+.create-option:hover span {
+    color: var(--text-primary);
+}
+
+/* ============================================================
+   🎬 ANIMATION EFFECTS (KIRIB KELISH ANIMATSIYASI)
+   ============================================================ */
+@keyframes fadeInSheet {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUpSheet {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+
+/* ============================================================
+   📝 POST CARD STYLES (THREADS / MINIMALIST)
+   ============================================================ */
+
+.post-card {
+    background-color: var(--bg-main);
+    border-bottom: 1px solid var(--border-color); /* Kartalar orasini ajratish uchun faqat pastdan chiziq */
+    padding: 16px 20px;
+    margin-bottom: 0;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* --- Header Qismi --- */
+.post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.post-author-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.post-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    cursor: pointer;
+    flex-shrink: 0;
+    border: 1px solid var(--border-color); /* Qora rejimda ajralib turishi uchun nozik chiziq */
+}
+
+.post-meta {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.post-author-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.post-author-name:hover {
+    text-decoration: underline;
+}
+
+.post-time {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+/* --- Tugmalar --- */
+.post-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-follow {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-follow:hover {
+    background-color: var(--text-primary);
+    color: var(--bg-main);
+}
+
+.btn-icon-only {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.text-muted {
+    color: var(--text-secondary);
+}
+.text-muted:hover {
+    color: var(--text-primary);
+}
+
+/* --- Tana Qismi --- */
+.post-body {
+    padding-bottom: 12px;
+}
+
+.post-text {
+    margin: 0;
+    line-height: 1.5;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    white-space: pre-wrap; /* Matndagi bo'shliqlarni saqlash */
+}
+
+.post-media {
+    width: 100%;
+    border-radius: 12px;
+    margin-top: 12px;
+    max-height: 450px;
+    object-fit: cover;
+    cursor: pointer;
+    border: 1px solid var(--border-color);
+}
+
+/* --- Harakatlar (Like, Comment, Share) --- */
+.post-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px; /* Tugmalar orasidagi masofa */
+    padding-top: 4px;
+}
+
+.btn-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 6px 0;
+    transition: color 0.2s ease, transform 0.1s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.btn-action:active {
+    transform: scale(0.9);
+}
+
+.action-icon {
+    width: 22px;
+    height: 22px;
+    transition: fill 0.2s, color 0.2s;
+}
+
+.btn-bookmark {
+    margin-left: auto; /* Saqlash tugmasini o'ng burchakka surish */
+}
+
+/* Like bosilgandagi holat (Qizil rang) */
+.btn-action.liked {
+    color: #ff3040 !important; 
+}
+.btn-action.liked .action-icon {
+    stroke: #ff3040;
+}
+
+/* --- Comment Qismi --- */
+.post-comment-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+.comments-list {
+    max-height: 250px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+}
+
+.comment-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: var(--bg-input);
+    padding: 8px 16px;
+    border-radius: 24px;
+    border: 1px solid transparent;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.comment-input-wrapper:focus-within {
+    border-color: var(--border-color);
+}
+
+.comment-input {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    outline: none;
+    font-size: 0.9rem;
+}
+
+.comment-input::placeholder {
+    color: var(--text-secondary);
+}
+
+.btn-send-comment {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+}
+.btn-send-comment .action-icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* ========================================================
+   1. REELS MODAL OYNASI (YANGI REEL QO'SHISH)
+   ======================================================== */
+.reel-modal-card {
+    width: 92%;
+    max-width: 450px;
+    max-height: 85vh; /* Ekran ichida chiroyli quti bo'lib turishi uchun */
+    overflow-y: auto;
+    margin: auto;
+    border-radius: 20px;
+    background: #fff;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+/* Mobil telefonlar uchun modal qismini biroz ixchamlashtiramiz */
+@media (max-width: 480px) {
+    .reel-modal-card {
+        width: 95%;
+        padding: 15px;
+        border-radius: 16px;
+    }
+    .reel-modal-card .file-drop-area {
+        padding: 20px 10px;
+    }
+    .reel-modal-card textarea {
+        height: 70px;
+    }
+}
+
+/* ========================================================
+   2. VIDEO VIEWER MODAL (FULLSCREEN TO'LIQ EKRAN)
+   ======================================================== */
+.fullscreen-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    /* Mobil brauzerlar paneli hisobiga dvh (Dynamic Viewport Height) ishlatamiz */
+    height: 100vh;
+    height: 100dvh; 
+    background-color: #000;
+    z-index: 9999; /* Hamma narsadan ustida turishi shart */
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Asosiy Snap Scroll Konteyner */
+.snap-scroll-wrapper {
+    width: 100%;
+    height: 100%;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory; /* Vertikal majburiy yopishish */
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch; /* iOS (iPhone) larda mayin scroll bo'lishi uchun */
+    background-color: #000;
+}
+
+/* Sichqoncha (scrollbar) chiziqlarini yashiramiz (chiroyli ko'rinishi uchun) */
+.snap-scroll-wrapper::-webkit-scrollbar {
+    display: none;
+}
+.snap-scroll-wrapper {
+    -ms-overflow-style: none;  /* IE va Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+/* ========================================================
+   3. HAR BIR REELS ELEMENTI (VIDEO KARTASI)
+   ======================================================== */
+.snap-reel-item {
+    width: 100%;
+    height: 100vh;
+    height: 100dvh; /* Mobil uchun dynamic balandlik */
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    overflow: hidden;
+}
+
+.snap-reel-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Telefon ekranini to'liq qoplaydi */
+    z-index: 1;
+}
+
+/* Videoning ustiga qorong'u gradient beramiz (Matnlar aniq ko'rinishi uchun) */
+.snap-reel-item::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40%;
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+    z-index: 2;
+    pointer-events: none; /* Gradient videoni bosishga xalaqit bermaydi */
+}
+
+/* ========================================================
+   4. INTERFEYS ELEMENTLARI (TUGMALAR VA MATNLAR)
+   ======================================================== */
+
+/* Yuqori qism (Orqaga tugmasi) */
+.reel-global-top {
+    position: absolute;
+    top: env(safe-area-inset-top, 20px); /* iPhone xorizgi teppasidagi datchikni hisobga oladi */
+    left: 15px;
+    z-index: 100;
+    color: white;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.reel-back-btn {
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px); /* Orqasini xira qiladi (Aero glass) */
+    -webkit-backdrop-filter: blur(10px);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+}
+
+/* Pastki ma'lumotlar bloki */
+.insta-bottom-info {
+    position: absolute;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); /* Pastki tugmalarga taqalib qolmaydi */
+    left: 15px;
+    right: 80px; /* O'ng tarafdagi tugmalarga joy qoldiramiz */
+    color: white;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none; /* Blok element videoni bosishni to'smaydi */
+}
+
+/* Matnli elementlarni bosishni qayta yoqamiz */
+.reel-user-info, .reel-caption {
+    pointer-events: auto;
+}
+
+.reel-user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.reel-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1.5px solid white;
+    object-fit: cover;
+}
+
+.reel-username {
+    font-weight: 600;
+    font-size: 15px;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+}
+
+.reel-follow-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.8);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.reel-follow-btn:active {
+    background: rgba(255,255,255,0.2);
+}
+
+.reel-caption {
+    font-size: 14px;
+    line-height: 1.4;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+    max-height: 75px; /* Juda uzun matn o'sib ketmasligi uchun */
+    overflow-y: auto;
+}
+
+/* O'ng tarafdagi harakat tugmalari (Sidebar) */
+.insta-sidebar {
+    position: absolute;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 25px);
+    right: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.2); /* Tugmalar orqasi biroz soya */
+    padding: 10px 5px;
+    border-radius: 30px;
+    backdrop-filter: blur(2px);
+}
+
+.action-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+}
+
+.action-btn i {
+    font-size: 26px;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.4));
+}
+
+/* Bosganda klik effekti (Mobil uchun active) */
+.action-btn:active i {
+    transform: scale(0.9);
+}
+
+.action-btn span {
+    font-size: 11px;
+    font-weight: 500;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+}
+
+.delete-btn i {
+    color: #ff4d4d;
+}
+
+/* ========================================================
+   5. VIDEO ELEMENT XUSUSIYATLARI
+   ======================================================== */
+video {
+    pointer-events: auto; /* Videoni to'xtatish/yoqish ishlashi shart */
+    -webkit-playsinline: true; /* iOS Safari ichida to'liq ekran ochilib ketmasligi uchun */
+}
+
+video::-webkit-media-controls-picture-in-picture-button,
+video::-webkit-media-controls-fullscreen-button {
+    display: none !important;
+}
+
+/* O'ng tarafdagi harakat tugmalari (Sidebar) */
+.insta-sidebar {
+    position: absolute;
+    /* env(safe-area-inset-bottom) - telefonlar paneli balandligini hisoblaydi, 
+       unga 80px qo'shib tugmalarni pastki menyudan tepaga ko'taramiz */
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 80px) !important;
+    right: 15px !important;
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Tugmalar orasidagi masofa */
+    z-index: 9999 !important; /* Tugmalar navigatsiya paneli ostida qolib ketmasligi uchun */
+    background: rgba(0, 0, 0, 0.2); /* Orqa fonga yengil soya */
+    padding: 12px 6px;
+    border-radius: 30px;
+    backdrop-filter: blur(2px);
+}
+
+/* Pastki ma'lumotlar bloki (Foydalanuvchi ismi va caption) */
+.insta-bottom-info {
+    position: absolute;
+    /* Pastki oq navigatsiya menyusidan balandroq turishi uchun 85px ko'taramiz */
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 85px) !important; 
+    left: 15px !important;
+    right: 80px !important; /* O'ng tarafdagi tugmalarga tegib ketmasligi uchun */
+    color: white;
+    z-index: 9999 !important; /* Navigatsiya paneli ostida qolib ketmasligi shart */
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none; /* Blok element videoni bosishni to'smaydi */
+}
+
+/* Ichidagi matn va tugmalarni bosish imkoniyatini qaytaramiz */
+.reel-user-info, .reel-caption {
+    pointer-events: auto !important;
+}
