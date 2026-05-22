@@ -1,6 +1,6 @@
-const cacheName = 'rivion-v1';
+const cacheName = 'rivion-v2'; // Versiyani v2 qildik, eski kesh avtomatik o'chishi uchun
 
-// Sizning fayllaringiz ro'yxati
+// Kesh qilinadigan asosiy fayllar ro'yxati
 const assets = [
   '/',
   '/index.html',
@@ -14,34 +14,50 @@ const assets = [
   '/googlefe4c79b94fb8a333.html'
 ];
 
-// Service Worker o'rnatilganda fayllarni keshga saqlash
+// 1. Service Worker o'rnatilganda fayllarni keshga yozish
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(cacheName).then((cache) => {
-      console.log('RIVION: Fayllar keshlanmoqda...');
+      console.log('RIVION: Baza fayllari keshga saqlanmoqda...');
       return cache.addAll(assets);
-    })
+    }).then(() => self.skipWaiting()) // Yangi SW o'rnatilishi bilan darhol ishga tushadi
   );
 });
 
-// Ma'lumotlarni yetkazib berish (Oflayn rejimni qo'llab-quvvatlash)
-self.addEventListener('fetch', (e) => {
-  e.respondWith(
-    caches.match(e.request).then((response) => {
-      // Agar keshda bo'lsa keshdan oladi, bo'lmasa tarmoqdan yuklaydi
-      return response || fetch(e.request);
-    })
-  );
-});
-
-// Eski keshni tozalash (Ilova yangilanganda)
+// 2. Aktivatsiya bosqichi - Eski kesh versiyalarini butunlay o'chirish
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
-        keys.filter((key) => key !== cacheName)
-            .map((key) => caches.delete(key))
+        keys.map((key) => {
+          if (key !== cacheName) {
+            console.log('RIVION: Eski kesh o‘chirilmoqda:', key);
+            return caches.delete(key);
+          }
+        })
       );
-    })
+    }).then(() => self.clients.claim()) // Barcha ochiq sahifalarni nazoratga oladi
+  );
+});
+
+// 3. So'rovlarni boshqarish (Network-First strategiyasi)
+self.addEventListener('fetch', (e) => {
+  // Faqat HTTP va HTTPS so'rovlarini keshga tekshiramiz (Firebase yoki tashqi API'lar bilan xato bermasligi uchun)
+  if (!e.request.url.startsWith('http')) return;
+
+  e.respondWith(
+    fetch(e.request)
+      .then((res) => {
+        // Agar internet bor bo'lsa, yangi faylni keshga ham saqlab qo'yamiz
+        const resClone = res.clone();
+        caches.open(cacheName).then((cache) => {
+          cache.put(e.request, resClone);
+        });
+        return res;
+      })
+      .catch(() => {
+        // Agar internet o'chib qolsa (error bo'lsa), keshdan qidiradi
+        return caches.match(e.request);
+      })
   );
 });

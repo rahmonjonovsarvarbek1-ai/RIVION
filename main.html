@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>RIVION | Ijtimoiy Tarmoq</title>
+    <title>RIVION | Social Network</title>
     
     <meta name="description" content="RIVION - Sarvarbek Rahmonjonov tomonidan yaratilgan, yoshlar uchun xavfsiz va zamonaviy ijtimoiy tarmoq.">
     <meta name="keywords" content="RIVION, Sarvarbek Rahmonjonov, ijtimoiy tarmoq, Uzbekistan, dasturlash, networking">
@@ -28,6 +28,10 @@
     <meta property="og:image" content="https://rivion.vercel.app/og-logo.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:creator" content="@Sarvarbek_Dev">
+    <!-- Keshni cheklash uchun teglar -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
 
     <!-- Structured Data -->
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"RIVION","operatingSystem":"Web","applicationCategory":"SocialNetworkingApplication","author":{"@type":"Person","name":"Sarvarbek Rahmonjonov"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
@@ -1419,6 +1423,17 @@
         </div>
     </div>
 </div>
+
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('Service Worker OK!'))
+        .catch(err => console.log('SW Error:', err));
+    });
+  }
+</script>
 
 <!-- ========================================
      SCRIPTS
