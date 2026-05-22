@@ -844,7 +844,7 @@ small { font-size: 0.8rem; color: var(--text-muted); }
 .footer-copy { font-size: 0.72rem; color: var(--text-muted); }
 
 /* ================================================================
-   11. STORIES
+   11. STORIES (TUZATILDI - MUKAMMAL DUMALOQ)
    ================================================================ */
 .stories-container {
   background: var(--bg-card);
@@ -881,26 +881,36 @@ small { font-size: 0.8rem; color: var(--text-muted); }
   white-space: nowrap;
 }
 
+/* Kvadrat asosni mustahkamlaymiz */
 .story-avatar-wrap {
   position: relative;
   width: 56px;
   height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0; /* Siqilib ketmasligi uchun majburiy */
 }
+
+/* Rasmni har doim mukammal doirada saqlash */
 .story-avatar-wrap img {
-  width: 56px;
-  height: 56px;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  border: 2.5px solid var(--bg-card);
+  box-sizing: border-box; /* Padding va border o'lchamni buzmasligi uchun */
+  border: 2px solid var(--bg-card);
   padding: 2px;
   background: var(--grad-accent);
+  display: block;
 }
+
+/* Kontenti bor storylar uchun chiroyli gradient halqa */
 .story-item:not(.add-story) .story-avatar-wrap img {
-  /* gradient ring for stories with content */
-  padding: 2.5px;
+  padding: 3px; /* Halqa qalinligi */
   background: linear-gradient(var(--bg-card), var(--bg-card)) padding-box,
               var(--grad-accent) border-box;
-  border: 2.5px solid transparent;
+  border: 3px solid transparent;
 }
 
 .story-add-btn {
@@ -917,6 +927,7 @@ small { font-size: 0.8rem; color: var(--text-muted); }
   justify-content: center;
   color: #fff;
   font-size: 0.65rem;
+  z-index: 2; /* Rasmning tagida qolib ketmasligi uchun */
 }
 
 /* ================================================================
@@ -5144,62 +5155,7 @@ body.dark-mode {
     transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* 1. Stories - Threads uslubida juda yupqa va toza */
-.stories-container {
-    padding: 12px 4px;
-    background: var(--bg-card);
-    border-bottom: 1px solid var(--border-color);
-    transition: background-color 0.25s ease, border-color 0.25s ease;
-}
-.stories-scroll {
-    display: flex;
-    gap: 14px;
-    overflow-x: auto;
-    scrollbar-width: none;
-}
-.stories-scroll::-webkit-scrollbar { display: none; }
 
-.story-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
-    min-width: 56px;
-}
-.story-avatar-wrap {
-    position: relative;
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    border: 1.5px solid var(--border-color);
-    padding: 2px;
-}
-.story-avatar-wrap img {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
-}
-.story-add-btn {
-    position: absolute;
-    bottom: -2px;
-    right: -2px;
-    background: var(--btn-send-bg); /* Rejimga qarab oq yoki qora bo'ladi */
-    color: var(--btn-send-text);
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.6rem;
-    border: 2px solid var(--bg-card); /* Kontur fonga moslashadi */
-}
-.story-item span {
-    font-size: 0.7rem;
-    color: var(--text-secondary);
-    margin-top: 4px;
-}
 
 /* 2. Threads Composer Box */
 .threads-composer {
@@ -6279,4 +6235,391 @@ video::-webkit-media-controls-fullscreen-button {
 /* Ichidagi matn va tugmalarni bosish imkoniyatini qaytaramiz */
 .reel-user-info, .reel-caption {
     pointer-events: auto !important;
+}
+
+/* ================================================================
+   11. THREADS FEED LAYOUT - MINIMALIST STYLE (YAKUNIY VARIANT)
+   ================================================================ */
+
+/* Faqat Home (Feed) bo'limi faol bo'lgandagina Threads uslubini qo'llaymiz */
+.threads-feed-layout.active {
+  background: transparent !important;
+  display: flex !important; /* JS sahifalarni almashtirganda bloklanib qolmasligi uchun */
+  flex-direction: column;
+}
+
+/* Agar boshqa navigatsiya bo'limiga o'tilsa, bu bo'lim orqada yashirinishi shart */
+.content-section:not(.active) {
+  display: none !important;
+}
+
+/* 1. STORIES QISMI - Ortiqcha fon va ramkalarni butunlay o'chiramiz */
+.stories-container {
+  background: transparent !important; /* Oq to'rtburchak fonni o'chiramiz */
+  border: none !important;             /* Ramkani olib tashlaymiz */
+  border-bottom: 1px solid var(--border) !important; /* Faqat pastki qismida ingichka silliq chiziq */
+  border-radius: 0 !important;          /* Burchaklarni yumshatish shart emas */
+  padding: 12px 4px 16px 4px !important;
+  margin-bottom: 0px !important;
+}
+
+/* 2. THREADS COMPOSER (Post yozish joyi) */
+.threads-composer {
+  background: transparent !important; /* Fon yo'q */
+  border: none !important;             /* Ramkalar o'chdi */
+  border-bottom: 1px solid var(--border) !important; /* Silliq ajratuvchi pastki chiziq */
+  border-radius: 0 !important;
+  padding: 16px 4px !important;
+  margin-bottom: 0px !important;
+  box-shadow: none !important;         /* Soyalarni butunlay yo'q qilamiz */
+}
+
+/* Textarea yozish joyini silliq qilish */
+.textarea-wrap textarea {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  resize: none !important;
+  font-size: 1rem;
+  color: var(--text-main);
+  padding: 4px 0;
+}
+
+/* Action pilla tugmachalarini (Rasm, Emoji, Joylashuv) minimalist qilish */
+.action-pill {
+  background: transparent !important;
+  border: none !important;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  padding: 6px 10px;
+}
+
+.action-pill:hover {
+  color: var(--accent); /* Fokus bo'lganda nozik rang o'zgarishi */
+}
+
+/* 3. THREADS TABS (Siz uchun, Obunalar, Trending tugmalari) */
+.threads-tabs-container {
+  display: flex;
+  background: transparent !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.feed-tab {
+  flex: 1;
+  background: transparent !important;
+  border: none !important;
+  padding: 14px 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-align: center;
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.feed-tab.active {
+  color: var(--text-main) !important;
+}
+
+/* Aktiv tabning ostidagi ingichka nozik chiziq */
+.feed-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--text-main);
+}
+
+
+/* ================================================================
+   THREADS POSTS LIST - MINIMALIST DESIGN (TINIQLASHTIRILDI)
+   ================================================================ */
+
+/* Postlar ro'yxati konteyneri */
+.posts-container {
+  background: transparent !important;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+}
+
+/* Har bitta alohida Post kartasi */
+.post-card, .post, .thread-item { 
+  background: transparent !important;     /* Alohida oq/rangli fonlarni o'chiramiz */
+  border: none !important;                 /* Atrofidagi to'rtburchak ramkani yo'q qilamiz */
+  border-bottom: 1px solid var(--border) !important; /* Faqat post tagida ingichka silliq chiziq */
+  border-radius: 0 !important;              /* Burchak botiqliklarini o'chiramiz */
+  padding: 16px 4px !important;            /* Yon tomondagi keraksiz surilishlarni tozalaydi */
+  margin-bottom: 0px !important;            /* Kartalar orasidagi bo'shliq o'rniga chiziq tushadi */
+  box-shadow: none !important;             /* Soyalarni butunlay o'chiramiz */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Post muallifi va rasm qatori tuzilishi */
+.post-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  background: transparent !important;
+}
+
+/* 🌟 Post muallifining ismi (TINIQLASHTIRILDI) */
+.post-author-name {
+  font-weight: 700 !important;          /* Ism qalinroq va ajralib turadigan bo'ladi */
+  font-size: 0.98rem !important;
+  color: #000000 !important;            /* Light modeda qop-qora tiniq rang */
+  opacity: 1 !important;                /* Har qanday xiralikni (opacity) butunlay yo'q qilamiz */
+  text-transform: none;
+}
+
+/* 🌓 Dark mode (Tungi rejim) uchun ismni oppoq va yorqin qilish */
+body.dark-mode .post-author-name,
+[data-theme="dark"] .post-author-name {
+  color: #ffffff !important;            /* Dark modeda oppoq va yorqin rang */
+}
+
+/* Post vaqti (2k avval, 5d avval) */
+.post-time {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+/* Post ichidagi matn (qalesla?? va h.k.) */
+.post-content {
+  font-size: 0.96rem;
+  color: var(--text-main);
+  line-height: 1.5;
+  margin-bottom: 10px;
+  padding-left: 0px; 
+}
+
+/* Post ichiga yuklangan asosiy rasm yoki video */
+.post-media-wrap img, .post-media-wrap video {
+  width: 100%;
+  max-height: 450px;
+  object-fit: cover;
+  border-radius: var(--radius-md, 8px); /* Rasm burchaklari Threads'da nozik yumshatilgan bo'ladi */
+  border: 1px solid var(--border);       /* Rasm fonga yopishib ketmasligi uchun nozik chegara */
+  margin-top: 6px;
+}
+
+/* Post ostidagi interaktiv tugmalar (Like, Comment, Share) */
+.post-actions {
+  display: flex;
+  gap: 20px;
+  margin-top: 12px;
+  color: var(--text-secondary);
+}
+
+.post-action-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s ease;
+  padding: 4px 0;
+}
+
+.post-action-btn:hover {
+  color: var(--text-main); /* Bosganda yoki yaqinlashganda yorqinlashadi */
+}
+
+
+/* ================================================================
+   STORIES MODAL - LIGHT & DARK MODE FUNCTIONALITY
+   ================================================================ */
+
+/* Modal orqa foni (Oyna ochilganda orqani xiralashtirish) */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4); /* Light modeda nozikroq qoralik */
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+body.dark-mode .modal-overlay,
+[data-theme="dark"] .modal-overlay {
+  background: rgba(0, 0, 0, 0.7); /* Dark modeda to'qroq qoralik */
+}
+
+/* Modal asosiy kartasi (Threads va Old Money minimalist uslubida) */
+.reel-modal-card {
+  background: #ffffff !important; /* Light modeda top-toza oq */
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 16px);
+  width: 90%;
+  max-width: 480px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+body.dark-mode .reel-modal-card,
+[data-theme="dark"] .reel-modal-card {
+  background: #121212 !important; /* Dark modeda Threads kabi to'q qora */
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Modal Header & Footer */
+.modal-header, .modal-footer {
+  padding: 16px 20px;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-footer {
+  border-bottom: none;
+  border-top: 1px solid var(--border);
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #000000 !important; /* Light modeda qora */
+}
+
+body.dark-mode .modal-header h3,
+[data-theme="dark"] .modal-header h3 {
+  color: #ffffff !important; /* Dark modeda oq */
+}
+
+/* Story turi tugmalari (Tabs) */
+.story-type-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 0 20px;
+  margin-top: 16px;
+}
+
+.story-type {
+  flex: 1;
+  background: #f3f4f6; /* Light modeda kulrang nozik fon */
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: #4b5563;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.story-type.active {
+  background: #000000; /* Light modeda aktiv qora */
+  color: #ffffff;
+}
+
+body.dark-mode .story-type,
+[data-theme="dark"] .story-type {
+  background: #222222; /* Dark modeda tugma foni */
+  color: #9ca3af;
+}
+
+body.dark-mode .story-type.active,
+[data-theme="dark"] .story-type.active {
+  background: #ffffff; /* Dark modeda aktiv oq */
+  color: #000000;
+}
+
+/* Fayl yuklash maydoni (File Drop Area) */
+.file-drop-area {
+  margin: 0 20px 16px 20px;
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.file-drop-area:hover {
+  border-color: var(--accent);
+}
+
+body.dark-mode .file-drop-area,
+[data-theme="dark"] .file-drop-area {
+  border-color: #374151;
+}
+
+.file-drop-area p {
+  color: #4b5563;
+  font-size: 0.9rem;
+  margin-top: 10px;
+}
+
+body.dark-mode .file-drop-area p,
+[data-theme="dark"] .file-drop-area p {
+  color: #9ca3af;
+}
+
+/* Matnli Story muharriri (Textarea) */
+.story-text-editor textarea {
+  width: 100%;
+  min-height: 150px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  font-size: 1rem;
+  color: #000000;
+  resize: none;
+  outline: none;
+  box-sizing: border-box;
+}
+
+body.dark-mode .story-text-editor textarea,
+[data-theme="dark"] .story-text-editor textarea {
+  background: #1a1a1a;
+  border-color: #374151;
+  color: #ffffff;
+}
+
+/* Yopish (X) va Bekor qilish tugmalari */
+.close-dot, .btn-secondary {
+  background: transparent;
+  border: none;
+  color: #4b5563;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+body.dark-mode .close-dot, 
+body.dark-mode .btn-secondary,
+[data-theme="dark"] .close-dot,
+[data-theme="dark"] .btn-secondary {
+  color: #9ca3af;
 }

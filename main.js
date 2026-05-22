@@ -1656,10 +1656,19 @@ window.openAnalytics = () => showToast('Tahlil bo\'limi tez kunda! 📊', 'info'
 // ============================================================
 // REELS
 // ============================================================
-
-
+ 
 // Global kesh (barcha yuklangan videolarni xotirada saqlash uchun)
 window.allReelsCache = [];
+
+// Yordamchi funksiya: Supabase havolasini CORS xatolaridan tozalash
+function getCleanVideoURL(url) {
+    if (!url) return '';
+    // Agar havola Supabase'ga tegishli bo'lsa va unda '/public/' bo'lmasa, uni to'g'rilaymiz
+    if (url.includes('supabase.co') && !url.includes('/object/public/')) {
+        return url.replace('/storage/v1/object/', '/storage/v1/object/public/');
+    }
+    return url;
+}
 
 // ==========================================
 // 1. REELS GRIDNI BAZADAN YUKLASH
@@ -1687,15 +1696,18 @@ window.loadReels = async function() {
             const data = docSnap.data();
             if (!data.videoURL) return;
 
-            // ID ni ob'ekt ichiga majburiy joylaymiz
-            const reelData = { id: docSnap.id, ...data };
+            // Havolani xavfsiz va toza holatga keltiramiz
+            const cleanURL = getCleanVideoURL(data.videoURL);
+
+            // ID ni ob'ekt ichiga majburiy joylaymiz va toza URL bilan yangilaymiz
+            const reelData = { id: docSnap.id, ...data, videoURL: cleanURL };
             window.allReelsCache.push(reelData);
 
             // Grid elementini yaratish
             const el = document.createElement('div');
             el.className = 'reel-thumb';
             el.innerHTML = `
-                <video src="${data.videoURL}" muted loop playsinline style="width:100%;height:100%;object-fit:cover;"></video>
+                <video src="${cleanURL}" muted loop playsinline style="width:100%;height:100%;object-fit:cover;"></video>
                 <div class="reel-overlay">
                     <span><i class="fas fa-heart"></i> ${data.likes?.length || 0}</span>
                 </div>`;
@@ -1745,6 +1757,9 @@ window.openReelsFeed = (allReelsData, startDocId = null) => {
         const docId = data.id;
         if (!docId) return; // ID bo'lmasa o'tkazib yuboriladi
 
+        // Havolani bu yerda ham tekshirib tozalaymiz
+        const cleanURL = getCleanVideoURL(data.videoURL);
+
         // --- LIKE HOLATINI TEKSHIRISH ---
         const hasLiked = currentUserId && data.likes && data.likes.includes(currentUserId);
         const heartClass = hasLiked ? 'fas fa-heart' : 'far fa-heart';
@@ -1763,7 +1778,7 @@ window.openReelsFeed = (allReelsData, startDocId = null) => {
         reelItem.setAttribute('id', `reel-item-${docId}`);
         
         reelItem.innerHTML = `
-            <video src="${data.videoURL}" loop playsinline disablepictureinpicture class="reel-video-element" style="width:100%;height:100%;object-fit:cover;"></video>
+            <video src="${cleanURL}" loop playsinline disablepictureinpicture class="reel-video-element" style="width:100%;height:100%;object-fit:cover;"></video>
             
             <div class="insta-sidebar">
                 <button class="action-btn" onclick="likeReel('${docId}', '${data.userId || ''}')">
@@ -1822,6 +1837,94 @@ window.openReelsFeed = (allReelsData, startDocId = null) => {
 
     allVideos.forEach(v => reelObserver.observe(v));
 };
+
+// ============================================================
+// 3. AVTOMATIK UPLOAD MANTIQI (YANGI QO'SHILDI)
+// ============================================================
+document.addEventListener('click', async (e) => {
+    // Agar sening skrinshotingdagi "Ulashish" tugmasi bosilsa
+    if (e.target && e.target.tagName === 'BUTTON' && e.target.innerText.includes('Ulashish')) {
+        
+        const ulashishBtn = e.target;
+        
+        // Modal ichidagi elementlarni avtomatik qidirib topamiz
+        const fileInput = document.querySelector('input[type="file"]') || document.getElementById('reel-video-input');
+        const captionInput = document.querySelector('.modal-body textarea') || document.querySelector('textarea');
+        
+        // Skrinshotingdagi "0% yuklandi..." yozuvini yangilash uchun div
+        const progressDiv = document.querySelector('.modal-body div[style*="padding"]') || 
+                            Array.from(document.querySelectorAll('div')).find(el => el.innerText.includes('yuklandi'));
+
+        if (!fileInput || fileInput.files.length === 0) {
+            alert("Iltimos, avval video faylni yuklang yoki tanlang!");
+            return;
+        }
+
+        const file = fileInput.files[0];
+        const caption = captionInput ? captionInput.value : '';
+
+        try {
+            // Tugmani bloklaymiz va foydalanuvchiga jarayonni ko'rsatamiz
+            ulashishBtn.disabled = true;
+            if (progressDiv) progressDiv.innerText = "Supabase'ga yuklanyapti...";
+
+            // 1. Unikal fayl nomi yaratish
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+
+            // 2. Supabase Storage 'videos' bucket-iga faylni yuklash
+            const { data: uploadData, error: uploadError } = await supabase
+                .storage
+                .from('videos')
+                .upload(fileName, file, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
+
+            if (uploadError) throw uploadError;
+
+            // 3. Supabase'dan toza, ochiq (Public) URL manzilini olish
+            const { data: urlData } = supabase
+                .storage
+                .from('videos')
+                .getPublicUrl(fileName);
+
+            const cleanVideoURL = urlData.publicUrl;
+
+            // 4. Firestore-ga yangi post ma'lumotlarini toza link bilan yozish
+            const currentUser = auth.currentUser;
+            
+            await addDoc(collection(db, 'reels'), {
+                userId: currentUser ? currentUser.uid : 'anonim_user',
+                userName: currentUser ? (currentUser.displayName || currentUser.email.split('@')[0]) : 'foydalanuvchi',
+                userAvatar: currentUser ? (currentUser.photoURL || 'profil-rasm.jpg') : 'profil-rasm.jpg',
+                videoURL: cleanVideoURL, // <-- Mana shu yerga Supabase linki ketadi!
+                caption: caption,
+                likes: [],
+                createdAt: serverTimestamp() // Firebase Timestamp
+            });
+
+            if (progressDiv) progressDiv.innerText = "100% yuklandi!";
+            alert("Reel muvaffaqiyatli ulashildi!");
+
+            // Modal oynasini yopish (X tugmasini avtomatik bosish orqali)
+            const closeBtn = document.querySelector('button[class*="close"]') || document.querySelector('.modal-header button');
+            if (closeBtn) closeBtn.click();
+
+            // Gridni yangitdan yuklash
+            if (typeof window.loadReels === 'function') {
+                window.loadReels();
+            }
+
+        } catch (err) {
+            console.error("Yuklashda xatolik:", err);
+            alert("Yuklab bo'lmadi: " + err.message);
+            if (progressDiv) progressDiv.innerText = "Yuklashda xato bo'ldi!";
+        } finally {
+            ulashishBtn.disabled = false;
+        }
+    }
+});
 
 
 window.likeReel = async function(docId) {
@@ -3013,7 +3116,7 @@ window.handleReelFile = function(event) {
 };
 
 // ========================================================
-// 2. VIDEONI PROGRESS BAR BILAN FIREBASE-GA YUKLASH
+// 2. VIDEONI PROGRESS BAR BILAN SUPABASE-GA YUKLASH (FIXED)
 // ========================================================
 window.shareReel = async function() {
     try {
@@ -3023,8 +3126,22 @@ window.shareReel = async function() {
             return;
         }
 
-        if (!selectedReelFile) {
-            alert("Iltimos, avval video fayl tanlang!");
+        // 1. INPUT ELEMENTINI VA FAYLNI MAJBURIY QIDIRIB TOPAMIZ
+        const fileInput = document.getElementById('reel-video-input') || 
+                          document.querySelector('input[type="file"]') || 
+                          document.querySelector('.modal-body input[type="file"]');
+        
+        // Birinchi navbatda input ichidagi faylni tekshiramiz, agar u bo'sh bo'lsa global o'zgaruvchini olamiz
+        let fileToUpload = null;
+        if (fileInput && fileInput.files && fileInput.files.length > 0) {
+            fileToUpload = fileInput.files[0];
+        } else if (typeof selectedReelFile !== 'undefined' && selectedReelFile) {
+            fileToUpload = selectedReelFile;
+        }
+
+        // Agar hech qayerdan fayl topilmasa
+        if (!fileToUpload) {
+            alert("Iltimos, avval video fayl tanlang yoki qaytadan yuklang!");
             return;
         }
 
@@ -3032,90 +3149,88 @@ window.shareReel = async function() {
         const progressFill = document.getElementById('upload-progress-fill');
         const progressText = document.getElementById('progress-text');
 
+        // Progress barlarni ishga tushiramiz
         if (progressContainer) progressContainer.style.display = 'block';
+        if (progressFill) progressFill.style.width = '10%';
+        if (progressText) progressText.innerText = "Yuklash boshlanmoqda...";
 
-        // 1-QADAM: FIREBASE STORAGE MODULLARINI XAVFSIZ YUKLASH
-        let storage, refFunc, uploadFunc, getUrlFunc;
-        try {
-            const storageMod = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js");
-            
-            // TO'G'RILANDI: ReferenceError oldini olish uchun storageMod ichidan chaqiramiz
-            if (window.storage) {
-                storage = window.storage;
-            } else {
-                storage = storageMod.getStorage(); 
-            }
-            
-            refFunc = storageMod.ref;
-            uploadFunc = storageMod.uploadBytesResumable;
-            getUrlFunc = storageMod.getDownloadURL;
-        } catch (e) {
-            console.error("Storage modullarini yuklashda muammo:", e);
-            alert("Firebase Storage modullari topilmadi!");
-            return;
-        }
+        // 2. UNIKAL FAYL NOMI YARATISH
+        const fileExt = fileToUpload.name ? fileToUpload.name.split('.').pop() : 'mp4';
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
 
-        // 2-QADAM: YUKLASH MANZILINI BELGILASH
-        const fileRef = refFunc(storage, `reels/${Date.now()}_${selectedReelFile.name}`);
+        if (progressFill) progressFill.style.width = '30%';
+        if (progressText) progressText.innerText = "Supabase'ga yuklanyapti...";
+
+        // 3. SUPABASE STORAGE'GA TO'G'RIDAN-TO'G'RI YUKLASH
+        const { data: uploadData, error: uploadError } = await supabase
+            .storage
+            .from('videos') // Sening Supabase panelingdagi bucket nomi
+            .upload(fileName, fileToUpload, {
+                cacheControl: '3600',
+                upsert: false
+            });
+
+        if (uploadError) throw uploadError;
+
+        if (progressFill) progressFill.style.width = '70%';
+        if (progressText) progressText.innerText = "Havola olinmoqda...";
+
+        // 4. SUPABASE'DAN OCHIQ (PUBLIC) URL MANZILINI OLISH
+        const { data: urlData } = supabase
+            .storage
+            .from('videos')
+            .getPublicUrl(fileName);
+
+        const cleanVideoURL = urlData.publicUrl;
+
+        if (progressFill) progressFill.style.width = '90%';
+        if (progressText) progressText.innerText = "Firestore'ga yozilmoqda...";
+
+        // 5. FIRESTORE-GA YANGI REEL MA'LUMOTLARINI YOZISH
+        const captionInput = document.getElementById('reel-caption') || document.querySelector('.modal-body textarea');
+        const captionText = captionInput ? captionInput.value : "";
+
+        await addDoc(collection(db, "reels"), {
+            userId: user.uid,
+            userName: user.displayName || user.email.split('@')[0] || "Foydalanuvchi",
+            userAvatar: user.photoURL || "profil-rasm.jpg",
+            videoURL: cleanVideoURL, // Muammosiz, CORS xatosiz ishlaydigan Supabase linki
+            caption: captionText,
+            likes: [],
+            createdAt: serverTimestamp()
+        });
+
+        // 6. PROCESS YAKUNLANDI
+        if (progressFill) progressFill.style.width = '100%';
+        if (progressText) progressText.innerText = "100% yuklandi!";
         
-        // 3-QADAM: YUKLASHNI BOSHLASH
-        const uploadTask = uploadFunc(fileRef, selectedReelFile);
+        alert("Video muvaffaqiyatli yuklandi va ulashildi!");
 
-        uploadTask.on('state_changed', 
-            (snapshot) => {
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                if (progressFill) progressFill.style.width = `${progress}%`;
-                if (progressText) progressText.innerText = `${Math.round(progress)}% yuklandi...`;
-            }, 
-            (error) => {
-                console.error("Yuklashda xatolik:", error);
-                alert("Videoni yuklashda xato bo'ldi: " + error.message);
-                if (progressContainer) progressContainer.style.display = 'none';
-            }, 
-            async () => {
-                // 4-QADAM: LINKNI OLISH
-                const videoURL = await getUrlFunc(uploadTask.ref);
-
-                const captionInput = document.getElementById('reel-caption');
-                const captionText = captionInput ? captionInput.value : "";
-
-                // Firestore-ga yozish
-                await addDoc(collection(db, "reels"), {
-                    userId: user.uid,
-                    userName: user.displayName || "Foydalanuvchi",
-                    userAvatar: user.photoURL || "profil-rasm.jpg",
-                    videoURL: videoURL,
-                    caption: captionText,
-                    likes: [],
-                    createdAt: serverTimestamp()
-                });
-
-                console.log("Video muvaffaqiyatli Firestore-ga yozildi!");
-                alert("Video muvaffaqiyatli yuklandi va ulashildi!");
-
-                selectedReelFile = null;
-                if (captionInput) captionInput.value = '';
-                
-                if (progressContainer) progressContainer.style.display = 'none';
-                if (progressFill) progressFill.style.width = '0%';
-                
-                if (typeof closeAddReelModal === 'function') {
-                    closeAddReelModal();
-                } else {
-                    location.reload();
-                }
-            }
-        );
+        // Tozalash va modalni yopish
+        if (typeof selectedReelFile !== 'undefined') selectedReelFile = null;
+        if (fileInput) fileInput.value = ''; // Inputni tozalash
+        if (captionInput) captionInput.value = '';
+        
+        if (progressContainer) progressContainer.style.display = 'none';
+        
+        if (typeof closeAddReelModal === 'function') {
+            closeAddReelModal();
+        } else {
+            location.reload();
+        }
 
     } catch (error) {
         console.error("shareReel ichida xatolik:", error);
-        alert("Kutilmagan xatolik yuz berdi. Konsolni tekshiring.");
+        alert("Videoni yuklashda xato bo'ldi: " + error.message);
+        
+        const progressContainer = document.getElementById('upload-progress-container');
+        if (progressContainer) progressContainer.style.display = 'none';
     }
 };
 
-// --- Karakter sanagich (HTML dagi textarea uchun qo'shimcha qulaylik) ---
+// --- Karakter sanagich ---
 document.addEventListener('DOMContentLoaded', () => {
-    const captionArea = document.getElementById('reel-caption');
+    const captionArea = document.getElementById('reel-caption') || document.querySelector('.modal-body textarea');
     const charCount = document.getElementById('reelCaptionCount');
     if (captionArea && charCount) {
         captionArea.addEventListener('input', (e) => {
