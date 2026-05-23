@@ -1036,7 +1036,6 @@
     </div>
 </div>
 
-<!-- Add Story Modal -->
 <div id="add-story-modal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true">
     <div class="reel-modal-card glass-card">
         <div class="modal-header">
@@ -1049,14 +1048,23 @@
                 <button class="story-type" data-type="text"><i class="fas fa-font"></i> Matn</button>
                 <button class="story-type" data-type="video"><i class="fas fa-video"></i> Video</button>
             </div>
+            
             <div id="storyPhotoArea">
                 <div class="file-drop-area" onclick="document.getElementById('storyFileInput').click()">
                     <div class="upload-icon-wrap"><i class="fas fa-image"></i></div>
                     <p>Story uchun rasm tanlang</p>
-                    <input type="file" id="storyFileInput" hidden accept="image/*,video/*">
+                    <input type="file" id="storyFileInput" hidden accept="image/*">
                 </div>
                 <div id="storyPreviewWrap" style="display:none;"></div>
+                
+                <div class="modal-footer" style="padding: 15px 0 0 0; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <button onclick="closeAddStory()" class="btn-secondary">Bekor</button>
+                    <button onclick="event.stopPropagation(); publishStory()" class="btn-primary">
+                        <i class="fas fa-paper-plane"></i> Rasm story ulashish
+                    </button>
+                </div>
             </div>
+            
             <div id="storyTextArea" style="display:none;">
                 <div class="story-text-editor">
                     <textarea id="storyTextContent" placeholder="Matn kiriting..." maxlength="250"></textarea>
@@ -1068,13 +1076,31 @@
                         <span class="story-bg-color" style="background:linear-gradient(135deg,#4facfe,#00f2fe)" data-bg="linear-gradient(135deg,#4facfe,#00f2fe)"></span>
                     </div>
                 </div>
+                
+                <div class="modal-footer" style="padding: 15px 0 0 0; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <button onclick="closeAddStory()" class="btn-secondary">Bekor</button>
+                    <button onclick="event.stopPropagation(); publishStory()" class="btn-primary">
+                        <i class="fas fa-paper-plane"></i> Matn story ulashish
+                    </button>
+                </div>
             </div>
-        </div>
-        <div class="modal-footer">
-            <button onclick="closeAddStory()" class="btn-secondary">Bekor</button>
-            <button onclick="event.stopPropagation(); publishStory()" class="btn-primary">
-               <i class="fas fa-paper-plane"></i> Story ulashish
-            </button>
+
+            <div id="storyVideoArea" style="display:none;">
+                <div class="file-drop-area" onclick="document.getElementById('storyVideoInput').click()">
+                    <div class="upload-icon-wrap"><i class="fas fa-video"></i></div>
+                    <p>Story uchun qisqa video tanlang</p>
+                    <input type="file" id="storyVideoInput" hidden accept="video/*">
+                </div>
+                <div id="storyVideoPreviewWrap" style="display:none;"></div>
+                
+                <div class="modal-footer" style="padding: 15px 0 0 0; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <button onclick="closeAddStory()" class="btn-secondary">Bekor</button>
+                    <button onclick="event.stopPropagation(); publishStory()" class="btn-primary">
+                        <i class="fas fa-paper-plane"></i> Video story ulashish
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
