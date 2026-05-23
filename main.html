@@ -1072,8 +1072,8 @@
         </div>
         <div class="modal-footer">
             <button onclick="closeAddStory()" class="btn-secondary">Bekor</button>
-            <button onclick="publishStory()" class="btn-primary">
-                <i class="fas fa-paper-plane"></i> Ulashish
+            <button onclick="event.stopPropagation(); publishStory()" class="btn-primary">
+               <i class="fas fa-paper-plane"></i> Story ulashish
             </button>
         </div>
     </div>
