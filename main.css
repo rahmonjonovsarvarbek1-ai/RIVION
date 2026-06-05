@@ -6623,3 +6623,187 @@ body.dark-mode .btn-secondary,
 [data-theme="dark"] .btn-secondary {
   color: #9ca3af;
 }
+
+/* ===== OVERLAY ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+/* ===== MODAL CARD ===== */
+.profile-edit-modal.glass-card {
+  background: #ffffff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+}
+
+/* ===== HEADER ===== */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fff;
+  flex-shrink: 0;
+}
+.modal-header h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+.close-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: #f5f5f5;
+  color: #666;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.close-dot:hover { background: #ffe4e4; color: #e53e3e; }
+
+/* ===== SCROLL AREA ===== */
+.edit-scroll-container {
+  overflow-y: auto;
+  flex: 1 1 auto;      /* <-- bu eng muhim: scroll ishlaydi */
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.edit-scroll-container::-webkit-scrollbar { width: 5px; }
+.edit-scroll-container::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
+
+/* ===== SECTION TITLE ===== */
+.edit-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6c63ff;
+  margin: 16px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1.5px solid #ede9fe;
+}
+
+/* ===== FIELD GROUP ===== */
+.edit-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.edit-field-group label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #4a4a6a;
+}
+
+/* ===== TWO COLUMN ROW ===== */
+.edit-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* ===== INPUTS ===== */
+.edit-field-group input,
+.edit-field-group select,
+.edit-field-group textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border: 1.5px solid #e8e8f0;
+  border-radius: 10px;
+  font-size: 14px;
+  background: #fafafa;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
+}
+.edit-field-group input:focus,
+.edit-field-group select:focus,
+.edit-field-group textarea:focus {
+  border-color: #6c63ff;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.12);
+}
+.edit-field-group textarea { resize: vertical; min-height: 72px; }
+.char-count { font-size: 11px; color: #aaa; text-align: right; }
+
+/* ===== FOOTER ===== */
+.modal-footer.sticky-footer {
+  display: flex;
+  gap: 10px;
+  padding: 16px 24px 20px;
+  border-top: 1px solid #f0f0f0;
+  background: #fff;
+  flex-shrink: 0;   /* <-- footer doim pastda qoladi */
+}
+.btn-secondary {
+  flex: 1;
+  padding: 11px 16px;
+  border: 1.5px solid #e0e0e8;
+  border-radius: 12px;
+  background: transparent;
+  font-size: 14px;
+  cursor: pointer;
+}
+.btn-primary {
+  flex: 2;
+  padding: 11px 16px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6c63ff, #a78bfa);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ===== TELEFON — FULLSCREEN BOTTOM SHEET ===== */
+@media (max-width: 480px) {
+  .modal-overlay {
+    padding: 0;
+    align-items: flex-end;   /* pastdan chiqadi */
+  }
+  .profile-edit-modal.glass-card {
+    max-width: 100%;
+    width: 100%;
+    max-height: 96vh;
+    border-radius: 24px 24px 0 0;   /* faqat yuqori burchaklar yumaloq */
+  }
+  .modal-header { padding: 16px 18px 14px; }
+  .edit-scroll-container { padding: 16px 18px; }
+  .modal-footer.sticky-footer { padding: 14px 18px 28px; }
+  .edit-field-row { grid-template-columns: 1fr; }  /* bir ustun */
+}
+
+/* ===== DESKTOP ===== */
+@media (min-width: 768px) {
+  .profile-edit-modal.glass-card {
+    max-height: 85vh;
+  }
+}
